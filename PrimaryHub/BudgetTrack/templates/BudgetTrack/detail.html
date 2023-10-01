@@ -1,0 +1,14 @@
+<h1> Expenditure ID: {{ expenditure.id }}</h1>
+
+<li>Date: {{ expenditure.date }}</li>
+<li>Name: {{ expenditure.name }}</li>
+<li>Location: {{ expenditure.location }}</li>
+<li>Amount: {{ expenditure.amount }}</li>
+<li>Currency: {{ expenditure.currency }}</li>
+<li>Type: {{ expenditure.type }}</li>
+<li>Payment Method: {{ expenditure.payment_method }}</li>
+<li>User: {{ expenditure.user }}</li>
+<br>
+<button><a href="{% url 'edit' expenditure.id %}">Edit</a></button>
+<button><a href="{% url 'delete' expenditure.id %}">Delete</a></button>
+<button><a href="{% url 'list' %}">Back</a></button>

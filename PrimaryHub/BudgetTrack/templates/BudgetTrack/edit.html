@@ -1,0 +1,11 @@
+<h1> Expenditure ID: {{ object.id }}</h1>
+
+<form action="{% url 'edit' object.id %}" method="post">
+    {% csrf_token %}
+    {{ form.as_table }}
+    <input type="submit" value="Submit">
+</form>
+
+<button>
+    <a href="{% url 'detail' object.id %}">Back</a>
+</button>
