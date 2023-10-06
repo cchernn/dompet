@@ -8,7 +8,14 @@ from django.template import loader
 from .models import Expenditure
 from .forms import ExpenditureForm
 
+from rest_framework import viewsets
+from .serializers import ExpenditureSerializer
+
 import pandas as pd
+
+class ExpenditureView(viewsets.ModelViewSet):
+    serializer_class = ExpenditureSerializer
+    queryset = Expenditure.objects.all()
 
 def index(request):
     template_path = "BudgetTrack/index.html"
