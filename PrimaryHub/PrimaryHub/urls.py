@@ -26,10 +26,9 @@ router = routers.DefaultRouter()
 router.register(r'expenditures', BudgetViews.ExpenditureView)
 
 urlpatterns = [
-    # path("budget/", include("BudgetTrack.urls")),
     path("admin/", admin.site.urls),
     path("api/", include(router.urls)),
     path("api/token", jwt_views.TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path("api/token/refresh/", jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
+    path("api/token/refresh", jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
     path("api/logout", views.LogoutView.as_view(), name='logout'),
 ]
