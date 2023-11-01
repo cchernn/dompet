@@ -6,12 +6,12 @@ import datetime
 class Expenditure(models.Model):
     date = models.DateField()
     user = models.CharField(max_length=32)
-    name = models.CharField(max_length=256, blank=True)
-    location = models.CharField(max_length=256, blank=True)
-    type = models.CharField(max_length=256, blank=True)
-    amount = models.DecimalField(max_digits=    9, decimal_places=2, default=0)
+    name = models.CharField(max_length=256)
+    location = models.CharField(max_length=256)
+    type = models.CharField(max_length=256)
+    amount = models.DecimalField(max_digits=9, decimal_places=2, default=0)
     currency = models.CharField(max_length=3, default="MYR")
-    payment_method = models.CharField(max_length=256, blank=True)
+    payment_method = models.CharField(max_length=256)
     inserted_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
