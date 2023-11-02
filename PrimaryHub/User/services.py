@@ -41,19 +41,3 @@ def create_user(userdc: "UserDataClass") -> "UserDataClass":
     instance.save()
 
     return UserDataClass.from_instance(user=instance)
-
-def user_username_selector(username: str) -> "User":
-    user = User.objects.filter(username=username).first()
-
-    return user
-
-def create_token(user_id: int) -> str:
-    payload = {
-        "id" : user_id,
-        "exp" : datetime.datetime.utcnow() + datetime.timedelta(hours=1),
-        "iat" : datetime.datetime.utcnow()
-    }
-
-    token = jwt.encode(payload, settings.JWT_SECRET, algorithm="HS256")
-
-    return token
