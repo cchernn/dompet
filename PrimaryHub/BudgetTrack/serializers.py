@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Expenditure
 from .services import ExpenditureDataClass
+from django.http import QueryDict
 
 class ExpenditureSerializer(serializers.ModelSerializer):
     class Meta:
@@ -10,6 +11,8 @@ class ExpenditureSerializer(serializers.ModelSerializer):
 
     def to_internal_value(self, data):
         if self.partial:
+            if isinstance(data, QueryDict):
+                data = data.dict()
             for field,value in self.instance.__dict__.items():
                 if field not in data.keys():
                     data[field] = value

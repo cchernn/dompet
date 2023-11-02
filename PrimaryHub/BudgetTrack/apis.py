@@ -1,10 +1,8 @@
 from rest_framework import views, response, permissions, status
 from .serializers import ExpenditureSerializer
 from . import services
-from User import auth
 
 class ExpenditureCreateAPI(views.APIView):
-    authentication_classes = (auth.CustomUserAuthentication, )
     permission_classes = (permissions.IsAuthenticated, )
 
     def post(self, request):
@@ -25,7 +23,6 @@ class ExpenditureCreateAPI(views.APIView):
         return response.Response(data=serializer.data)
 
 class ExpenditureRetrieveUpdateDeleteAPI(views.APIView):
-    authentication_classes = (auth.CustomUserAuthentication, )
     permission_classes = (permissions.IsAuthenticated, )
 
     def get(self, request, expenditure_id):
@@ -41,11 +38,8 @@ class ExpenditureRetrieveUpdateDeleteAPI(views.APIView):
 
     def put(self, request, expenditure_id):
         expenditure = services.get_expenditure_detail(expenditure_id=expenditure_id)
-        # print('instance', expenditure.instance)
-        serializer = ExpenditureSerializer(expenditure, data=request.data, partial=True)
-        print(serializer.initial_data)
 
-        print("we're going to die here")
+        serializer = ExpenditureSerializer(expenditure, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
 
         expenditure = serializer.validated_data

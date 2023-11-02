@@ -1,6 +1,7 @@
-from rest_framework import views, response, exceptions, permissions
+from rest_framework import views, response, permissions, status
 from .serializers import UserSerializer
-from . import services, auth
+from . import services
+from rest_framework_simplejwt.tokens import RefreshToken
 
 class RegisterAPI(views.APIView):
     def post(self, request):
@@ -12,27 +13,7 @@ class RegisterAPI(views.APIView):
 
         return response.Response(data=serializer.data)
     
-class LoginAPI(views.APIView):
-    def post(self, request):
-        username = request.data["username"]
-        password = request.data["password"]
-
-        user = services.user_username_selector(username=username)
-        if user is None:
-            raise exceptions.AuthenticationFailed("Invalid Credentials")
-        
-        if not user.check_password(raw_password=password):
-            raise exceptions.AuthenticationFailed("Invalid Credentials")
-        
-        token = services.create_token(user_id=user.id)
-
-        resp = response.Response()
-        resp.set_cookie(key="jwt", value=token, httponly=True)
-
-        return resp
-    
 class UserAPI(views.APIView):
-    authentication_classes = (auth.CustomUserAuthentication, )
     permission_classes = (permissions.IsAuthenticated, )
 
     def get(self, request):
@@ -41,14 +22,15 @@ class UserAPI(views.APIView):
         serializer = UserSerializer(user)
 
         return response.Response(serializer.data)
-    
+
 class LogoutAPI(views.APIView):
-    authentication_classes = (auth.CustomUserAuthentication, )
     permission_classes = (permissions.IsAuthenticated, )
-
+    
     def post(self, request):
-        resp = response.Response()
-        resp.delete_cookie("jwt")
-        resp.data = {"message": "Logout"}
-
-        return resp
+        try:
+            refresh_token = request.data['refresh_token']
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+            return response.Response(status=status.HTTP_205_RESET_CONTENT)
+        except Exception as ex:
+            return response.Response(status=status.HTTP_400_BAD_REQUEST)
