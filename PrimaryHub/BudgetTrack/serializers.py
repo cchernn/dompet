@@ -18,9 +18,5 @@ class ExpenditureSerializer(serializers.ModelSerializer):
                     data[field] = value
         data = super().to_internal_value(data)
 
-        ### bypass for user since Serializer user is set to read_only
-        if 'user' in self.instance.__dict__:
-            data['user'] = self.instance.__dict__.get('user', None)
-        
         return ExpenditureDataClass(**data)
         

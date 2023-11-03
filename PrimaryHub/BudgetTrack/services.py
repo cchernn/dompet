@@ -13,7 +13,7 @@ from rest_framework import exceptions
 
 @dataclasses.dataclass
 class ExpenditureDataClass:
-    user: UserDataClass
+    user: UserDataClass = None
     date: datetime.datetime = None
     name: str = None
     location: str = ""
@@ -50,7 +50,7 @@ def create_expenditure(user: "User", expendituredc: "ExpenditureDataClass") -> "
         currency=expendituredc.currency,
         type=expendituredc.type,
         payment_method=expendituredc.payment_method,
-        user=expendituredc.user,
+        user=user,
     )
 
     return ExpenditureDataClass.from_instance(expenditure=instance)
