@@ -2,6 +2,7 @@ import dataclasses
 import datetime
 
 from .models import Expenditure
+from User.services import UserDataClass
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .models import Expenditure
@@ -12,6 +13,7 @@ from rest_framework import exceptions
 
 @dataclasses.dataclass
 class ExpenditureDataClass:
+    user: UserDataClass
     date: datetime.datetime = None
     name: str = None
     location: str = ""
@@ -19,7 +21,6 @@ class ExpenditureDataClass:
     currency: str = "MYR"
     type: str = ""
     payment_method: str = ""
-    user: str = ""
     inserted_at: datetime.datetime = None
     updated_at: datetime.datetime = None
     id: int = None
@@ -40,7 +41,7 @@ class ExpenditureDataClass:
             updated_at=expenditure.updated_at,
         )
 
-def create_expenditure(expendituredc: "ExpenditureDataClass") -> "ExpenditureDataClass":
+def create_expenditure(user: "User", expendituredc: "ExpenditureDataClass") -> "ExpenditureDataClass":
     instance = Expenditure.objects.create(
         date=expendituredc.date,
         name=expendituredc.name,
@@ -54,7 +55,7 @@ def create_expenditure(expendituredc: "ExpenditureDataClass") -> "ExpenditureDat
 
     return ExpenditureDataClass.from_instance(expenditure=instance)
 
-def get_expenditure(user: str = None) -> list["ExpenditureDataClass"]:
+def get_expenditure(user: "User" = None) -> list["ExpenditureDataClass"]:
     if user:
         user_expenditure = Expenditure.objects.filter(user=user)
     else:
@@ -62,24 +63,27 @@ def get_expenditure(user: str = None) -> list["ExpenditureDataClass"]:
 
     return [ExpenditureDataClass.from_instance(ex) for ex in user_expenditure]
 
-def get_expenditure_detail(expenditure_id: int) -> "ExpenditureDataClass":
+def get_expenditure_detail(user: "User", expenditure_id: int) -> "ExpenditureDataClass":
     expenditure = get_object_or_404(Expenditure, pk=expenditure_id)
+    
+    if expenditure.user.id != user.id:
+        raise exceptions.PermissionDenied("Invalid User")
 
     return ExpenditureDataClass.from_instance(expenditure=expenditure)
 
-def delete_expenditure(expenditure_id: int, user: str = None) -> "ExpenditureDataClass":
+def delete_expenditure(user: "User", expenditure_id: int) -> "ExpenditureDataClass":
     expenditure = get_object_or_404(Expenditure, pk=expenditure_id)
 
-    # if expenditure.user.username != user:
-    #     raise exceptions.PermissionDenied("Invalid User")
+    if expenditure.user.id != user.id:
+        raise exceptions.PermissionDenied("Invalid User")
 
     expenditure.delete()
 
-def update_expenditure(expenditure_id: int, expenditure_data: "ExpenditureDataClass", user: str = None) -> "ExpenditureDataClass":
+def update_expenditure(user: "User", expenditure_id: int, expenditure_data: "ExpenditureDataClass") -> "ExpenditureDataClass":
     expenditure = get_object_or_404(Expenditure, pk=expenditure_id)
 
-    # if expenditure.user.username != user:
-    #     raise exceptions.PermissionDenied("Invalid User")
+    if expenditure.user.id != user.id:
+        raise exceptions.PermissionDenied("Invalid User")
 
     expenditure.name = expenditure_data.name
     expenditure.date = expenditure_data.date
