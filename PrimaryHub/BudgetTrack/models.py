@@ -16,11 +16,11 @@ class Expenditure(models.Model):
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Updated At")
 
     def __str__(self):
-        if self.type == "Expenditure":
+        if self.type == "spend":
             type_text = "spent"
-        elif self.type == "Transfer":
+        elif self.type == "transfer":
             type_text = "transferred"
-        elif self.type == "Received":
+        elif self.type == "receive":
             type_text = "received"
         return f"{self.date}: {self.user.first_name} {type_text} {self.amount} for {self.name}, {self.location}"
 
