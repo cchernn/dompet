@@ -34,3 +34,14 @@ class LogoutAPI(views.APIView):
             return response.Response(status=status.HTTP_205_RESET_CONTENT)
         except Exception as ex:
             return response.Response(status=status.HTTP_400_BAD_REQUEST)
+        
+class VerifyEmailAPI(views.APIView):
+    def get(self, request):
+        username = request.data.get('username', None)
+        email = request.data.get('email', None)
+
+        user = services.get_user(username=username, email=email)
+        if not user:
+            return response.Response(status=status.HTTP_404_NOT_FOUND)
+        
+        return response.Response(status=status.HTTP_200_OK)

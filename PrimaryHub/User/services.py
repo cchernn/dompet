@@ -3,6 +3,8 @@ import datetime
 import jwt
 from .models import User
 from django.conf import settings
+from django.shortcuts import get_object_or_404
+from rest_framework import exceptions
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -41,3 +43,12 @@ def create_user(userdc: "UserDataClass") -> "UserDataClass":
     instance.save()
 
     return UserDataClass.from_instance(user=instance)
+
+def get_user(username:str, email:str):
+    user = get_object_or_404(User, username=username)
+
+    if user:
+        if user.email != email:
+            raise exceptions.NotFound("Email does not match user.")
+
+    return user
