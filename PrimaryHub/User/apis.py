@@ -36,7 +36,7 @@ class LogoutAPI(views.APIView):
             return response.Response(status=status.HTTP_400_BAD_REQUEST)
         
 class VerifyEmailAPI(views.APIView):
-    def get(self, request):
+    def post(self, request):
         username = request.data.get('username', None)
         email = request.data.get('email', None)
 
