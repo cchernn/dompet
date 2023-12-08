@@ -1,8 +1,6 @@
+import os
 import dataclasses
-import datetime
-import jwt
 from .models import User
-from django.conf import settings
 from django.shortcuts import get_object_or_404
 from rest_framework import exceptions
 
@@ -13,7 +11,7 @@ if TYPE_CHECKING:
 from django.core.mail import EmailMultiAlternatives
 from django.dispatch import receiver
 from django.template.loader import render_to_string
-from django.urls import reverse
+# from django.urls import reverse
 
 from django_rest_passwordreset.signals import reset_password_token_created
 
@@ -72,8 +70,8 @@ def password_reset_token_created(sender, instance, reset_password_token, *args, 
     :param kwargs:
     :return:
     """
-    front_end_url = "http://localhost:3000"
-    print(reverse('password_reset:reset-password-confirm'))
+    front_end_url = os.getenv("WEB_BASE_URL")
+
     # send an e-mail to the user
     context = {
         'current_user': reset_password_token.user,

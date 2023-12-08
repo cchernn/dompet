@@ -177,7 +177,7 @@ AUTH_USER_MODEL = "User.User"
 # CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True
 CORS_ORIGIN_WHITELIST = [
-    'http://localhost:3000'
+    os.getenv("WEB_BASE_URL")
 ]
 
 # Email Config
