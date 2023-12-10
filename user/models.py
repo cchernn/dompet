@@ -34,7 +34,7 @@ class UserManager(auth_models.BaseUserManager):
 class User(auth_models.AbstractUser):
     first_name = models.CharField(verbose_name="First Name", max_length=255, blank=True)
     last_name = models.CharField(verbose_name="Last Name", max_length=255, blank=True)
-    email = models.EmailField(verbose_name="Email", max_length=255)
+    email = models.EmailField(verbose_name="Email", max_length=255, unique=True, error_messages={"unique": "A user with that email already exists."})
     username = models.CharField(verbose_name="Username", max_length=255, unique=True, error_messages={"unique": "A user with that username already exists."})
 
     objects = UserManager()

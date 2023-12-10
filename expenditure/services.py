@@ -2,11 +2,11 @@ import dataclasses
 import datetime
 
 from .models import Expenditure
-from User.services import UserDataClass
+from user.services import UserDataClass
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .models import Expenditure
-    from User.models import User
+    from user.models import User
 
 from django.shortcuts import get_object_or_404
 from rest_framework import exceptions

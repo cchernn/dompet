@@ -1,5 +1,5 @@
 """
-URL configuration for PrimaryHub project.
+URL configuration for dompet project.
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/4.2/topics/http/urls/
@@ -20,9 +20,10 @@ from rest_framework_simplejwt import views as jwt_views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("api/", include("User.urls")),
-    path("api/", include("BudgetTrack.urls")),
+    path("api/", include("user.urls")),
+    path("api/", include("expenditure.urls")),
     path("api/token", jwt_views.TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path("api/token/refresh", jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
     path("api/password_reset/", include('django_rest_passwordreset.urls', namespace='password_reset')),
 ]
+
