@@ -14,7 +14,7 @@ class RegisterAPI(views.APIView):
         return response.Response(data=serializer.data)
     
 class UserAPI(views.APIView):
-    permission_classes = (permissions.IsAuthenticated, )
+    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
         user = request.user
@@ -24,7 +24,7 @@ class UserAPI(views.APIView):
         return response.Response(serializer.data)
 
 class LogoutAPI(views.APIView):
-    permission_classes = (permissions.IsAuthenticated, )
+    permission_classes = [permissions.IsAuthenticated]
     
     def post(self, request):
         try:

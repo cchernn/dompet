@@ -1,9 +1,10 @@
 from rest_framework import views, response, permissions, status
 from .serializers import ExpenditureSerializer
+from .permissions import HasExpenditureMethod
 from . import services
 
 class ExpenditureCreateAPI(views.APIView):
-    permission_classes = (permissions.IsAuthenticated, )
+    permission_classes = [permissions.IsAuthenticated, HasExpenditureMethod]
 
     def post(self, request):
         serializer = ExpenditureSerializer(data=request.data)
@@ -22,7 +23,7 @@ class ExpenditureCreateAPI(views.APIView):
         return response.Response(data=serializer.data)
 
 class ExpenditureRetrieveUpdateDeleteAPI(views.APIView):
-    permission_classes = (permissions.IsAuthenticated, )
+    permission_classes = [permissions.IsAuthenticated, HasExpenditureMethod]
 
     def get(self, request, expenditure_id):
         expenditure = services.get_expenditure_detail(user=request.user, expenditure_id=expenditure_id)
