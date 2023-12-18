@@ -48,7 +48,7 @@ class ExpenditureRetrieveUpdateDeleteAPI(views.APIView):
         return response.Response(data=serializer.data)
     
 class ExpenditureGroupCreateAPI(views.APIView):
-    permissionclasses = [permissions.IsAuthenticated, HasExpenditureMethod]
+    permission_classes = [permissions.IsAuthenticated, HasExpenditureMethod]
 
     def post(self, request, expenditure_group_id):
         serializer = ExpenditureSerializer(data=request.data)
@@ -66,7 +66,7 @@ class ExpenditureGroupCreateAPI(views.APIView):
         return response.Response(data=serializer.data)
     
 class ExpenditureGroupRetrieveUpdateDeleteAPI(views.APIView):
-    permissionclasses = [permissions.IsAuthenticated, HasExpenditureMethod]
+    permission_classes = [permissions.IsAuthenticated, HasExpenditureMethod]
 
     def get(self, request, expenditure_group_id, expenditure_id):
         expenditure = services.get_expenditure_detail_by_group(group_id=expenditure_group_id, expenditure_id=expenditure_id)
