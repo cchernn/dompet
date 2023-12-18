@@ -6,8 +6,8 @@ from django.http import QueryDict
 class ExpenditureSerializer(serializers.ModelSerializer):
     class Meta:
         model = Expenditure
-        fields = ["id", "date", "name", "location", "amount", "currency", "type", "payment_method", "user", "inserted_at", "updated_at"]
-        read_only_fields = ["id", "user"]
+        fields = ["id", "date", "name", "location", "amount", "currency", "type", "payment_method", "user", "group", "inserted_at", "updated_at"]
+        read_only_fields = ["id", "user", "group"]
 
     def to_internal_value(self, data):
         if self.partial:
