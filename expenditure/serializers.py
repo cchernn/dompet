@@ -1,6 +1,6 @@
 from rest_framework import serializers
-from .models import Expenditure
-from .services import ExpenditureDataClass
+from .models import Expenditure, ExpenditureGroup
+from .services import ExpenditureDataClass, ExpenditureGroupDataClass
 from django.http import QueryDict
 
 class ExpenditureSerializer(serializers.ModelSerializer):
@@ -19,4 +19,14 @@ class ExpenditureSerializer(serializers.ModelSerializer):
         data = super().to_internal_value(data)
 
         return ExpenditureDataClass(**data)
-        
+
+class ExpenditureGroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ExpenditureGroup
+        fields = ["id", "name"]
+        read_only_fields = ["id"]
+
+    def to_internal_value(self, data):
+        data = super().to_internal_value(data)
+
+        return ExpenditureGroupDataClass(**data)
