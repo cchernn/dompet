@@ -23,8 +23,8 @@ class ExpenditureSerializer(serializers.ModelSerializer):
 class ExpenditureGroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = ExpenditureGroup
-        fields = ["id", "name"]
-        read_only_fields = ["id"]
+        fields = ["id", "name", "owner", "inserted_at", "updated_at"]
+        read_only_fields = ["id", "owner"]
 
     def to_internal_value(self, data):
         data = super().to_internal_value(data)

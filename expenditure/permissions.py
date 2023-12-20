@@ -30,7 +30,7 @@ class HasExpenditureMethod(permissions.BasePermission):
         group_id = view.kwargs.get('expenditure_group_id')
         if not group_id: #endpoint doesn't involve expenditure_group_id
             return True
-        users = ExpenditureGroup.user.through.objects.filter(expendituregroup_id=group_id)
+        users = ExpenditureGroup.users.through.objects.filter(expendituregroup_id=group_id)
         user_ids = [user.user_id for user in users]
         if request.user.id in user_ids:
             return True

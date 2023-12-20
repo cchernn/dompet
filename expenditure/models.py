@@ -5,7 +5,10 @@ from django.conf import settings
 
 class ExpenditureGroup(models.Model):
     name = models.CharField(max_length=256, verbose_name="Name")
-    user = models.ManyToManyField(settings.AUTH_USER_MODEL, verbose_name="User")
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="owner", verbose_name="Owner")
+    users = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name="users", verbose_name="Users")
+    inserted_at = models.DateTimeField(auto_now_add=True, verbose_name="Inserted At")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Updated At")
 
     def __str__(self):
         return self.name

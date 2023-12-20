@@ -100,7 +100,10 @@ def update_expenditure(user: "User", group_id: int, expenditure_id: int, expendi
 @dataclasses.dataclass
 class ExpenditureGroupDataClass:
     name: str = None
-    user: UserDataClass = None
+    users: UserDataClass = None
+    owner: UserDataClass = None
+    inserted_at: datetime.datetime = None
+    updated_at: datetime.datetime = None
     id: int = None
     
     @classmethod
@@ -108,20 +111,22 @@ class ExpenditureGroupDataClass:
         return cls(
             id=expenditure_group.id,
             name=expenditure_group.name,
-            user=expenditure_group.user,
-            # inserted_at=expenditure_group.inserted_at,
-            # updated_at=expenditure_group.updated_at,
+            users=expenditure_group.users,
+            owner=expenditure_group.owner,
+            inserted_at=expenditure_group.inserted_at,
+            updated_at=expenditure_group.updated_at,
         )
 
 def create_expenditure_group(user: "User", expendituregroupdc: "ExpenditureGroupDataClass") -> "ExpenditureGroupDataClass":
     instance = ExpenditureGroup.objects.create(
         name=expendituregroupdc.name,
+        owner=user
     )
-    instance.user.set([user])
+    instance.users.set([user])
     return ExpenditureGroupDataClass.from_instance(expenditure_group=instance)
 
 def get_expenditure_group(user: "User") -> list["ExpenditureGroupDataClass"]:
-    ex_groups = ExpenditureGroup.objects.filter(user=user)
+    ex_groups = ExpenditureGroup.objects.filter(users=user)
 
     return [ExpenditureGroupDataClass.from_instance(gr) for gr in ex_groups]
 
