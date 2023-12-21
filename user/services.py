@@ -21,6 +21,7 @@ class UserDataClass:
     email: str
     id: int = None
     password: str = None
+    is_active: bool = True
     first_name: str = ""
     last_name: str = ""
 
@@ -30,6 +31,7 @@ class UserDataClass:
             id=user.id,
             username=user.username,
             email=user.email,
+            is_active=user.is_active,
             first_name=user.first_name,
             last_name=user.last_name,
         )
@@ -38,6 +40,7 @@ def create_user(userdc: "UserDataClass") -> "UserDataClass":
     instance = User(
         username=userdc.username,
         email=userdc.email,
+        is_active=True,
         first_name=userdc.first_name,
         last_name=userdc.last_name,
     )
