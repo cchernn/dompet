@@ -22,6 +22,8 @@ class ExpenditureDataClass:
     type: str = ""
     payment_method: str = ""
     group: int = None
+    username: str = ""
+    groupname: str = ""
     inserted_at: datetime.datetime = None
     updated_at: datetime.datetime = None
     id: int = None
@@ -39,6 +41,8 @@ class ExpenditureDataClass:
             payment_method=expenditure.payment_method,
             user=expenditure.user,
             group=expenditure.group,
+            username=expenditure.user.username,
+            groupname=expenditure.group.name,
             inserted_at=expenditure.inserted_at,
             updated_at=expenditure.updated_at,
         )
@@ -102,6 +106,7 @@ class ExpenditureGroupDataClass:
     name: str = None
     users: UserDataClass = None
     owner: UserDataClass = None
+    username: str = ""
     inserted_at: datetime.datetime = None
     updated_at: datetime.datetime = None
     id: int = None
@@ -113,6 +118,7 @@ class ExpenditureGroupDataClass:
             name=expenditure_group.name,
             users=expenditure_group.users,
             owner=expenditure_group.owner,
+            username=expenditure_group.owner.username,
             inserted_at=expenditure_group.inserted_at,
             updated_at=expenditure_group.updated_at,
         )
