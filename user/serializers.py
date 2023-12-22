@@ -12,7 +12,7 @@ class UserSerializer(serializers.ModelSerializer):
         extra_kwargs = {'password': {'write_only': True}}
 
     def get_group_names(self, obj):
-        if 'groups' in obj.__dict__:
+        if type(obj) == User:
             return list(obj.groups.values_list('name', flat=True))
         else:
             return []
