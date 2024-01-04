@@ -9,7 +9,7 @@ class ExpenditureSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Expenditure
-        fields = ["id", "date", "name", "location", "amount", "currency", "type", "payment_method", "user", "group", "username", "groupname", "inserted_at", "updated_at"]
+        fields = ["id", "date", "name", "location", "amount", "currency", "type", "payment_method", "user", "group", "username", "groupname", "category", "attachment", "inserted_at", "updated_at"]
         read_only_fields = ["id", "user", "group", "username", "groupname"]
 
     def to_internal_value(self, data):

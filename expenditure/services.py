@@ -19,11 +19,13 @@ class ExpenditureDataClass:
     location: str = ""
     amount: float = 0
     currency: str = "MYR"
-    type: str = ""
+    type: str = "spend"
     payment_method: str = ""
     group: int = None
     username: str = ""
     groupname: str = ""
+    category: str = "others"
+    attachment: str = ""
     inserted_at: datetime.datetime = None
     updated_at: datetime.datetime = None
     id: int = None
@@ -43,6 +45,8 @@ class ExpenditureDataClass:
             group=expenditure.group,
             username=expenditure.user.username,
             groupname=expenditure.group.name,
+            category=expenditure.category,
+            attachment=expenditure.attachment,
             inserted_at=expenditure.inserted_at,
             updated_at=expenditure.updated_at,
         )
@@ -58,6 +62,8 @@ def create_expenditure(group_id: int, user: "User", expendituredc: "ExpenditureD
         payment_method=expendituredc.payment_method,
         user=user,
         group_id=group_id,
+        category=expendituredc.category,
+        attachment=expendituredc.attachment,
     )
     return ExpenditureDataClass.from_instance(expenditure=instance)
 
@@ -96,6 +102,8 @@ def update_expenditure(user: "User", group_id: int, expenditure_id: int, expendi
     expenditure.currency = expenditure_data.currency
     expenditure.type = expenditure_data.type
     expenditure.payment_method = expenditure_data.payment_method
+    expenditure.category = expenditure_data.category
+    expenditure.attachment = expenditure_data.attachment
 
     expenditure.save()
 
