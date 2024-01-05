@@ -70,6 +70,7 @@ def create_expenditure(group_id: int, user: "User", expendituredc: "ExpenditureD
 def get_expenditure(group_id: int) -> list["ExpenditureDataClass"]:
     group = get_object_or_404(ExpenditureGroup, pk=group_id)
     expenditure = Expenditure.objects.filter(group=group.id)
+    expenditure = expenditure.order_by('-id')
 
     return [ExpenditureDataClass.from_instance(ex) for ex in expenditure]
 

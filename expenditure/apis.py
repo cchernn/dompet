@@ -1,9 +1,9 @@
-from rest_framework import views, response, permissions, status
+from rest_framework import views, response, permissions, status, pagination
 from .serializers import ExpenditureSerializer, ExpenditureGroupSerializer
 from .permissions import HasExpenditureMethod
 from . import services
 
-class ExpenditureCreateAPI(views.APIView):
+class ExpenditureCreateAPI(views.APIView, pagination.PageNumberPagination):
     permission_classes = [permissions.IsAuthenticated, HasExpenditureMethod]
 
     def post(self, request, expenditure_group_id):
@@ -17,9 +17,11 @@ class ExpenditureCreateAPI(views.APIView):
 
     def get(self, request, expenditure_group_id):
         expenditure_collection = services.get_expenditure(group_id=expenditure_group_id)
-        serializer = ExpenditureSerializer(expenditure_collection, many=True)
+        expenditures = self.paginate_queryset(expenditure_collection, request, view=self)
+        serializer = ExpenditureSerializer(expenditures, many=True)
 
-        return response.Response(data=serializer.data)
+        # return response.Response(data=serializer.data)
+        return self.get_paginated_response(serializer.data)
 
 class ExpenditureRetrieveUpdateDeleteAPI(views.APIView):
     permission_classes = [permissions.IsAuthenticated, HasExpenditureMethod]
