@@ -17,6 +17,9 @@ COPY requirements.txt requirements.txt
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
+# create static folder
+RUN mkdir /dompet/static
+
 # copy all files
 COPY . .
 
