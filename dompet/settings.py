@@ -186,6 +186,9 @@ AUTH_USER_MODEL = "user.User"
 CORS_ALLOW_CREDENTIALS = True
 CORS_ORIGIN_WHITELIST = os.getenv("WEB_BASE_URL").split()
 
+# CSRF TRUSTED ORIGINS
+CSRF_TRUSTED_ORIGINS = os.getenv("WEB_BASE_URL").split()
+
 # Email Config
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_USE_TLS = True
