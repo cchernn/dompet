@@ -90,3 +90,11 @@ class ExpenditureGroupRetrieveUpdateDeleteAPI(views.APIView):
         serializer.instance = services.update_expenditure_group(user=request.user, expenditure_group_id=expenditure_group_id, expenditure_group_data=expenditure_group)
 
         return response.Response(data=serializer.data)
+
+class ExpenditureSummaryAPI(views.APIView):
+    permission_classes = [permissions.IsAuthenticated, HasExpenditureMethod]
+
+    def get(self, request, expenditure_group_id):
+        expenditure_summary = services.get_expenditure_summary(user=request.user, group_id=expenditure_group_id)
+
+        return response.Response(data=expenditure_summary)
