@@ -235,18 +235,112 @@ def get_expenditure_summary(user: "User", group_id: int) -> dict:
         total_items = Count("id"),
     )
 
-    expenditure['expenditure_by_user'] = ex_data.values(
+    expenditure_by_user = ex_data.values(
         "user"
     ).annotate(
         total_spend = Sum("amount", default=0),
         total_items = Count("id"),
+    ).order_by(
+        "-total_spend"
     )
+    users = [ex["user"] for ex in expenditure_by_user[:10]]
+    users_others = []
+    if len(expenditure_by_user) > 10:
+        users_others = [ex["user"] for ex in expenditure_by_user[10:]]
+        ex_others = {
+            "user": "others",
+            "total_spend": sum(ex["total_spend"] for ex in expenditure_by_user[10:]),
+            "total_items": sum(ex["total_items"] for ex in expenditure_by_user[10:])
+        }
+        expenditure_by_user = expenditure_by_user[:10] + [ex_others]
+    expenditure['expenditure_by_user'] = expenditure_by_user
 
-    expenditure['expenditure_by_category'] = ex_data.values(
+    expenditure_by_user_breakdown = {}
+    for user_i in users:
+        expenditure_by_user_breakdown[user_i] = []
+        expenditure_by_user_i = ex_data.filter(
+            user=user_i
+        ).values(
+            "name"
+        ).annotate(
+            total_spend = Sum("amount", default=0),
+            total_items = Count("id")
+        ).order_by(
+            "-total_spend"
+        )
+        if expenditure_by_user_i:
+            expenditure_by_user_i = expenditure_by_user_i[:5]
+            expenditure_by_user_breakdown[user_i] = expenditure_by_user_i
+
+    if len(users_others) > 0:
+        expenditure_by_user_breakdown["others"] = []
+        expenditure_by_user_others = ex_data.filter(
+            user__in=users_others
+        ).values(
+            "name"
+        ).annotate(
+            total_spend = Sum("amount", default=0),
+            total_items = Count("id")
+        ).order_by(
+            "-total_spend"
+        )
+        if expenditure_by_user_others:
+            expenditure_by_user_others = expenditure_by_user_others[:5]
+            expenditure_by_user_breakdown["others"] = expenditure_by_user_others
+    expenditure["expenditure_by_user_breakdown"] = expenditure_by_user_breakdown
+
+    expenditure_by_category = ex_data.values(
         "category"
     ).annotate(
         total_spend = Sum("amount", default=0),
         total_items = Count("id"),
+    ).order_by(
+        "-total_spend"
     )
+    categories = [ex["category"] for ex in expenditure_by_category[:10]]
+    categories_others = []
+    if len(expenditure_by_category) > 10:
+        categories_others = [ex["category"] for ex in expenditure_by_category[10:]]
+        ex_others = {
+            "category": "others",
+            "total_spend": sum(ex["total_spend"] for ex in expenditure_by_category[10:]),
+            "total_items": sum(ex["total_items"] for ex in expenditure_by_category[10:])
+        }
+        expenditure_by_category = expenditure_by_category[:10] + [ex_others]
+    expenditure['expenditure_by_category'] = expenditure_by_category
+    
+    expenditure_by_category_breakdown = {}
+    for cat_i in categories:
+        expenditure_by_category_breakdown[cat_i] = []
+        expenditure_by_cat_i = ex_data.filter(
+            category=cat_i
+        ).values(
+            "name"
+        ).annotate(
+            total_spend = Sum("amount", default=0),
+            total_items = Count("id")
+        ).order_by(
+            "-total_spend"
+        )
+        if expenditure_by_cat_i:
+            expenditure_by_cat_i = expenditure_by_cat_i[:5]
+            expenditure_by_category_breakdown[cat_i] = expenditure_by_cat_i
+
+    if len(categories_others) > 0:
+        expenditure_by_category_breakdown["others"] = []
+        expenditure_by_cat_others = ex_data.filter(
+            category__in=categories_others
+        ).values(
+            "name"
+        ).annotate(
+            total_spend = Sum("amount", default=0),
+            total_items = Count("id")
+        ).order_by(
+            "-total_spend"
+        )
+        if expenditure_by_cat_others:
+            expenditure_by_cat_others = expenditure_by_cat_others[:5]
+            expenditure_by_category_breakdown["others"] = expenditure_by_cat_others
+    expenditure["expenditure_by_category_breakdown"] = expenditure_by_category_breakdown
 
     return expenditure
