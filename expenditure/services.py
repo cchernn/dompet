@@ -168,8 +168,8 @@ def update_expenditure_group(user: "User", expenditure_group_id: int, expenditur
 
 def get_expenditure_summary(user: "User", group_id: int) -> dict:
     now = datetime.datetime.now()
-    prev_m = now - datetime.timedelta(days=30)
-    prev_y = now - datetime.timedelta(days=365)
+    # prev_m = now - datetime.timedelta(days=7)
+    # prev_y = now - datetime.timedelta(days=365)
     mtd = datetime.date(now.year, now.month, 1)
     ytd = datetime.date(now.year, 1, 1)
 
@@ -180,167 +180,138 @@ def get_expenditure_summary(user: "User", group_id: int) -> dict:
         type="spend",
     )
 
+    ex_data_mtd = ex_data.filter(
+        date__range=[mtd.strftime("%Y-%m-%d"), now.strftime("%Y-%m-%d")]
+    )
+
+    ex_data_ytd = ex_data.filter(
+        date__range=[ytd.strftime("%Y-%m-%d"), now.strftime("%Y-%m-%d")]
+    )
+
     expenditure['expenditure_total'] = ex_data.aggregate(
         total_spend = Sum("amount", default=0),
         total_items = Count("id"),
     )
 
-    expenditure['expenditure_30d'] = ex_data.filter(
-        date__range=[prev_m.strftime("%Y-%m-%d"), now.strftime("%Y-%m-%d")]
-    ).aggregate(
+    expenditure['expenditure_mtd'] = ex_data_mtd.aggregate(
         total_spend = Sum("amount", default=0),
         total_items = Count("id"),
     )
 
-    expenditure['expenditure_mtd'] = ex_data.filter(
-        date__range=[mtd.strftime("%Y-%m-%d"), now.strftime("%Y-%m-%d")]
-    ).aggregate(
+    expenditure['expenditure_ytd'] = ex_data_ytd.aggregate(
         total_spend = Sum("amount", default=0),
         total_items = Count("id"),
     )
 
-    expenditure['expenditure_ytd'] = ex_data.filter(
-        date__range=[ytd.strftime("%Y-%m-%d"), now.strftime("%Y-%m-%d")]
-    ).aggregate(
-        total_spend = Sum("amount", default=0),
-        total_items = Count("id"),
+    expenditure.update(
+        get_expenditure_summary_by_group(ex_data=ex_data, group="user")
     )
 
-    expenditure['expenditure_by_date'] = ex_data.filter(
-        date__range=[prev_m.strftime("%Y-%m-%d"), now.strftime("%Y-%m-%d")]
-    ).values(
-        "date"
-    ).order_by(
-        "date"
-    ).annotate(
-        total_spend = Sum("amount", default=0),
-        total_items = Count("id"),
+    expenditure.update(
+        get_expenditure_summary_by_group(ex_data=ex_data_mtd, group="user", suffix="_mtd")
     )
 
-    expenditure['expenditure_by_month'] = ex_data.filter(
-        date__range=[prev_y.strftime("%Y-%m-%d"), now.strftime("%Y-%m-%d")]
-    ).annotate(
-        year_month = Concat(
-            ExtractYear("date"),
-            Value("-"),
-            ExtractMonth("date", output_field=CharField()),
-            output_field=CharField()
-        )
-    ).values(
-        "year_month"
-    ).order_by(
-        "year_month"
-    ).annotate(
-        total_spend = Sum("amount", default=0),
-        total_items = Count("id"),
+    expenditure.update(
+        get_expenditure_summary_by_group(ex_data=ex_data_ytd, group="user", suffix="_ytd")
     )
 
-    expenditure_by_user = ex_data.values(
-        "user"
-    ).annotate(
-        total_spend = Sum("amount", default=0),
-        total_items = Count("id"),
-    ).order_by(
-        "-total_spend"
+    expenditure.update(
+        get_expenditure_summary_by_group(ex_data=ex_data, group="category")
     )
-    users = [ex["user"] for ex in expenditure_by_user[:10]]
-    users_others = []
-    if len(expenditure_by_user) > 10:
-        users_others = [ex["user"] for ex in expenditure_by_user[10:]]
-        ex_others = {
-            "user": "others",
-            "total_spend": sum(ex["total_spend"] for ex in expenditure_by_user[10:]),
-            "total_items": sum(ex["total_items"] for ex in expenditure_by_user[10:])
-        }
-        expenditure_by_user = expenditure_by_user[:10] + [ex_others]
-    expenditure['expenditure_by_user'] = expenditure_by_user
 
-    expenditure_by_user_breakdown = {}
-    for user_i in users:
-        expenditure_by_user_breakdown[user_i] = []
-        expenditure_by_user_i = ex_data.filter(
-            user=user_i
-        ).values(
-            "name"
-        ).annotate(
-            total_spend = Sum("amount", default=0),
-            total_items = Count("id")
-        ).order_by(
-            "-total_spend"
-        )
-        if expenditure_by_user_i:
-            expenditure_by_user_i = expenditure_by_user_i[:5]
-            expenditure_by_user_breakdown[user_i] = expenditure_by_user_i
-
-    if len(users_others) > 0:
-        expenditure_by_user_breakdown["others"] = []
-        expenditure_by_user_others = ex_data.filter(
-            user__in=users_others
-        ).values(
-            "name"
-        ).annotate(
-            total_spend = Sum("amount", default=0),
-            total_items = Count("id")
-        ).order_by(
-            "-total_spend"
-        )
-        if expenditure_by_user_others:
-            expenditure_by_user_others = expenditure_by_user_others[:5]
-            expenditure_by_user_breakdown["others"] = expenditure_by_user_others
-    expenditure["expenditure_by_user_breakdown"] = expenditure_by_user_breakdown
-
-    expenditure_by_category = ex_data.values(
-        "category"
-    ).annotate(
-        total_spend = Sum("amount", default=0),
-        total_items = Count("id"),
-    ).order_by(
-        "-total_spend"
+    expenditure.update(
+        get_expenditure_summary_by_group(ex_data=ex_data_mtd, group="category", suffix="_mtd")
     )
-    categories = [ex["category"] for ex in expenditure_by_category[:10]]
-    categories_others = []
-    if len(expenditure_by_category) > 10:
-        categories_others = [ex["category"] for ex in expenditure_by_category[10:]]
-        ex_others = {
-            "category": "others",
-            "total_spend": sum(ex["total_spend"] for ex in expenditure_by_category[10:]),
-            "total_items": sum(ex["total_items"] for ex in expenditure_by_category[10:])
-        }
-        expenditure_by_category = expenditure_by_category[:10] + [ex_others]
-    expenditure['expenditure_by_category'] = expenditure_by_category
-    
-    expenditure_by_category_breakdown = {}
-    for cat_i in categories:
-        expenditure_by_category_breakdown[cat_i] = []
-        expenditure_by_cat_i = ex_data.filter(
-            category=cat_i
-        ).values(
-            "name"
-        ).annotate(
-            total_spend = Sum("amount", default=0),
-            total_items = Count("id")
-        ).order_by(
-            "-total_spend"
-        )
-        if expenditure_by_cat_i:
-            expenditure_by_cat_i = expenditure_by_cat_i[:5]
-            expenditure_by_category_breakdown[cat_i] = expenditure_by_cat_i
 
-    if len(categories_others) > 0:
-        expenditure_by_category_breakdown["others"] = []
-        expenditure_by_cat_others = ex_data.filter(
-            category__in=categories_others
-        ).values(
-            "name"
-        ).annotate(
-            total_spend = Sum("amount", default=0),
-            total_items = Count("id")
-        ).order_by(
-            "-total_spend"
-        )
-        if expenditure_by_cat_others:
-            expenditure_by_cat_others = expenditure_by_cat_others[:5]
-            expenditure_by_category_breakdown["others"] = expenditure_by_cat_others
-    expenditure["expenditure_by_category_breakdown"] = expenditure_by_category_breakdown
+    expenditure.update(
+        get_expenditure_summary_by_group(ex_data=ex_data_ytd, group="category", suffix="_ytd")
+    )
+
+    # expenditure['expenditure_by_date'] = ex_data.filter(
+    #     date__range=[prev_m.strftime("%Y-%m-%d"), now.strftime("%Y-%m-%d")]
+    # ).values(
+    #     "date"
+    # ).order_by(
+    #     "date"
+    # ).annotate(
+    #     total_spend = Sum("amount", default=0),
+    #     total_items = Count("id"),
+    # )
+
+    # expenditure['expenditure_by_month'] = ex_data.filter(
+    #     date__range=[prev_y.strftime("%Y-%m-%d"), now.strftime("%Y-%m-%d")]
+    # ).annotate(
+    #     year_month = Concat(
+    #         ExtractYear("date"),
+    #         Value("-"),
+    #         ExtractMonth("date", output_field=CharField()),
+    #         output_field=CharField()
+    #     )
+    # ).values(
+    #     "year_month"
+    # ).order_by(
+    #     "year_month"
+    # ).annotate(
+    #     total_spend = Sum("amount", default=0),
+    #     total_items = Count("id"),
+    # )
 
     return expenditure
+
+def get_expenditure_summary_by_group(ex_data: Expenditure, group: str = "category", suffix: str = ""):
+    result = {}
+    expenditure_by_group = ex_data.values(
+        group
+    ).annotate(
+        total_spend = Sum("amount", default=0),
+        total_items = Count("id"),
+    ).order_by(
+        "-total_spend"
+    )
+    groups = [ex[group] for ex in expenditure_by_group[:10]]
+    groups_others = []
+    if len(expenditure_by_group) > 10:
+        groups_others = [ex[group] for ex in expenditure_by_group[10:]]
+        ex_others = {
+            group: "others",
+            "total_spend": sum(ex["total_spend"] for ex in expenditure_by_group[10:]),
+            "total_items": sum(ex["total_items"] for ex in expenditure_by_group[10:])
+        }
+        expenditure_by_group = expenditure_by_group[:10] + [ex_others]
+    result[f'expenditure_by_{group}{suffix}'] = expenditure_by_group
+
+    expenditure_by_group_breakdown = {}
+    for group_i in groups:
+        expenditure_by_group_breakdown[group_i] = []
+        expenditure_by_group_i = ex_data.filter(
+            **{group:group_i}
+        ).values(
+            "name"
+        ).annotate(
+            total_spend = Sum("amount", default=0),
+            total_items = Count("id")
+        ).order_by(
+            "-total_spend"
+        )
+        if expenditure_by_group_i:
+            expenditure_by_group_i = expenditure_by_group_i[:5]
+            expenditure_by_group_breakdown[group_i] = expenditure_by_group_i
+
+    if len(groups_others) > 0:
+        expenditure_by_group_breakdown["others"] = []
+        expenditure_by_group_others = ex_data.filter(
+            **{f"{group}__in":groups_others}
+        ).values(
+            "name"
+        ).annotate(
+            total_spend = Sum("amount", default=0),
+            total_items = Count("id")
+        ).order_by(
+            "-total_spend"
+        )
+        if expenditure_by_group_others:
+            expenditure_by_group_others = expenditure_by_group_others[:5]
+            expenditure_by_group_breakdown["others"] = expenditure_by_group_others
+    result[f"expenditure_by_{group}_breakdown{suffix}"] = expenditure_by_group_breakdown
+
+    return result
