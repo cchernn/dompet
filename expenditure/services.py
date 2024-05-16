@@ -315,3 +315,47 @@ def get_expenditure_summary_by_group(ex_data: Expenditure, group: str = "categor
     result[f"expenditure_by_{group}_breakdown{suffix}"] = expenditure_by_group_breakdown
 
     return result
+
+def get_expenditure_historical(user: "User", group_id: int) -> dict:
+    now = datetime.datetime.now()
+    # prev_m = now - datetime.timedelta(days=7)
+    # prev_y = now - datetime.timedelta(days=365)
+    ytd = datetime.date(now.year, 1, 1)
+
+    expenditure = {}
+
+    ex_data = Expenditure.objects.filter(
+        group_id=group_id,
+        type="spend",
+    )
+
+    ex_data_ytd = ex_data.filter(
+        date__range=[ytd.strftime("%Y-%m-%d"), now.strftime("%Y-%m-%d")]
+    )
+
+    expenditure['expenditure_daily'] = ex_data_ytd.values(
+        "date"
+    ).order_by(
+        "date"
+    ).annotate(
+        total_spend = Sum("amount", default=0),
+        total_items = Count("id"),
+    )
+
+    expenditure['expenditure_monthly'] = ex_data_ytd.annotate(
+        year_month = Concat(
+            ExtractYear("date"),
+            Value("-"),
+            ExtractMonth("date", output_field=CharField()),
+            output_field=CharField()
+        )
+    ).values(
+        "year_month"
+    ).order_by(
+        "year_month"
+    ).annotate(
+        total_spend = Sum("amount", default=0),
+        total_items = Count("id"),
+    )
+
+    return expenditure

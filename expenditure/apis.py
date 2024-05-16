@@ -98,3 +98,11 @@ class ExpenditureSummaryAPI(views.APIView):
         expenditure_summary = services.get_expenditure_summary(user=request.user, group_id=expenditure_group_id)
 
         return response.Response(data=expenditure_summary)
+
+class ExpenditureHistoricalAPI(views.APIView):
+    permission_classes = [permissions.IsAuthenticated, HasExpenditureMethod]
+
+    def get(self, request, expenditure_group_id):
+        expenditure_historical = services.get_expenditure_historical(user=request.user, group_id=expenditure_group_id)
+
+        return response.Response(data=expenditure_historical)
