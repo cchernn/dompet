@@ -74,7 +74,8 @@ def get_expenditure(group_id: int) -> list["ExpenditureDataClass"]:
     expenditure = Expenditure.objects.filter(group=group.id)
     expenditure = expenditure.order_by('-id')
 
-    return [ExpenditureDataClass.from_instance(ex) for ex in expenditure]
+    # return [ExpenditureDataClass.from_instance(ex) for ex in expenditure]
+    return expenditure
 
 def get_expenditure_detail(group_id: int, expenditure_id: int) -> "ExpenditureDataClass":
     group = get_object_or_404(ExpenditureGroup, pk=group_id)
