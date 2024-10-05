@@ -1,0 +1,31 @@
+{
+    "statusCode": 200,
+    "body": [
+        {
+            "id": 1,
+            "date": "2024-10-01",
+            "name": "Test",
+            "location": "Web",
+            "type": "expediture",
+            "amount": 100.0,
+            "currency": "MYR",
+            "payment_method": "Cash",
+            "category": "financing",
+            "attachment": null,
+            "is_active": true
+        },
+        {
+            "id": 2,
+            "date": "2024-10-01",
+            "name": "Test",
+            "location": "Web",
+            "type": "expediture",
+            "amount": 100.0,
+            "currency": "MYR",
+            "payment_method": "Cash",
+            "category": "financing",
+            "attachment": null,
+            "is_active": true
+        }
+    ]
+}

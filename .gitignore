@@ -1,9 +1,2 @@
-# default
 .env
-.env.prod
-.env.db
-__pycache__/
-*.pyc
-*.pyo
-dump/
-static/
+/dump
