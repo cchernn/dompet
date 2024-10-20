@@ -1,6 +1,7 @@
 from Database import Database
 from Params import Params
 from Transactions import Main as Transactions
+from Transactions import Group as TransactionGroups
 import Setup
 import json
 import re
@@ -11,6 +12,11 @@ routes = [
     ("/transactions/\d+", "GET", Transactions.get),
     ("/transactions/\d+", "PUT", Transactions.edit),
     ("/transactions/\d+", "DELETE", Transactions.delete),
+    ("/transactions/groups", "GET", TransactionGroups.list),
+    ("/transactions/groups", "POST", TransactionGroups.create),
+    ("/transactions/groups/\d+", "GET", TransactionGroups.get),
+    ("/transactions/groups/\d+", "PUT", TransactionGroups.edit),
+    ("/transactions/groups/\d+", "DELETE", TransactionGroups.delete),
 ]
 
 def main(event, context):

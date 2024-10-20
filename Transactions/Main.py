@@ -41,7 +41,7 @@ def create(params, db):
 
 def get(params, db):
     transaction_id = params.pathParams.get('transaction_id')
-    data = db.list("transactions", where=f"id={transaction_id}")
+    data = db.list("transactions", where=("id", transaction_id))
     if not data:
         return {}
     item = Transaction(**data[0]).serialize()

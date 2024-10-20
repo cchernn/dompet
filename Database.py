@@ -81,10 +81,14 @@ class Database():
             else:
                 query = sql.SQL("SELECT * FROM {table_name}").format(table_name=sql.Identifier(table_name))
                 if "where" in kwargs:
-                    query += sql.SQL(" WHERE {user} = {user_id} AND {where_clause}").format(
+                    where_clause = kwargs.get('where')
+                    query_id = where_clause[0]
+                    query_value = where_clause[1]
+                    query += sql.SQL(" WHERE {user} = {user_id} AND {query_id} = {query_value}").format(
                         user=sql.Identifier('user'),
                         user_id=sql.Placeholder('user'),
-                        where_clause=kwargs.get('where'),
+                        query_id=sql.Identifier(query_id),
+                        query_value=sql.Placeholder('query_value')
                     )
                 else:
                     query += sql.SQL(" WHERE {user} = {user_id}").format(
@@ -96,7 +100,9 @@ class Database():
             
             with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
                 print("query", query.as_string(self.conn))
-                cur.execute(query, {'user': self.user})
+                vars={'user': self.user}
+                if "where" in kwargs: vars.update({'query_value': query_value})
+                cur.execute(query, vars)
                 rows = cur.fetchall()
                 return rows
         except (psycopg2.DatabaseError, psycopg2.IntegrityError) as ex:
