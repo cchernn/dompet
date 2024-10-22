@@ -44,6 +44,29 @@ class Database():
             print(ex)
             self.conn.rollback()
 
+    def createJunction(self, table_name, left_id, left_table, right_id, right_table):
+        try:
+            query = sql.SQL("""CREATE TABLE {table_name} (
+                {left_id} INT REFERENCES {left_table}({left_default_id}) ON DELETE NO ACTION,
+                {right_id} INT REFERENCES {right_table}({right_default_id}) ON DELETE NO ACTION,
+                PRIMARY KEY ({left_id}, {right_id})) """).format(
+                    table_name=sql.Identifier(table_name),
+                    left_id=sql.Identifier(left_id),
+                    left_table=sql.Identifier(left_table),
+                    left_default_id=sql.Identifier("id"),
+                    right_id=sql.Identifier(right_id),
+                    right_table=sql.Identifier(right_table),
+                    right_default_id=sql.Identifier("id"),
+                )
+
+            with self.conn.cursor() as cur:
+                print("query", query.as_string(self.conn))
+                cur.execute(query)
+            self.conn.commit()
+        except (psycopg2.DatabaseError, psycopg2.IntegrityError) as ex:
+            print(ex)
+            self.conn.rollback()
+
     @classmethod
     def addDefaultColumns(cls, columns):
         if ("id", "SERIAL PRIMARY KEY") not in columns:

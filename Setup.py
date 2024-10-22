@@ -1,7 +1,9 @@
 from Database import Database
 
 def main(params, db):
-    createTransactionTable(db)
+    # createTransactionTable(db)
+    # createTransactionGroupTable(db)
+    createTransactionTransactionGroupTable(db)
 
 def createTransactionTable(db):
     db.create("transactions", [
@@ -18,3 +20,18 @@ def createTransactionTable(db):
         ("is_active", "BOOLEAN DEFAULT TRUE"),
     ])
 
+def createTransactionGroupTable(db):
+    db.create("transaction_groups", [
+        ("user", "UUID NOT NULL"),
+        ("name", "VARCHAR(255)"),
+        ("is_active", "BOOLEAN DEFAULT TRUE"),
+    ])
+
+def createTransactionTransactionGroupTable(db):
+    db.createJunction(
+        "transaction_transaction_group",
+        "transaction_id",
+        "transactions",
+        "transaction_group_id",
+        "transaction_groups"
+    )
