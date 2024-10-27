@@ -1,9 +1,10 @@
 from Database import Database
 
 def main(params, db):
-    # createTransactionTable(db)
-    # createTransactionGroupTable(db)
+    createTransactionTable(db)
+    createTransactionGroupTable(db)
     createTransactionTransactionGroupTable(db)
+    createUserTransactionGroupTable(db)
 
 def createTransactionTable(db):
     db.create("transactions", [
@@ -28,10 +29,15 @@ def createTransactionGroupTable(db):
     ])
 
 def createTransactionTransactionGroupTable(db):
-    db.createJunction(
-        "transaction_transaction_group",
+    db.createJunction("transaction_transaction_group",
         "transaction_id",
         "transactions",
+        "transaction_group_id",
+        "transaction_groups"
+    )
+
+def createUserTransactionGroupTable(db):
+    db.createJunctionUser("user_transaction_group",
         "transaction_group_id",
         "transaction_groups"
     )
