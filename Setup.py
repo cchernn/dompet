@@ -15,7 +15,6 @@ def createTransactionTable(db):
         ("currency", "VARCHAR(3) DEFAULT 'MYR'"),
         ("payment_method", "VARCHAR(255)"),
         ("category", "VARCHAR(255) DEFAULT 'others'"),
-        ("attachment", "VARCHAR(255)"),
         ("is_active", "BOOLEAN DEFAULT TRUE"),
     ])
 

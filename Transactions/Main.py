@@ -13,7 +13,6 @@ class Transaction(BaseModel):
     currency: Optional[str] = Field(None)
     payment_method: str = Field(...)
     category: Optional[str] = Field(None)
-    attachment: Optional[str] = Field(None)
     is_active: Optional[bool] = Field(None)
 
     def serialize(self, method="GET", *args, **kwargs):
