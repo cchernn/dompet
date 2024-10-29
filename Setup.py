@@ -1,5 +1,3 @@
-from Database import Database
-
 def main(params, db):
     createTransactionTable(db)
     createTransactionGroupTable(db)

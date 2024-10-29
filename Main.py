@@ -1,4 +1,4 @@
-from Database import Database
+from Transactions.Database import TransactionDatabase
 from Params import Params
 from Transactions import Main as Transactions
 from Transactions import Group as TransactionGroups
@@ -21,10 +21,9 @@ routes = [
 
 def main(event, context):
     params = Params(event)
-    db = Database(params)
     for route_path, route_method, route_func in routes:
         if re.match(f"^{route_path}$", params.path) and (route_method == params.http_method):
-            result = route_func(params, db)
+            result = route_func(params)
             return {
                 'statusCode': 200,
                 'body': json.dumps(result)
@@ -36,5 +35,5 @@ def main(event, context):
 
 def admin(event, context):
     params = Params(event)
-    db = Database(params)
+    db = TransactionDatabase(params)
     Setup.main(params, db)

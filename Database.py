@@ -3,7 +3,7 @@ from psycopg2 import sql
 from psycopg2.extras import RealDictCursor
 import os
 
-class Database():
+class BaseDatabase():
     def __init__(self, params):
         self.conn = self.connect()
         self.user = params.user
@@ -23,6 +23,9 @@ class Database():
         
         return conn
     
+    def close(self):
+        self.conn.close()
+
     def create(self, table_name, columns): 
         try:
             columns = self.addDefaultColumns(columns)
@@ -117,96 +120,3 @@ class Database():
             trigger_name=sql.Identifier(trigger_name), 
             table_name=sql.Identifier(table_name)
         ))
-
-    def list(self, table_name, **kwargs):
-        try:
-            if "query" in kwargs:
-                query = kwargs.get("query")
-            else:
-                query = sql.SQL("SELECT * FROM {table_name}").format(table_name=sql.Identifier(table_name))
-                if "where" in kwargs:
-                    where_clause = kwargs.get('where')
-                    query_id = where_clause[0]
-                    query_value = where_clause[1]
-                    query += sql.SQL(" WHERE {user} = {user_id} AND {query_id} = {query_value}").format(
-                        user=sql.Identifier('user'),
-                        user_id=sql.Placeholder('user'),
-                        query_id=sql.Identifier(query_id),
-                        query_value=sql.Placeholder('query_value')
-                    )
-                else:
-                    query += sql.SQL(" WHERE {user} = {user_id}").format(
-                        user=sql.Identifier('user'),
-                        user_id=sql.Placeholder('user'),
-                    )
-                if "order" in kwargs:
-                    query += sql.SQL(f" ORDER BY {kwargs.get('order')} DESC")
-            
-            with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
-                print("query", query.as_string(self.conn))
-                vars={'user': self.user}
-                if "where" in kwargs: vars.update({'query_value': query_value})
-                cur.execute(query, vars)
-                rows = cur.fetchall()
-                return rows
-        except (psycopg2.DatabaseError, psycopg2.IntegrityError) as ex:
-            print(ex)
-
-        return rows
-
-    def add(self, table_name, item):
-        if item:
-            item['user'] = self.user
-        columns = list(item.keys())
-        values = list(item.values())
-        
-        try:
-            query = sql.SQL("INSERT INTO {table_name} ({columns}) VALUES ({values})").format(
-                table_name=sql.Identifier(table_name),
-                columns=sql.SQL(", ").join(map(sql.Identifier, columns)),
-                values=sql.SQL(", ").join(sql.Placeholder() for _ in values)
-            )
-            
-            with self.conn.cursor() as cur:
-                print("query", query.as_string(self.conn))
-                cur.execute(query, values)
-            self.conn.commit()
-        except (psycopg2.DatabaseError, psycopg2.IntegrityError) as ex:
-            print(ex)
-            self.conn.rollback()
-
-    def edit(self, table_name, item_id, item):
-        set_clause = sql.SQL(", ").join(sql.Composed([sql.Identifier(col), sql.SQL(" = "), sql.Placeholder(col)]) for col in item.keys())
-
-        try:
-            query = sql.SQL("UPDATE {table_name} SET {set_clause} WHERE {id} = {item_id}").format(
-                table_name=sql.Identifier(table_name),
-                set_clause=set_clause,
-                id=sql.Identifier("id"),
-                item_id=sql.Placeholder('item_id')
-            )
-            
-            with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
-                print("query", query.as_string(self.conn))
-                print({**item, 'item_id': item_id})
-                cur.execute(query, {**item, 'item_id': item_id})
-            self.conn.commit()
-        except (psycopg2.DatabaseError, psycopg2.IntegrityError) as ex:
-            print(ex)
-            self.conn.rollback()
-    
-    def delete(self, table_name, item_id):
-        try:
-            query = sql.SQL("DELETE FROM {table_name} WHERE {id} = {item_id}").format(
-                table_name=sql.Identifier(table_name),
-                id=sql.Identifier("id"),
-                item_id=sql.Placeholder('item_id')
-            )
-
-            with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
-                print("query", query.as_string(self.conn))
-                cur.execute(query, {'item_id': item_id})
-            self.conn.commit()
-        except (psycopg2.DatabaseError, psycopg2.IntegrityError) as ex:
-            print(ex)
-            self.conn.rollback()
