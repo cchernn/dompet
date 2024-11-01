@@ -128,6 +128,36 @@ class TransactionDatabase(BaseDatabase):
             print(ex)
             self.conn.rollback()
     
+    def editGroup(self, item_id, group_ids=[]):
+        try:
+            query = sql.SQL("""
+                INSERT INTO {t_tgroup_junction_table_name} ({transaction_id}, {transaction_group_id}) 
+                SELECT {item_id}, {group_id} 
+                FROM unnest({group_ids}::int[]) as {group_id} 
+                WHERE NOT EXISTS (
+                    SELECT 1
+                    FROM {t_tgroup_junction_table_name}
+                    WHERE {transaction_id} = {item_id}
+                    AND {transaction_group_id} = {group_id}
+                )
+            """).format(
+                t_tgroup_junction_table_name=sql.Identifier(self.t_tgroup_junction_table_name),
+                transaction_id=sql.Identifier("transaction_id"),
+                transaction_group_id=sql.Identifier("transaction_group_id"),
+                group_id = sql.Identifier("group_id"),
+                group_ids = sql.Placeholder("group_ids"),
+                item_id=sql.Placeholder('item_id')
+            )
+            
+            with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
+                print("query", query.as_string(self.conn))
+                print({'group_ids': group_ids, 'item_id': item_id})
+                cur.execute(query, {"group_ids": group_ids, 'item_id': item_id})
+            self.conn.commit()
+        except (psycopg2.DatabaseError, psycopg2.IntegrityError) as ex:
+            print(ex)
+            self.conn.rollback()
+
     def delete(self, item_id):
         try:
             query = sql.SQL("DELETE FROM {table_name} WHERE {id} = {item_id}").format(
@@ -263,7 +293,37 @@ class TransactionGroupDatabase(BaseDatabase):
         except (psycopg2.DatabaseError, psycopg2.IntegrityError) as ex:
             print(ex)
             self.conn.rollback()
-    
+
+    def editUser(self, item_id, user_ids):
+        try:
+            query = sql.SQL("""
+                INSERT INTO {user_tgroup_junction_table_name} ({transaction_group_id}, {user}) 
+                SELECT {item_id}, {user_id} 
+                FROM unnest({user_ids}::uuid[]) as {user_id} 
+                WHERE NOT EXISTS (
+                    SELECT 1
+                    FROM {user_tgroup_junction_table_name}
+                    WHERE {transaction_group_id} = {item_id}
+                    AND {user} = {user_id}
+                )
+            """).format(
+                user_tgroup_junction_table_name=sql.Identifier(self.user_tgroup_junction_table_name),
+                transaction_group_id=sql.Identifier("transaction_group_id"),
+                user=sql.Identifier("user"),
+                user_id=sql.Identifier("user_id"),
+                user_ids = sql.Placeholder("user_ids"),
+                item_id=sql.Placeholder('item_id')
+            )
+            
+            with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
+                print("query", query.as_string(self.conn))
+                print({'user_ids': user_ids, 'item_id': item_id})
+                cur.execute(query, {"user_ids": user_ids, 'item_id': item_id})
+            self.conn.commit()
+        except (psycopg2.DatabaseError, psycopg2.IntegrityError) as ex:
+            print(ex)
+            self.conn.rollback()
+
     def delete(self, item_id):
         try:
             query = sql.SQL("DELETE FROM {table_name} WHERE {id} = {item_id} AND {user_id} = {user}").format(

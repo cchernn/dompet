@@ -49,10 +49,16 @@ def get(params, db):
     item = Transaction(**data[0]).serialize()
     return item
 
+@load_db(TransactionDatabase)
 def edit(params, db):
     body = params.body
     transaction_id = params.pathParams.get('transaction_id')
-    db.edit(item_id=transaction_id, item=body)
+    if 'group' in body.keys():
+        group_ids = body.get('group')
+        group_ids = group_ids.split("|")
+        db.editGroup(item_id=transaction_id, group_ids=group_ids)
+    else:
+        db.edit(item_id=transaction_id, item=body)
 
     return {
         "message": "Update successful"

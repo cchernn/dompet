@@ -44,7 +44,12 @@ def get(params, db):
 def edit(params, db):
     body = params.body
     group_id = params.pathParams.get('group_id')
-    db.edit(item_id=group_id, item=body)
+    if 'user' in body.keys():
+        user_ids = body.get('user')
+        user_ids = user_ids.split("|")
+        db.editUser(item_id=group_id, user_ids=user_ids)
+    else:
+        db.edit(item_id=group_id, item=body)
 
     return {
         "message": "Update successful"
