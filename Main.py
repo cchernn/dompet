@@ -1,8 +1,6 @@
-from Transactions.Database import TransactionDatabase
 from Params import Params
 from Transactions import Main as Transactions
 from Transactions import Group as TransactionGroups
-import Setup
 import json
 import re
 
@@ -33,7 +31,5 @@ def main(event, context):
         'body': json.dumps("Route doesn't exists")
     }
 
-def admin(event, context):
-    params = Params(event)
-    db = TransactionDatabase(params)
-    Setup.main(params, db)
+if __name__ == "__main__":
+    pass
