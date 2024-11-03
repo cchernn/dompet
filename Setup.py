@@ -1,8 +1,40 @@
-def main(params, db):
+import os
+import boto3
+import shutil
+import subprocess
+from Database import BaseDatabase
+
+def main(params):
+    db = BaseDatabase(params)
     createTransactionTable(db)
     createTransactionGroupTable(db)
     createTransactionTransactionGroupTable(db)
     createUserTransactionGroupTable(db)
+    uploadLambda()
+
+def uploadLambda():
+    repo_url = os.getenv('GIT_REPO_URL')
+    repo_branch = os.getenv('GIT_REPO_BRANCH')
+    repo_dir = "/tmp/dompet"
+    zip_path = "/tmp/dompet.zip"
+    function_name = "dompet"
+
+    subprocess.run(["git", "clone", "--branch", repo_branch, repo_url, repo_dir], check=True)
+    shutil.make_archive("/tmp/dompet", "zip", repo_dir)
+
+    session = boto3.Session(profile_name="dompet-user")
+    client = session.client("lambda")
+    with open(zip_path, "rb") as fp:
+        zip_content = fp.read()
+    
+    response = client.update_function_code(
+        FunctionName=function_name,
+        ZipFile=zip_content
+    )
+
+    shutil.rmtree(repo_dir)
+    os.remove(zip_path)
+
 
 def createTransactionTable(db):
     db.create("transactions", [
@@ -38,3 +70,6 @@ def createUserTransactionGroupTable(db):
         "transaction_group_id",
         "transaction_groups"
     )
+
+if __name__ == "__main__":
+    main({})
