@@ -4,16 +4,6 @@ from psycopg2.extras import RealDictCursor
 
 from Database import BaseDatabase
 
-def load_db(db_model):
-    def load_db_func(func):
-        def db_wrapper(params):
-            db = db_model(params)
-            result = func(params, db)
-            db.close()
-            return result
-        return db_wrapper
-    return load_db_func
-
 class TransactionDatabase(BaseDatabase):
     def __init__(self, params):
         super().__init__(params)
