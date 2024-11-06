@@ -1,7 +1,16 @@
 import psycopg2
 from psycopg2 import sql
-from psycopg2.extras import RealDictCursor
 import os
+
+def load_db(db_model):
+    def load_db_func(func):
+        def db_wrapper(params):
+            db = db_model(params)
+            result = func(params, db)
+            db.close()
+            return result
+        return db_wrapper
+    return load_db_func
 
 class BaseDatabase():
     def __init__(self, params):
