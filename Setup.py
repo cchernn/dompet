@@ -10,6 +10,8 @@ def main(params):
     createTransactionGroupTable(db)
     createTransactionTransactionGroupTable(db)
     createUserTransactionGroupTable(db)
+    createAttachmentTable(db)
+    createTransactionAttachmentTable(db)
     uploadLambda()
 
 def uploadLambda():
@@ -69,6 +71,25 @@ def createUserTransactionGroupTable(db):
     db.createJunctionUser("user_transaction_group",
         "transaction_group_id",
         "transaction_groups"
+    )
+
+def createAttachmentTable(db):
+    db.create("attachments", [
+        ("user", "UUID NOT NULL"),
+        ("date", "DATE NOT NULL"),
+        ("name", "VARCHAR(255)"),
+        ("filename", "VARCHAR(255)"),
+        ("url", "VARCHAR(255)"),
+        ("type", "VARCHAR(255)"),
+        ("is_active", "BOOLEAN DEFAULT TRUE"),
+    ])
+
+def createTransactionAttachmentTable(db):
+    db.createJunction("transaction_attachment",
+        "transaction_id",
+        "transactions",
+        "attachment_id",
+        "attachments"
     )
 
 if __name__ == "__main__":
