@@ -1,6 +1,7 @@
 from Params import Params
 from Transactions import Main as Transactions
 from Transactions import Group as TransactionGroups
+from Attachments import Main as Attachments
 import json
 import re
 
@@ -15,6 +16,11 @@ routes = [
     ("/transactions/groups/\d+", "GET", TransactionGroups.get),
     ("/transactions/groups/\d+", "PUT", TransactionGroups.edit),
     ("/transactions/groups/\d+", "DELETE", TransactionGroups.delete),
+    ("/attachments", "GET", Attachments.list),
+    ("/attachments", "POST", Attachments.create),
+    ("/attachments/\d+", "GET", Attachments.get),
+    ("/attachments/\d+", "PUT", Attachments.edit),
+    ("/attachments/\d+", "DELETE", Attachments.delete),
 ]
 
 def main(event, context):
