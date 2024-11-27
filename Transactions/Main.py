@@ -58,6 +58,10 @@ def edit(params, db):
         group_ids = body.get('group')
         group_ids = group_ids.split("|")
         db.editGroup(item_id=transaction_id, group_ids=group_ids)
+    elif 'attachment' in body.keys():
+        attachment_ids = body.get('attachment')
+        attachment_ids = attachment_ids.split("|")
+        db.editAttachment(item_id=transaction_id, attachment_ids=attachment_ids)
     else:
         db.edit(item_id=transaction_id, item=body)
 
