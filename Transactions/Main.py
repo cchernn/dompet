@@ -8,7 +8,6 @@ class Transaction(BaseModel):
     id: int = Field(None)
     date: datetime = Field(...)
     name: str = Field(...)
-    location: str = Field(...)
     type: Optional[str] = Field(None)
     amount: Optional[float] = Field(0)
     currency: Optional[str] = Field(None)

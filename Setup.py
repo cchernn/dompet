@@ -12,6 +12,7 @@ def main(params):
     createUserTransactionGroupTable(db)
     createAttachmentTable(db)
     createTransactionAttachmentTable(db)
+    createLocationTable(db)
     uploadLambda()
 
 def uploadLambda():
@@ -43,7 +44,7 @@ def createTransactionTable(db):
         ("user", "UUID NOT NULL"),
         ("date", "DATE NOT NULL"),
         ("name", "VARCHAR(255)"),
-        ("location", "VARCHAR(255)"),
+        ("location", "INT REFERENCES location (id) ON DELETE NO ACTION"),
         ("type", "VARCHAR(255) DEFAULT 'expenditure'"),
         ("amount", "DECIMAL(10,2) NOT NULL DEFAULT 0.00 CHECK (amount >= 0)"),
         ("currency", "VARCHAR(3) DEFAULT 'MYR'"),
@@ -92,5 +93,17 @@ def createTransactionAttachmentTable(db):
         "attachments"
     )
 
+def createLocationTable(db):
+    db.create("locations", [
+        ("date", "DATE NOT NULL"),
+        ("name", "VARCHAR(255)"),
+        ("url", "VARCHAR(255)"),
+        ("google_page_link", "VARCHAR(255)"),
+        ("google_maps_link", "VARCHAR(255)"),
+        ("category", "VARCHAR(255)"),
+        ("access_type", "VARCHAR(255) NOT NULL DEFAULT 'onsite'"),
+        ("is_active", "BOOLEAN DEFAULT TRUE"),
+    ])
+
 if __name__ == "__main__":
-    main({})
+    pass
