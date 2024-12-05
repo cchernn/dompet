@@ -7,10 +7,10 @@ from Database import load_db
 class Attachment(BaseModel):
     id: int = Field(None)
     name: str = Field(...)
-    filename: str = Field(...)
+    filename: Optional[str] = Field(None)
     date: datetime = Field(...)
-    url: str = Field(...)
-    type: str = Field(...)
+    url: Optional[str] = Field(None)
+    type: Optional[str] = Field(None)
     is_active: Optional[bool] = Field(None)
 
     def serialize(self, method="GET", *args, **kwargs):
