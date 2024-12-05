@@ -6,13 +6,13 @@ from Database import BaseDatabase
 
 def main(params):
     db = BaseDatabase(params)
+    createAttachmentTable(db)
+    createLocationTable(db)
     createTransactionTable(db)
     createTransactionGroupTable(db)
     createTransactionTransactionGroupTable(db)
     createUserTransactionGroupTable(db)
-    createAttachmentTable(db)
     createTransactionAttachmentTable(db)
-    createLocationTable(db)
     uploadLambda()
 
 def uploadLambda():
@@ -44,7 +44,7 @@ def createTransactionTable(db):
         ("user", "UUID NOT NULL"),
         ("date", "DATE NOT NULL"),
         ("name", "VARCHAR(255)"),
-        ("location", "INT REFERENCES location (id) ON DELETE NO ACTION"),
+        ("location", "INT REFERENCES locations (id) ON DELETE NO ACTION"),
         ("type", "VARCHAR(255) DEFAULT 'expenditure'"),
         ("amount", "DECIMAL(10,2) NOT NULL DEFAULT 0.00 CHECK (amount >= 0)"),
         ("currency", "VARCHAR(3) DEFAULT 'MYR'"),
