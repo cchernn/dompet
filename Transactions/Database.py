@@ -43,7 +43,7 @@ class TransactionDatabase(BaseDatabase):
                 query += sql.SQL("""
                     JOIN {transaction_transaction_group} AS ttgroup ON t.{id} = ttgroup.{transaction_id}
                     JOIN {user_tgroup_junction_table_name} AS utgroup ON ttgroup.{transaction_group_id} = utgroup.{transaction_group_id}
-                    WHERE utgr)oup.{transaction_group_id} = {group} AND utgroup.{user_id} = {user}
+                    WHERE utgroup.{transaction_group_id} = {group} AND utgroup.{user_id} = {user}
                 """).format(
                     transaction_transaction_group=sql.Identifier(self.t_tgroup_junction_table_name),
                     user_tgroup_junction_table_name=sql.Identifier(self.user_tgroup_junction_table_name),
