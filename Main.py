@@ -36,6 +36,11 @@ def main(event, context):
             result = route_func(params)
             return {
                 'statusCode': 200,
+                'headers': {
+                    "Access-Control-Allow-Origin": "*",
+                    "Access-Control-Allow-Methods": "OPTIONS, GET, POST, PUT, DELETE",
+                    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+                },
                 'body': json.dumps(result)
             }
     return {
