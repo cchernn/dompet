@@ -16,8 +16,6 @@ class Location(BaseModel):
 
     def serialize(self, method="GET", *args, **kwargs):
         data = super().dict(*args, **kwargs)
-        if method=="GET":
-            data['date'] = data['date'].strftime("%Y-%m-%d")
         return data
 
 @load_db(LocationDatabase)
