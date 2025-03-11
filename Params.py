@@ -7,6 +7,7 @@ class Params:
         self.user = self.getUserID(event)
         self.http_method = self.getHTTPMethod(event)
         self.path = self.getPath(event)
+        self.headers = self.getHeaders(event)
         self.body = self.getBody(event)
         self.pathParams = self.getPathParams(event)
     
@@ -27,12 +28,19 @@ class Params:
         return event.get('pathParameters')
     
     @classmethod
+    def getHeaders(cls, event):
+        headers = event.get("headers")
+        headers = {k.lower(): v for k, v in headers.items()}
+        return headers
+
+    @classmethod
     def getBody(cls, event):
+        headers = cls.getHeaders(event)
         if event.get('body', None) not in [None, "None"]:
-            content_type = event.get("headers").get("Content-Type")
+            content_type = headers.get("content-type")
             if "multipart/form-data" in content_type:
                 fp = io.BytesIO(event.get("body").encode("utf-8"))
-                pdict = cgi.parse_header(event.get("headers").get("Content-Type"))[1]
+                pdict = cgi.parse_header(content_type)[1]
                 if "boundary" in pdict:
                     pdict["boundary"] = pdict["boundary"].encode("utf-8")
                 pdict["CONTENT-LENGTH"] = len(event.get("body"))
