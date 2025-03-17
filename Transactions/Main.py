@@ -13,6 +13,10 @@ class Transaction(BaseModel):
     currency: Optional[str] = Field(None)
     payment_method: str = Field(...)
     category: Optional[str] = Field(None)
+    location: Optional[int] = Field(None)
+    location_name: Optional[str] = Field(None)
+    attachments: Optional[list] = Field(None)
+    groups: Optional[list] = Field(None)
     is_active: Optional[bool] = Field(None)
 
     def serialize(self, method="GET", *args, **kwargs):
@@ -31,7 +35,12 @@ def list(params, db):
 def create(params, db):
     body = params.body
     method = params.http_method
-    
+
+    if "group" in body.keys():
+        body["groups"] = body.get("group").split("|")
+    if "attachment" in body.keys():
+        body["attachments"] = body.get("attachment").split("|")
+
     item = Transaction(**body)
     item = item.serialize(method=method, exclude_none=True)
     db.add(item)
@@ -53,16 +62,13 @@ def get(params, db):
 def edit(params, db):
     body = params.body
     transaction_id = params.pathParams.get('transaction_id')
-    if 'group' in body.keys():
-        group_ids = body.get('group')
-        group_ids = group_ids.split("|")
-        db.editGroup(item_id=transaction_id, group_ids=group_ids)
-    elif 'attachment' in body.keys():
-        attachment_ids = body.get('attachment')
-        attachment_ids = attachment_ids.split("|")
-        db.editAttachment(item_id=transaction_id, attachment_ids=attachment_ids)
-    else:
-        db.edit(item_id=transaction_id, item=body)
+    
+    if "group" in body.keys():
+        body["groups"] = body.get("group").split("|")
+    if "attachment" in body.keys():
+        body["attachments"] = body.get("attachment").split("|")
+
+    db.edit(item_id=transaction_id, item=body)
 
     return {
         "message": "Update successful"

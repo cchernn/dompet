@@ -8,9 +8,14 @@ class TransactionDatabase(BaseDatabase):
     def __init__(self, params):
         super().__init__(params)
         self.table_name = "transactions"
-        self.t_tgroup_junction_table_name = "transaction_transaction_group"
+        self.t_tgroup_junction_table_name = "transaction_transaction_group" # DEPRECATE
+        self.transaction_transaction_group_junction_table_name = "transaction_transaction_group"
+        self.transaction_group_table_name = "transaction_groups"
         self.user_tgroup_junction_table_name = "user_transaction_group"
         self.t_attachment_junction_table_name = "transaction_attachment"
+        self.location_table_name = "locations"
+        self.transaction_attachment_junction_table_name = "transaction_attachment"
+        self.attachment_table_name = "attachments"
         self.array_maxsize=25
     
     def list(self, item_id=None, group=None, n=0):
@@ -19,14 +24,63 @@ class TransactionDatabase(BaseDatabase):
         
         try:
             query = sql.SQL("""
-                SELECT t.* FROM {table_name} AS t
+                SELECT t.*, lt.name AS {location_name}, 
+                COALESCE(
+                    JSONB_AGG(
+                        DISTINCT to_jsonb(at)
+                    ) FILTER (WHERE at.id IS NOT NULL),
+                    '[]'::jsonb
+                ) AS {attachments},
+                COALESCE(
+                    JSONB_AGG(
+                        DISTINCT to_jsonb(tgroup)
+                    ) FILTER (WHERE tgroup.id IS NOT NULL),
+                    '[]'::jsonb
+                ) AS {groups}
+                FROM {table_name} AS t
             """).format(
                 table_name=sql.Identifier(self.table_name),
+                location_name=sql.Identifier("location_name"),
+                attachments=sql.Identifier("attachments"),
+                groups=sql.Identifier("groups"),
             )
 
             vars = {
                 "user": self.user,
             }
+
+            query += sql.SQL("""
+                LEFT JOIN {location_table_name} AS lt ON t.{location_id} = lt.{location_table_id}
+            """).format(
+                location_table_name=sql.Identifier(self.location_table_name),
+                location_id=sql.Identifier("location"),
+                location_table_id=sql.Identifier("id"),
+            )
+
+            query += sql.SQL("""
+                LEFT JOIN {transaction_attachment_junction_table_name} AS att ON t.{id} = att.{attachment_junction_table_transaction_id}
+                LEFT JOIN {attachment_table_name} AS at ON at.{attachment_table_id} = att.{attachment_junction_table_id}
+            """).format(
+                transaction_attachment_junction_table_name=sql.Identifier(self.transaction_attachment_junction_table_name),
+                attachment_table_name=sql.Identifier(self.attachment_table_name),
+                id=sql.Identifier("id"),
+                attachment_junction_table_transaction_id=sql.Identifier("transaction_id"),
+                attachment_table_id=sql.Identifier("id"),
+                attachment_junction_table_id=sql.Identifier("attachment_id"),
+            )
+
+            query += sql.SQL("""
+                LEFT JOIN {transaction_transaction_group_junction_table_name} AS ttgroup ON t.{id} = ttgroup.{transaction_id}
+                LEFT JOIN {transaction_group_table_name} AS tgroup ON tgroup.{transaction_group_table_id} = ttgroup.{transaction_group_junction_table_id}
+            """).format(
+                transaction_transaction_group_junction_table_name=sql.Identifier(self.transaction_transaction_group_junction_table_name),
+                transaction_group_table_name=sql.Identifier(self.transaction_group_table_name),
+                id=sql.Identifier("id"),
+                transaction_id=sql.Identifier("transaction_id"),
+                transaction_group_table_id=sql.Identifier("id"),
+                transaction_group_junction_table_id=sql.Identifier("transaction_group_id"),
+            )
+
             if item_id:
                 query += sql.SQL("""
                     WHERE t.{id} = {item_id} AND t.{user_id} = {user}
@@ -66,6 +120,10 @@ class TransactionDatabase(BaseDatabase):
                 )
 
             query += sql.SQL("""
+                GROUP BY t.id, lt.name
+            """)
+
+            query += sql.SQL("""
                 ORDER BY t.id DESC
             """)
 
@@ -81,26 +139,42 @@ class TransactionDatabase(BaseDatabase):
     def add(self, item):
         if item:
             item['user'] = self.user
-        columns = list(item.keys())
-        values = list(item.values())
+        new_id = None
+
+        transaction_items = {c: v for c, v in item.items() if c not in ['attachments', 'groups']}
+        transaction_columns = list(transaction_items.keys())
+        transaction_values = list(transaction_items.values())
+        group_ids = item.get("groups")
+        attachment_ids = item.get("attachments")
         
         try:
-            query = sql.SQL("INSERT INTO {table_name} ({columns}) VALUES ({values})").format(
+            query = sql.SQL("INSERT INTO {table_name} ({transaction_columns}) VALUES ({transaction_values}) RETURNING {id}").format(
                 table_name=sql.Identifier(self.table_name),
-                columns=sql.SQL(", ").join(map(sql.Identifier, columns)),
-                values=sql.SQL(", ").join(sql.Placeholder() for _ in values)
+                transaction_columns=sql.SQL(", ").join(map(sql.Identifier, transaction_columns)),
+                transaction_values=sql.SQL(", ").join(sql.Placeholder() for _ in transaction_values),
+                id=sql.Identifier("id")
             )
             
             with self.conn.cursor() as cur:
-                print("query", query.as_string(self.conn))
-                cur.execute(query, values)
+                print("transaction_query", query.as_string(self.conn))
+                cur.execute(query, transaction_values)
+                new_id = cur.fetchone()[0]
             self.conn.commit()
         except (psycopg2.DatabaseError, psycopg2.IntegrityError) as ex:
             print(ex)
             self.conn.rollback()
+
+        if new_id:
+            if group_ids:
+                self.editGroup(new_id, group_ids)
+            if attachment_ids:
+                self.editAttachment(new_id, attachment_ids)
     
     def edit(self, item_id, item):
-        set_clause = sql.SQL(", ").join(sql.Composed([sql.Identifier(col), sql.SQL(" = "), sql.Placeholder(col)]) for col in item.keys())
+        transaction_item = {c: v for c, v in item.items() if c not in ['attachments', 'groups']}
+        set_clause = sql.SQL(", ").join(sql.Composed([sql.Identifier(col), sql.SQL(" = "), sql.Placeholder(col)]) for col in transaction_item.keys())
+        group_ids = item.get("groups")
+        attachment_ids = item.get("attachments")
 
         try:
             query = sql.SQL("UPDATE {table_name} SET {set_clause} WHERE {id} = {item_id}").format(
@@ -112,12 +186,17 @@ class TransactionDatabase(BaseDatabase):
             
             with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
                 print("query", query.as_string(self.conn))
-                print({**item, 'item_id': item_id})
-                cur.execute(query, {**item, 'item_id': item_id})
+                print({**transaction_item, 'item_id': item_id})
+                cur.execute(query, {**transaction_item, 'item_id': item_id})
             self.conn.commit()
         except (psycopg2.DatabaseError, psycopg2.IntegrityError) as ex:
             print(ex)
             self.conn.rollback()
+        
+        if group_ids:
+            self.editGroup(item_id, group_ids)
+        if attachment_ids:
+            self.editAttachment(item_id, attachment_ids)
     
     def editGroup(self, item_id, group_ids=[]):
         try:
