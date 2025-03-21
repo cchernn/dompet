@@ -141,7 +141,7 @@ class TransactionDatabase(BaseDatabase):
             item['user'] = self.user
         new_id = None
 
-        transaction_items = {c: v for c, v in item.items() if c not in ['attachments', 'groups']}
+        transaction_items = {c: v for c, v in item.items() if c not in ['attachment', 'attachments', 'group', 'groups']}
         transaction_columns = list(transaction_items.keys())
         transaction_values = list(transaction_items.values())
         group_ids = item.get("groups")
@@ -171,28 +171,29 @@ class TransactionDatabase(BaseDatabase):
                 self.editAttachment(new_id, attachment_ids)
     
     def edit(self, item_id, item):
-        transaction_item = {c: v for c, v in item.items() if c not in ['attachments', 'groups']}
-        set_clause = sql.SQL(", ").join(sql.Composed([sql.Identifier(col), sql.SQL(" = "), sql.Placeholder(col)]) for col in transaction_item.keys())
+        transaction_item = {c: v for c, v in item.items() if c not in ['attachment', 'attachments', 'group', 'groups']}
+        if transaction_item:
+            set_clause = sql.SQL(", ").join(sql.Composed([sql.Identifier(col), sql.SQL(" = "), sql.Placeholder(col)]) for col in transaction_item.keys())
+
+            try:
+                query = sql.SQL("UPDATE {table_name} SET {set_clause} WHERE {id} = {item_id}").format(
+                    table_name=sql.Identifier(self.table_name),
+                    set_clause=set_clause,
+                    id=sql.Identifier("id"),
+                    item_id=sql.Placeholder('item_id')
+                )
+                
+                with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
+                    print("query", query.as_string(self.conn))
+                    print({**transaction_item, 'item_id': item_id})
+                    cur.execute(query, {**transaction_item, 'item_id': item_id})
+                self.conn.commit()
+            except (psycopg2.DatabaseError, psycopg2.IntegrityError) as ex:
+                print(ex)
+                self.conn.rollback()
+        
         group_ids = item.get("groups")
         attachment_ids = item.get("attachments")
-
-        try:
-            query = sql.SQL("UPDATE {table_name} SET {set_clause} WHERE {id} = {item_id}").format(
-                table_name=sql.Identifier(self.table_name),
-                set_clause=set_clause,
-                id=sql.Identifier("id"),
-                item_id=sql.Placeholder('item_id')
-            )
-            
-            with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
-                print("query", query.as_string(self.conn))
-                print({**transaction_item, 'item_id': item_id})
-                cur.execute(query, {**transaction_item, 'item_id': item_id})
-            self.conn.commit()
-        except (psycopg2.DatabaseError, psycopg2.IntegrityError) as ex:
-            print(ex)
-            self.conn.rollback()
-        
         if group_ids:
             self.editGroup(item_id, group_ids)
         if attachment_ids:
@@ -200,29 +201,43 @@ class TransactionDatabase(BaseDatabase):
     
     def editGroup(self, item_id, group_ids=[]):
         try:
-            query = sql.SQL("""
+            query_insert = sql.SQL("""
                 INSERT INTO {t_tgroup_junction_table_name} ({transaction_id}, {transaction_group_id}) 
-                SELECT {item_id}, {group_id} 
-                FROM unnest({group_ids}::int[]) as {group_id} 
+                SELECT {item_id}, group_id
+                FROM unnest({group_ids}::int[]) as group_id_table(group_id)
                 WHERE NOT EXISTS (
                     SELECT 1
                     FROM {t_tgroup_junction_table_name}
                     WHERE {transaction_id} = {item_id}
-                    AND {transaction_group_id} = {group_id}
+                    AND {transaction_group_id} = group_id_table.group_id
                 )
             """).format(
                 t_tgroup_junction_table_name=sql.Identifier(self.t_tgroup_junction_table_name),
                 transaction_id=sql.Identifier("transaction_id"),
                 transaction_group_id=sql.Identifier("transaction_group_id"),
-                group_id = sql.Identifier("group_id"),
+                group_ids = sql.Placeholder("group_ids"),
+                item_id=sql.Placeholder('item_id')
+            )
+
+            query_delete = sql.SQL("""
+                DELETE FROM {t_tgroup_junction_table_name}
+                WHERE {transaction_id} = {item_id}
+                AND {transaction_group_id} NOT IN (SELECT group_id FROM unnest({group_ids}::int[]))
+            """).format(
+                t_tgroup_junction_table_name=sql.Identifier(self.t_tgroup_junction_table_name),
+                transaction_id=sql.Identifier("transaction_id"),
+                transaction_group_id=sql.Identifier("transaction_group_id"),
                 group_ids = sql.Placeholder("group_ids"),
                 item_id=sql.Placeholder('item_id')
             )
             
             with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
-                print("query", query.as_string(self.conn))
+                print("query_insert", query_insert.as_string(self.conn))
+                print("query_delete", query_delete.as_string(self.conn))
                 print({'group_ids': group_ids, 'item_id': item_id})
-                cur.execute(query, {"group_ids": group_ids, 'item_id': item_id})
+
+                cur.execute(query_insert, {"group_ids": group_ids, 'item_id': item_id})
+                cur.execute(query_delete, {"group_ids": group_ids, 'item_id': item_id})
             self.conn.commit()
         except (psycopg2.DatabaseError, psycopg2.IntegrityError) as ex:
             print(ex)
@@ -230,29 +245,43 @@ class TransactionDatabase(BaseDatabase):
     
     def editAttachment(self, item_id, attachment_ids=[]):
         try:
-            query = sql.SQL("""
+            query_insert = sql.SQL("""
                 INSERT INTO {t_attachment_junction_table_name} ({transaction_id}, {attachment}) 
-                SELECT {item_id}, {attachment_id} 
-                FROM unnest({attachment_ids}::int[]) as {attachment_id} 
+                SELECT {item_id}, attachment_id
+                FROM unnest({attachment_ids}::int[]) as attachment_id_table(attachment_id)
                 WHERE NOT EXISTS (
                     SELECT 1
                     FROM {t_attachment_junction_table_name}
                     WHERE {transaction_id} = {item_id}
-                    AND {attachment} = {attachment_id}
+                    AND {attachment} = attachment_id_table.attachment_id
                 )
             """).format(
                 t_attachment_junction_table_name=sql.Identifier(self.t_attachment_junction_table_name),
                 transaction_id=sql.Identifier("transaction_id"),
                 attachment=sql.Identifier("attachment_id"),
-                attachment_id = sql.Identifier("attachment_id"),
                 attachment_ids = sql.Placeholder("attachment_ids"),
                 item_id=sql.Placeholder('item_id')
             )
-            
+
+            query_delete = sql.SQL("""
+                DELETE FROM {t_attachment_junction_table_name}
+                WHERE {transaction_id} = {item_id}
+                AND {attachment} NOT IN (SELECT attachment_id FROM unnest({attachment_ids}::int[]))
+            """).format(
+                t_attachment_junction_table_name=sql.Identifier(self.t_attachment_junction_table_name),
+                transaction_id=sql.Identifier("transaction_id"),
+                attachment=sql.Identifier("attachment_id"),
+                attachment_ids = sql.Placeholder("attachment_ids"),
+                item_id=sql.Placeholder('item_id')
+            )
+
             with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
-                print("query", query.as_string(self.conn))
+                print("query_insert", query_insert.as_string(self.conn))
+                print("query_delete", query_delete.as_string(self.conn))
                 print({'attachment_ids': attachment_ids, 'item_id': item_id})
-                cur.execute(query, {"attachment_ids": attachment_ids, 'item_id': item_id})
+
+                cur.execute(query_insert, {"attachment_ids": attachment_ids, 'item_id': item_id})
+                cur.execute(query_delete, {"attachment_ids": attachment_ids, 'item_id': item_id})
             self.conn.commit()
         except (psycopg2.DatabaseError, psycopg2.IntegrityError) as ex:
             print(ex)
