@@ -266,7 +266,7 @@ class TransactionDatabase(BaseDatabase):
             query_delete = sql.SQL("""
                 DELETE FROM {t_attachment_junction_table_name}
                 WHERE {transaction_id} = {item_id}
-                AND {attachment} NOT IN (SELECT attachment_id FROM unnest({attachment_ids}::int[]))
+                AND {attachment} NOT IN (SELECT unnest({attachment_ids}::int[]))
             """).format(
                 t_attachment_junction_table_name=sql.Identifier(self.t_attachment_junction_table_name),
                 transaction_id=sql.Identifier("transaction_id"),
