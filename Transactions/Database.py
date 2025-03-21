@@ -222,7 +222,7 @@ class TransactionDatabase(BaseDatabase):
             query_delete = sql.SQL("""
                 DELETE FROM {t_tgroup_junction_table_name}
                 WHERE {transaction_id} = {item_id}
-                AND {transaction_group_id} NOT IN (SELECT group_id FROM unnest({group_ids}::int[]))
+                AND {transaction_group_id} NOT IN (SELECT unnest({group_ids}::int[]))
             """).format(
                 t_tgroup_junction_table_name=sql.Identifier(self.t_tgroup_junction_table_name),
                 transaction_id=sql.Identifier("transaction_id"),

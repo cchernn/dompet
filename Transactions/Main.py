@@ -37,9 +37,17 @@ def create(params, db):
     method = params.http_method
 
     if "group" in body.keys():
-        body["groups"] = body.get("group").split("|")
+        if body.get("group") is None:
+            body["groups"] = []
+        else:
+            body["groups"] = body.get("group").split("|")
+            body["groups"] = [int(b) for b in body.get("group")]
     if "attachment" in body.keys():
-        body["attachments"] = body.get("attachment").split("|")
+        if body.get("attachment") is None:
+            body["attachments"] = []
+        else:
+            body["attachments"] = body.get("attachment").split("|")
+            body["attachments"] = [int(a) for a in body.get("attachments")]
 
     item = Transaction(**body)
     item = item.serialize(method=method, exclude_none=True)
