@@ -203,13 +203,13 @@ class TransactionDatabase(BaseDatabase):
         try:
             query_insert = sql.SQL("""
                 INSERT INTO {t_tgroup_junction_table_name} ({transaction_id}, {transaction_group_id}) 
-                SELECT {item_id}, transaction_group_id
+                SELECT {item_id}, group_id
                 FROM unnest({group_ids}::int[]) as group_id_table(group_id)
                 WHERE NOT EXISTS (
                     SELECT 1
                     FROM {t_tgroup_junction_table_name}
                     WHERE {transaction_id} = {item_id}
-                    AND {transaction_group_id} = group_id_table.transaction_group_id
+                    AND {transaction_group_id} = group_id_table.group_id
                 )
             """).format(
                 t_tgroup_junction_table_name=sql.Identifier(self.t_tgroup_junction_table_name),

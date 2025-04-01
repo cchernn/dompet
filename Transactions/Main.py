@@ -41,7 +41,7 @@ def create(params, db):
             body["groups"] = []
         else:
             body["groups"] = body.get("group").split("|")
-            body["groups"] = [int(b) for b in body.get("group")]
+            body["groups"] = [int(b) for b in body.get("groups")]
     if "attachment" in body.keys():
         if body.get("attachment") is None:
             body["attachments"] = []
@@ -73,7 +73,7 @@ def edit(params, db):
 
     if "group" in body.keys():
         body["groups"] = body.get("group").split("|")
-        body["groups"] = [int(b) for b in body.get("group")]
+        body["groups"] = [int(b) for b in body.get("groups")]
     if "attachment" in body.keys():
         body["attachments"] = body.get("attachment").split("|")
         body["attachments"] = [int(a) for a in body.get("attachments")]
