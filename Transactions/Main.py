@@ -72,11 +72,17 @@ def edit(params, db):
     transaction_id = params.pathParams.get('transaction_id')
 
     if "group" in body.keys():
-        body["groups"] = body.get("group").split("|")
-        body["groups"] = [int(b) for b in body.get("groups")]
+        if body.get("group") is None:
+            body["groups"] = []
+        else:
+            body["groups"] = body.get("group").split("|")
+            body["groups"] = [int(b) for b in body.get("groups")]
     if "attachment" in body.keys():
-        body["attachments"] = body.get("attachment").split("|")
-        body["attachments"] = [int(a) for a in body.get("attachments")]
+        if body.get("attachment") is None:
+            body["attachments"] = []
+        else:
+            body["attachments"] = body.get("attachment").split("|")
+            body["attachments"] = [int(a) for a in body.get("attachments")]
 
     db.edit(item_id=transaction_id, item=body)
 
