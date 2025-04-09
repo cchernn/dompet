@@ -52,7 +52,7 @@ class LocationDatabase(BaseDatabase):
                 if n > 0:
                     rows = cur.fetchmany(size=self.array_maxsize)
                 else:
-                    rows = cur.fetchmany()
+                    rows = cur.fetchall()
 
                 return rows
         except (psycopg2.DatabaseError, psycopg2.IntegrityError) as ex:
