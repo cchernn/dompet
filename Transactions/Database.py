@@ -19,8 +19,8 @@ class TransactionDatabase(BaseDatabase):
         self.array_maxsize=25
     
     def list(self, item_id=None, group=None, n=0):
-        if n <= 0:
-            n=self.array_maxsize
+        # if n <= 0:
+        #     n=self.array_maxsize
         
         try:
             query = sql.SQL("""
@@ -130,7 +130,10 @@ class TransactionDatabase(BaseDatabase):
             with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
                 print("query", query.as_string(self.conn))
                 cur.execute(query, vars)
-                rows = cur.fetchmany(size=self.array_maxsize)
+                if n > 0:
+                    rows = cur.fetchmany(size=self.array_maxsize)
+                else:
+                    rows = cur.fetchmany()
 
                 return rows
         except (psycopg2.DatabaseError, psycopg2.IntegrityError) as ex:
@@ -312,8 +315,8 @@ class TransactionGroupDatabase(BaseDatabase):
         self.array_maxsize=25
 
     def list(self, item_id=None, n=0):
-        if n <= 0:
-            n=self.array_maxsize
+        # if n <= 0:
+        #     n=self.array_maxsize
         
         try:
             query = sql.SQL("""
@@ -359,7 +362,10 @@ class TransactionGroupDatabase(BaseDatabase):
             with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
                 print("query", query.as_string(self.conn))
                 cur.execute(query, vars)
-                rows = cur.fetchmany(size=self.array_maxsize)
+                if n > 0:
+                    rows = cur.fetchmany(size=self.array_maxsize)
+                else:
+                    rows = cur.fetchmany()
 
                 return rows
         except (psycopg2.DatabaseError, psycopg2.IntegrityError) as ex:
