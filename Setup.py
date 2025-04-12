@@ -2,10 +2,14 @@ import os
 import boto3
 import shutil
 import subprocess
+import argparse
 from Database import BaseDatabase
 
-def main(params):
-    db = BaseDatabase(params)
+def upload():
+    uploadLambda()
+
+def migrate():
+    db = BaseDatabase()
     createAttachmentTable(db)
     createLocationTable(db)
     createTransactionTable(db)
@@ -13,7 +17,6 @@ def main(params):
     createTransactionTransactionGroupTable(db)
     createUserTransactionGroupTable(db)
     createTransactionAttachmentTable(db)
-    uploadLambda()
 
 def uploadLambda():
     repo_url = os.getenv('GIT_REPO_URL')
@@ -106,4 +109,25 @@ def createLocationTable(db):
     ])
 
 if __name__ == "__main__":
-    pass
+    parser = argparse.ArgumentParser(
+        description="""
+        upload: pushes changes to AWS Lambda
+        migrate: create databases
+        """,
+        add_help=True
+    )
+    parser.add_argument(
+        "command",
+        choices=[
+            "upload",
+            "migrate"
+        ],
+        help="Setup commands to run"
+    )
+
+    args = parser.parse_args()
+
+    if args.command == "upload":
+        upload()
+    if args.command == "migrate":
+        migrate()

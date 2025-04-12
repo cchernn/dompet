@@ -13,9 +13,10 @@ def load_db(db_model):
     return load_db_func
 
 class BaseDatabase():
-    def __init__(self, params):
+    def __init__(self, params=None):
         self.conn = self.connect()
-        self.user = params.user
+        if params is not None:
+            self.user = params.user
 
     def connect(self):
         conn = None
