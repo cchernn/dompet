@@ -1,3 +1,6 @@
+from .group import Group
+from .attachment import Attachment
+
 from pydantic import BaseModel, Field
 from typing import Optional, Literal
 from datetime import datetime
@@ -74,4 +77,14 @@ class Transaction(BaseModel):
         None,
         title="Transaction Location Name",
         description="The name of the location associated with the transaction"
+    )
+    groups: Optional[list[Group]] = Field(
+        None,
+        title="Transaction Groups",
+        description="The list of transaction groups associated with the transaction"
+    )
+    attachments: Optional[list[Attachment]] = Field(
+        None,
+        title="Transaction Attachments",
+        description="The list of attachments associated with the transaction"
     )
