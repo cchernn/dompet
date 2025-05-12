@@ -1,0 +1,9 @@
+# Database Config
+TRANSACTIONS_TABLE_NAME="transactions"
+GROUPS_TABLE_NAME="transaction_groups"
+ATTACHMENTS_TABLE_NAME="attachments"
+LOCATIONS_TABLE_NAME="locations"
+TRANSACTION_TRANSACTION_GROUP_TABLE_NAME="transaction_transaction_group"
+TRANSACTION_ATTACHMENT_TABLE_NAME="transaction_attachment"
+USER_TRANSACTION_GROUP_TABLE_NAME="user_transaction_group"
+PAGE_SIZE=25
