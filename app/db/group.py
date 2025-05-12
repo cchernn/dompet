@@ -5,5 +5,4 @@ from ..utils import config
 class GroupDatabase(BaseDatabase):
     def __init__(self, params: Params):
         super().__init__(params)
-        self.page_size = config.PAGE_SIZE
         self.table_name = config.GROUPS_TABLE_NAME

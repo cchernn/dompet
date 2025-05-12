@@ -38,10 +38,15 @@ class Params(BaseModel):
         title="Params Body",
         description="The body object the API call",
     )
+    queryParams: Optional[dict[str, Any]] = Field(
+        None,
+        title="Params Query Parameters",
+        description="Query Paramenters of the API endpoint"
+    )
     pathParams: Optional[dict[str, Any]] = Field(
         None,
         title="Params Path Parameters",
-        description="Parameters of the API endpoint",
+        description="Path Parameters of the API endpoint",
     )
 
     @classmethod
@@ -52,6 +57,7 @@ class Params(BaseModel):
             path = event.get("path"),
             headers = cls._parse_event_headers(event),
             body = cls._parse_event_body(event),
+            queryParams = event.get("queryStringParameters"),
             pathParams = event.get("pathParameters"),
         )
     

@@ -1,5 +1,6 @@
 from ..lib.exceptions import InvalidParamsException, DBConnectionException, DBOperationException
 from ..lib.params import Params
+from ..utils import config
 
 import os
 import psycopg2
@@ -12,6 +13,7 @@ class BaseDatabase(ABC):
         self.conn = self.connect()
         self.set_user(params)
         self.table_name = None
+        self.page_size = config.PAGE_SIZE
 
     def connect(self):
         conn = None

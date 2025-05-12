@@ -7,7 +7,6 @@ from psycopg2.sql import SQL, Identifier, Composable, Literal
 class TransactionDatabase(BaseDatabase):
     def __init__(self, params: Params):
         super().__init__(params)
-        self.page_size = config.PAGE_SIZE
         self.table_name = config.TRANSACTIONS_TABLE_NAME
         self.locations_table_name = config.LOCATIONS_TABLE_NAME
         self.transaction_group_table_name = config.GROUPS_TABLE_NAME
