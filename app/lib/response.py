@@ -2,7 +2,7 @@ from ..lib.params import Params
 
 import json
 from pydantic import BaseModel, Field
-from typing import Optional, Literal, Union
+from typing import Optional, Literal, Union, Any, List
 
 class Response(BaseModel):
     success: bool = Field(
@@ -10,7 +10,7 @@ class Response(BaseModel):
         title="API Response Title",
         description="Status of the API Response. Default: False"
     )
-    data: Optional[Union[dict, list]] = Field(
+    data: Optional[Union[Any, List[Any]]] = Field(
         None,
         title="API Response Data",
         description="Data returned by the API call"

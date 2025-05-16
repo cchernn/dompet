@@ -2,7 +2,7 @@ from .base import BaseDatabase
 from ..lib.params import Params
 from ..utils import config
 
-from psycopg2.sql import SQL, Identifier, Composable, Literal
+from psycopg2.sql import SQL, Identifier, Placeholder, Composable, Literal
 
 class TransactionDatabase(BaseDatabase):
     def __init__(self, params: Params):
@@ -14,7 +14,7 @@ class TransactionDatabase(BaseDatabase):
         self.attachment_table_name = config.ATTACHMENTS_TABLE_NAME
         self.transaction_attachment_junction_table_name = config.TRANSACTION_ATTACHMENT_TABLE_NAME
 
-    def get_query(self, page: int = 1) -> Composable:
+    def get_query(self, transaction_id: int = None, page: int = 1) -> Composable:
         offset = (page - 1) * self.page_size
 
         # get all transaction data
@@ -76,6 +76,16 @@ class TransactionDatabase(BaseDatabase):
             attachment_table_id=Identifier("id"),
             attachment_junction_table_id=Identifier("attachment_id"),
         )
+
+        # filter by params
+        if transaction_id:
+            query += SQL("""
+                WHERE t.{id} = {transaction_id}
+            """).format(
+                id=Identifier("id"),
+                user_id=Identifier("user"),
+                transaction_id=Placeholder("transaction_id"),
+            )
 
         # aggregate, sort and paginate
         query += SQL("""

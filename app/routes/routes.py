@@ -6,33 +6,40 @@ from ..handlers import group
 from ..handlers import attachment
 from ..handlers import location
 
+import re
 from typing import Callable
 
 routes = {
-    (r"/transactions", "GET"): transaction.list,
-    # (r"/transactions", "POST"): transaction.create,
-    # (r"/transactions/\d+", "GET"): transaction.get,
-    # (r"/transactions/\d+", "PUT"): transaction.edit,
-    # (r"/transactions/\d+", "DELETE"): transaction.delete,
-    (r"/groups", "GET"): group.list,
-    # (r"/transactions/groups", "POST"): group.create,
-    # (r"/transactions/groups/\d+", "GET"): group.get,
-    # (r"/transactions/groups/\d+", "PUT"): group.edit,
-    # (r"/transactions/groups/\d+", "DELETE"): group.delete,
-    (r"/attachments", "GET"): attachment.list,
-    # (r"/attachments", "POST"): attachment.create,
-    # (r"/attachments/\d+", "GET"): attachment.get,
-    # (r"/attachments/\d+", "PUT"): attachment.edit,
-    # (r"/attachments/\d+", "DELETE"): attachment.delete,
-    (r"/locations", "GET"): location.list,
-    # (r"/locations", "POST"): location.create,
-    # (r"/locations/\d+", "GET"): location.get,
-    # (r"/locations/\d+", "PUT"): location.edit,
-    # (r"/locations/\d+", "DELETE"): location.delete,   
+    (re.compile(r"^/transactions$"), "GET", transaction.list),
+    # (re.compile(r"^/transactions$"), "POST", transaction.create),
+    (re.compile(r"^/transactions/\d+$"), "GET", transaction.get),
+    # (re.compile(r"^/transactions/\d+$"), "PUT", transaction.edit),
+    # (re.compile(r"^/transactions/\d+$"), "DELETE", transaction.delete),
+    (re.compile(r"^/groups$"), "GET", group.list),
+    # (re.compile(r"^/transactions/groups$"), "POST", group.create),
+    # (re.compile(r"^/transactions/groups/\d+$"), "GET", group.get),
+    # (re.compile(r"^/transactions/groups/\d+$"), "PUT", group.edit),
+    # (re.compile(r"^/transactions/groups/\d+$"), "DELETE", group.delete),
+    (re.compile(r"^/attachments$"), "GET", attachment.list),
+    # (re.compile(r"^/attachments$"), "POST", attachment.create),
+    # (re.compile(r"^/attachments/\d+$"), "GET", attachment.get),
+    # (re.compile(r"^/attachments/\d+$"), "PUT", attachment.edit),
+    # (re.compile(r"^/attachments/\d+$"), "DELETE", attachment.delete),
+    (re.compile(r"^/locations$"), "GET", location.list),
+    # (re.compile(r"^/locations$"), "POST", location.create),
+    # (re.compile(r"^/locations/\d+$"), "GET", location.get),
+    # (re.compile(r"^/locations/\d+$"), "PUT", location.edit),
+    # (re.compile(r"^/locations/\d+$"), "DELETE", location.delete),
 }
 
+def match_route(path: str, method: str):
+    for pattern, http_method, func in routes:
+        if http_method == method and pattern.match(path):
+            return func
+    return None
+
 def route(params: Params) -> Callable[[Params], Response]:
-    func = routes.get((params.path, params.http_method))
+    func = match_route(params.path, params.http_method)
     if not func:
         raise InvalidFunctionException(f"Function for path is not found: {params.path}")
     return func

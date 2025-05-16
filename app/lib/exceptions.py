@@ -25,3 +25,10 @@ class DBOperationException(Exception):
         message = f"{self.__class__.__name__}: {type(ex).__name__}-{str(ex)}"
         print(message)
         self.message = message
+
+class InvalidDataException(Exception):
+    def __init__(self, ex: Exception):
+        super().__init__(ex)
+        message = f"{self.__class__.__name__}: {type(ex).__name__}-{str(ex)}"
+        print(message)
+        self.message = message

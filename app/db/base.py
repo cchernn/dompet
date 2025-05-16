@@ -74,14 +74,16 @@ class BaseDatabase(ABC):
     
         return query
 
-    def get_data(self, query: Composable, vars: dict = {}) -> list:
+    def get_data(self, query: Composable, vars: dict = {}, many: bool = True) -> list:
         try:
             with self.conn.cursor(cursor_factory=RealDictCursor) as cursor:
                 cursor.execute(self.get_user_query())
                 print("query", query.as_string(self.conn))
                 cursor.execute(query, vars)
-                data = cursor.fetchall()
-
+                if many:
+                    data = cursor.fetchall()
+                else:
+                    data = cursor.fetchone()
                 return data
         except (psycopg2.DatabaseError, psycopg2.IntegrityError) as ex:
             raise DBOperationException(ex)
