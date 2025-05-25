@@ -2,17 +2,28 @@ from .base import BaseDatabase
 from ..lib.params import Params
 from ..utils import config
 
-from psycopg2.sql import SQL, Identifier, Placeholder, Composable, Literal
+from psycopg2.sql import SQL, Identifier, Placeholder, Composable, Literal, Composed
 
 class TransactionDatabase(BaseDatabase):
     def __init__(self, params: Params):
         super().__init__(params)
         self.table_name = config.TRANSACTIONS_TABLE_NAME
         self.locations_table_name = config.LOCATIONS_TABLE_NAME
-        self.transaction_group_table_name = config.GROUPS_TABLE_NAME
-        self.transaction_transaction_group_junction_table_name = config.TRANSACTION_TRANSACTION_GROUP_TABLE_NAME
+        self.group_table_name = config.GROUPS_TABLE_NAME
+        self.transaction_group_junction_table_name = config.TRANSACTION_GROUP_TABLE_NAME
         self.attachment_table_name = config.ATTACHMENTS_TABLE_NAME
         self.transaction_attachment_junction_table_name = config.TRANSACTION_ATTACHMENT_TABLE_NAME
+        self.valid_keys = [
+            "date",
+            "name",
+            "location",
+            "type",
+            "amount",
+            "currency",
+            "payment_method",
+            "category",
+            "is_active",
+        ]
 
     def get_query(self, transaction_id: int = None, page: int = 1) -> Composable:
         offset = (page - 1) * self.page_size
@@ -53,15 +64,15 @@ class TransactionDatabase(BaseDatabase):
 
         # join groups
         query += SQL("""
-            LEFT JOIN {transaction_transaction_group_junction_table_name} AS ttgroup ON t.{id} = ttgroup.{transaction_id}
-            LEFT JOIN {transaction_group_table_name} AS tgroup ON tgroup.{transaction_group_table_id} = ttgroup.{transaction_group_junction_table_id}
+            LEFT JOIN {transaction_group_junction_table_name} AS ttgroup ON t.{id} = ttgroup.{id}
+            LEFT JOIN {group_table_name} AS tgroup ON tgroup.{group_table_id} = ttgroup.{group_junction_table_id}
         """).format(
-            transaction_group_table_name=Identifier(self.transaction_group_table_name),
-            transaction_transaction_group_junction_table_name=Identifier(self.transaction_transaction_group_junction_table_name),
+            group_table_name=Identifier(self.group_table_name),
+            transaction_group_junction_table_name=Identifier(self.transaction_group_junction_table_name),
             id=Identifier("id"),
             transaction_id=Identifier("transaction_id"),
-            transaction_group_table_id=Identifier("id"),
-            transaction_group_junction_table_id=Identifier("transaction_group_id"),
+            group_table_id=Identifier("id"),
+            group_junction_table_id=Identifier("transaction_group_id"),
         )
 
         # join attachment
@@ -98,3 +109,45 @@ class TransactionDatabase(BaseDatabase):
         )
     
         return query
+
+    def add_query(self, body: dict, user: str) -> Composable:
+        transaction_body = {k: v for k, v in body.items() if k in self.valid_keys}
+        transaction_body.update({'user': str(user)})
+        transaction_columns = list(transaction_body.keys())
+        transaction_values = list(transaction_body.values())
+
+        query = SQL("""
+            INSERT INTO {table_name} ({transaction_columns}) VALUES ({transaction_values}) RETURNING *
+        """).format(
+            table_name=Identifier(self.table_name),
+            transaction_columns=SQL(", ").join(map(Identifier, transaction_columns)),
+            transaction_values=SQL(", ").join(Placeholder() for _ in transaction_values)
+        )
+            
+        return query, transaction_values
+    
+    def edit_query(self, transaction_id: int, body: dict) -> Composable:
+        transaction_body = transaction_body = {k: v for k, v in body.items() if k in self.valid_keys}
+        set_clause = SQL(", ").join(Composed([Identifier(col), SQL(" = "), Placeholder(col)]) for col in transaction_body.keys())
+
+        query = SQL("""
+            UPDATE {table_name} SET {set_clause} WHERE {id} = {transaction_id} RETURNING *
+        """).format(
+            table_name=Identifier(self.table_name),
+            set_clause=set_clause,
+            id=Identifier("id"),
+            transaction_id=Placeholder("transaction_id")
+        )
+
+        return query, {**transaction_body, "transaction_id": transaction_id}
+    
+    def delete_query(self, transaction_id: int) -> Composable:
+        query = SQL("""
+            DELETE FROM {table_name} WHERE {id} = {transaction_id} RETURNING *
+        """).format(
+            table_name=Identifier(self.table_name),
+            id=Identifier("id"),
+            transaction_id=Placeholder("transaction_id")
+        )
+
+        return query, {"transaction_id": transaction_id}

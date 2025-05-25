@@ -74,7 +74,7 @@ class BaseDatabase(ABC):
     
         return query
 
-    def get_data(self, query: Composable, vars: dict = {}, many: bool = True) -> list:
+    def execute_get(self, query: Composable, vars: dict = {}, many: bool = True) -> list | dict:
         try:
             with self.conn.cursor(cursor_factory=RealDictCursor) as cursor:
                 cursor.execute(self.get_user_query())
@@ -84,7 +84,21 @@ class BaseDatabase(ABC):
                     data = cursor.fetchall()
                 else:
                     data = cursor.fetchone()
-                return data
+            return data
+        except (psycopg2.DatabaseError, psycopg2.IntegrityError) as ex:
+            raise DBOperationException(ex)
+        
+    def execute_commit(self, query: Composable, vars: dict = {}, is_return: bool = True) -> dict:
+        try:
+            data = None
+            with self.conn.cursor(cursor_factory=RealDictCursor) as cursor:
+                cursor.execute(self.get_user_query())
+                print("query", query.as_string(self.conn))
+                cursor.execute(query, vars)
+                if is_return:
+                    data = cursor.fetchone()
+            self.conn.commit()
+            return data
         except (psycopg2.DatabaseError, psycopg2.IntegrityError) as ex:
             raise DBOperationException(ex)
         

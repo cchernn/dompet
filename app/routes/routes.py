@@ -11,10 +11,10 @@ from typing import Callable
 
 routes = {
     (re.compile(r"^/transactions$"), "GET", transaction.list),
-    # (re.compile(r"^/transactions$"), "POST", transaction.create),
+    (re.compile(r"^/transactions$"), "POST", transaction.add),
     (re.compile(r"^/transactions/\d+$"), "GET", transaction.get),
-    # (re.compile(r"^/transactions/\d+$"), "PUT", transaction.edit),
-    # (re.compile(r"^/transactions/\d+$"), "DELETE", transaction.delete),
+    (re.compile(r"^/transactions/\d+$"), "PUT", transaction.edit),
+    (re.compile(r"^/transactions/\d+$"), "DELETE", transaction.delete),
     (re.compile(r"^/groups$"), "GET", group.list),
     # (re.compile(r"^/transactions/groups$"), "POST", group.create),
     # (re.compile(r"^/transactions/groups/\d+$"), "GET", group.get),
