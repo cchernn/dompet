@@ -6,3 +6,7 @@ class GroupDatabase(BaseDatabase):
     def __init__(self, params: Params):
         super().__init__(params)
         self.table_name = config.GROUPS_TABLE_NAME
+        self.valid_keys = [
+            "name",
+            "is_active",
+        ]

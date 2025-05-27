@@ -27,6 +27,7 @@ class TransactionDatabase(BaseDatabase):
 
     def get_query(self, transaction_id: int = None, page: int = 1) -> Composable:
         offset = (page - 1) * self.page_size
+        vars = {}
 
         # get all transaction data
         query = SQL("""
@@ -97,6 +98,9 @@ class TransactionDatabase(BaseDatabase):
                 user_id=Identifier("user"),
                 transaction_id=Placeholder("transaction_id"),
             )
+            vars.update({
+                "transaction_id": transaction_id
+            })
 
         # aggregate, sort and paginate
         query += SQL("""
@@ -108,7 +112,7 @@ class TransactionDatabase(BaseDatabase):
             offset=Literal(offset),
         )
     
-        return query
+        return query, vars
 
     def add_query(self, body: dict, user: str) -> Composable:
         transaction_body = {k: v for k, v in body.items() if k in self.valid_keys}

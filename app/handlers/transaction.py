@@ -9,7 +9,7 @@ from ..lib.exceptions import InvalidDataException
 @load_db(TransactionDatabase)
 def list(params: Params, db: TransactionDatabase) -> list[Transaction]:
     page = int(params.queryParams.get("page", 1))
-    query = db.get_query(page=page)
+    query, _ = db.get_query(page=page)
     data = db.execute_get(query=query)
     if not data:
         raise InvalidDataException("Data not available or user does not have authorization to access the data")
@@ -19,8 +19,8 @@ def list(params: Params, db: TransactionDatabase) -> list[Transaction]:
 @load_db(TransactionDatabase)
 def get(params: Params, db: TransactionDatabase) -> Transaction:
     transaction_id = int(params.pathParams.get("transaction_id"))
-    query = db.get_query(transaction_id=transaction_id)
-    data = db.execute_get(query=query, vars={'transaction_id': transaction_id}, many=False)
+    query, vars = db.get_query(transaction_id=transaction_id)
+    data = db.execute_get(query=query, vars=vars, many=False)
     if not data:
         raise InvalidDataException("Data not available or user does not have authorization to access the data")
     transaction = Transaction(**data)

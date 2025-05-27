@@ -4,7 +4,7 @@ from ..utils import config
 
 import os
 import psycopg2
-from psycopg2.sql import SQL, Identifier, Composable, Literal
+from psycopg2.sql import SQL, Identifier, Composable, Literal, Placeholder
 from psycopg2.extras import RealDictCursor
 from abc import ABC
 
@@ -14,6 +14,7 @@ class BaseDatabase(ABC):
         self.set_user(params)
         self.table_name = None
         self.page_size = config.PAGE_SIZE
+        self.valid_keys = []
 
     def connect(self):
         conn = None
@@ -53,8 +54,9 @@ class BaseDatabase(ABC):
         except psycopg2.Error as ex:
             raise DBOperationException(ex)
     
-    def get_query(self, page: int = 1) -> Composable:
+    def get_query(self, id: int = None, page: int = 1) -> Composable:
         offset = (page - 1) * self.page_size
+        vars = {}
 
         # get all location data
         query = SQL("""
@@ -62,6 +64,18 @@ class BaseDatabase(ABC):
         """).format(
             table_name=Identifier(self.table_name),
         )
+
+        # filters if not None
+        if id is not None:
+            query += SQL("""
+                WHERE {id_title} = {id}
+            """).format(
+                id_title=Identifier("id"),
+                id=Placeholder("id")
+            )
+            vars.update({
+                "id": id
+            })
 
         # sort and paginate
         query += SQL("""
@@ -72,7 +86,23 @@ class BaseDatabase(ABC):
             offset=Literal(offset),
         )
     
-        return query
+        return query, vars
+
+    def add_query(self, body: dict, user: str) -> Composable:
+        item_body = {k:v for k, v in body.items() if k in self.valid_keys}
+        item_body.update({'user': str(user)})
+        item_columns = list(item_body.keys())
+        item_values = list(item_body.values())
+
+        query = SQL("""
+            INSERT INTO {table_name} ({item_columns}) VALUES ({item_values}) RETURNING *
+        """).format(
+            table_name=Identifier(self.table_name),
+            item_columns=SQL(", ").join(map(Identifier, item_columns)),
+            item_values=SQL(", ").join(Placeholder() for _ in item_values)
+        )
+            
+        return query, item_values
 
     def execute_get(self, query: Composable, vars: dict = {}, many: bool = True) -> list | dict:
         try:
