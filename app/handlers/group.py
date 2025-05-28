@@ -29,3 +29,24 @@ def add(params: Params, db: GroupDatabase) -> Group:
     data = db.execute_commit(query=query, vars=vars)
     group = Group(**data)
     return group
+
+@load_db(GroupDatabase)
+def edit(params: Params, db: GroupDatabase) -> Group:
+    body = params.body
+    group_id = int(params.pathParams.get("group_id"))
+    query, vars = db.edit_query(id=group_id, body=body)
+    data = db.execute_commit(query=query, vars=vars)
+    if not data:
+        raise InvalidDataException("Data not available or user does not have authorization to access the data")
+    group = Group(**data)
+    return group
+
+@load_db(GroupDatabase)
+def delete(params: Params, db: GroupDatabase) -> Group:
+    group_id = int(params.pathParams.get("group_id"))
+    query, vars = db.delete_query(id=group_id)
+    data = db.execute_commit(query=query, vars=vars)
+    if not data:
+        raise InvalidDataException("Data not available or user does not have authorization to access the data")
+    group = Group(**data)
+    return group

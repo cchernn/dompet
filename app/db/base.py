@@ -4,7 +4,7 @@ from ..utils import config
 
 import os
 import psycopg2
-from psycopg2.sql import SQL, Identifier, Composable, Literal, Placeholder
+from psycopg2.sql import SQL, Identifier, Composable, Literal, Placeholder, Composed
 from psycopg2.extras import RealDictCursor
 from abc import ABC
 
@@ -103,6 +103,32 @@ class BaseDatabase(ABC):
         )
             
         return query, item_values
+
+    def edit_query(self, id: int, body: dict) -> Composable:
+        item_body = item_body = {k: v for k, v in body.items() if k in self.valid_keys}
+        set_clause = SQL(", ").join(Composed([Identifier(col), SQL(" = "), Placeholder(col)]) for col in item_body.keys())
+
+        query = SQL("""
+            UPDATE {table_name} SET {set_clause} WHERE {id_title} = {id} RETURNING *
+        """).format(
+            table_name=Identifier(self.table_name),
+            set_clause=set_clause,
+            id_title=Identifier("id"),
+            id=Placeholder("id"),
+        )
+
+        return query, {**item_body, "id": id}
+
+    def delete_query(self, id: int) -> Composable:
+        query = SQL("""
+            DELETE FROM {table_name} WHERE {id_title} = {id} RETURNING *
+        """).format(
+            table_name=Identifier(self.table_name),
+            id_title=Identifier("id"),
+            id=Placeholder("id")
+        )
+
+        return query, {"id": id}
 
     def execute_get(self, query: Composable, vars: dict = {}, many: bool = True) -> list | dict:
         try:
