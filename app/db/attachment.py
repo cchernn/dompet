@@ -6,3 +6,11 @@ class AttachmentDatabase(BaseDatabase):
     def __init__(self, params: Params):
         super().__init__(params)
         self.table_name = config.ATTACHMENTS_TABLE_NAME
+        self.valid_keys = [
+            "date",
+            "name",
+            "filename",
+            "url",
+            "type",
+            "is_active",
+        ]
