@@ -88,9 +88,10 @@ class BaseDatabase(ABC):
     
         return query, vars
 
-    def add_query(self, body: dict, user: str) -> Composable:
+    def add_query(self, body: dict, user: str = None) -> Composable:
         item_body = {k:v for k, v in body.items() if k in self.valid_keys}
-        item_body.update({'user': str(user)})
+        if user:
+            item_body.update({'user': str(user)})
         item_columns = list(item_body.keys())
         item_values = list(item_body.values())
 

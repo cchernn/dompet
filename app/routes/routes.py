@@ -26,10 +26,10 @@ routes = {
     # (re.compile(r"^/attachments/\d+$"), "PUT", attachment.edit),
     # (re.compile(r"^/attachments/\d+$"), "DELETE", attachment.delete),
     (re.compile(r"^/locations$"), "GET", location.list),
-    # (re.compile(r"^/locations$"), "POST", location.create),
-    # (re.compile(r"^/locations/\d+$"), "GET", location.get),
-    # (re.compile(r"^/locations/\d+$"), "PUT", location.edit),
-    # (re.compile(r"^/locations/\d+$"), "DELETE", location.delete),
+    (re.compile(r"^/locations$"), "POST", location.add),
+    (re.compile(r"^/locations/\d+$"), "GET", location.get),
+    (re.compile(r"^/locations/\d+$"), "PUT", location.edit),
+    (re.compile(r"^/locations/\d+$"), "DELETE", location.delete),
 }
 
 def match_route(path: str, method: str):
