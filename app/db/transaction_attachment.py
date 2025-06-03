@@ -29,3 +29,15 @@ class TransactionAttachmentDatabase(BaseDatabase):
         )
 
         return query, {"attachment": attachment, "transaction_id": transaction_id}
+    
+    def delete_query(self, transaction_id: int, attachment: list = []) -> Composable:
+        query = SQL("""
+            DELETE FROM {transaction_attachment_junction_table_name}
+            WHERE {transaction_id_title} = {transaction_id}
+        """).format(
+            transaction_attachment_junction_table_name=Identifier(self.table_name),
+            transaction_id_title=Identifier("transaction_id"),
+            transaction_id=Placeholder("transaction_id"),
+        )
+
+        return query, {"attachment": attachment, "transaction_id": transaction_id}

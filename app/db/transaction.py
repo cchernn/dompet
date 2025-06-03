@@ -65,7 +65,7 @@ class TransactionDatabase(BaseDatabase):
 
         # join groups
         query += SQL("""
-            LEFT JOIN {transaction_group_junction_table_name} AS ttgroup ON t.{id} = ttgroup.{id}
+            LEFT JOIN {transaction_group_junction_table_name} AS ttgroup ON t.{id} = ttgroup.{transaction_id}
             LEFT JOIN {group_table_name} AS tgroup ON tgroup.{group_table_id} = ttgroup.{group_junction_table_id}
         """).format(
             group_table_name=Identifier(self.group_table_name),
@@ -133,6 +133,8 @@ class TransactionDatabase(BaseDatabase):
     def edit_query(self, transaction_id: int, body: dict) -> Composable:
         transaction_body = transaction_body = {k: v for k, v in body.items() if k in self.valid_keys}
         set_clause = SQL(", ").join(Composed([Identifier(col), SQL(" = "), Placeholder(col)]) for col in transaction_body.keys())
+        if not set_clause.seq:
+            set_clause = Composed([Identifier("id"), SQL(" = "), Placeholder("transaction_id")])
 
         query = SQL("""
             UPDATE {table_name} SET {set_clause} WHERE {id} = {transaction_id} RETURNING *

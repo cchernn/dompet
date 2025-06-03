@@ -32,6 +32,12 @@ def add(params: Params, db: TransactionDatabase) -> Transaction:
     user = params.user
     query, vars = db.add_query(body=body, user=user)
     data = db.execute_commit(query=query, vars=vars)
+    transaction_id = data.get("id", None)
+    if transaction_id:
+        edit_transaction_group(params=params, transaction_id=transaction_id)
+        edit_transaction_attachment(params=params, transaction_id=transaction_id)
+    else:
+        raise InvalidDataException("Data not available or user does not have authorization to access the data")
     transaction = Transaction(**data)
     return transaction
 
@@ -43,8 +49,8 @@ def edit(params: Params, db: TransactionDatabase) -> Transaction:
     data = db.execute_commit(query=query, vars=vars)
     if not data:
         raise InvalidDataException("Data not available or user does not have authorization to access the data")
-    # edit_transaction_group(params=params)
-    # edit_transaction_attachment(params=params)
+    edit_transaction_group(params=params, transaction_id=transaction_id)
+    edit_transaction_attachment(params=params, transaction_id=transaction_id)
     transaction = Transaction(**data)
     return transaction
 
@@ -59,22 +65,24 @@ def delete(params: Params, db: TransactionDatabase) -> Transaction:
     return transaction
 
 @load_db(TransactionGroupDatabase)
-def edit_transaction_group(params: Params, db: TransactionGroupDatabase) -> None:
+def edit_transaction_group(params: Params, db: TransactionGroupDatabase, transaction_id: int) -> None:
     body = params.body
-    transaction_id = int(params.pathParams.get("transaction_id"))
     if 'group' in body.keys():
         group = body["group"].split("|")
         group = [int(b) for b in group]
-        query, vars = db.get_query(transaction_id=transaction_id, group=group)
-        db.execute_commit(query=query, vars=vars, is_return=False)
+        delete_query, delete_vars = db.delete_query(transaction_id=transaction_id, group=group)
+        db.execute_commit(query=delete_query, vars=delete_vars, is_return=False)
+        insert_query, insert_vars = db.get_query(transaction_id=transaction_id, group=group)
+        db.execute_commit(query=insert_query, vars=insert_vars, is_return=False)
     return 
 
 @load_db(TransactionAttachmentDatabase)
-def edit_transaction_attachment(params: Params, db: TransactionAttachmentDatabase) -> None:
+def edit_transaction_attachment(params: Params, db: TransactionAttachmentDatabase, transaction_id: int) -> None:
     body = params.body
-    transaction_id = int(params.pathParams.get("transaction_id"))
     if 'attachment' in body.keys():
         attachment = body["attachment"].split("|")
         attachment = [int(b) for b in attachment]
-        query, vars = db.get_query(transaction_id=transaction_id, attachment=attachment)
-        db.execute_commit(query=query, vars=vars, is_return=False)
+        delete_query, delete_vars = db.delete_query(transaction_id=transaction_id, attachment=attachment)
+        db.execute_commit(query=delete_query, vars=delete_vars, is_return=False)
+        insert_query, insert_vars = db.get_query(transaction_id=transaction_id, attachment=attachment)
+        db.execute_commit(query=insert_query, vars=insert_vars, is_return=False)

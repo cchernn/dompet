@@ -29,3 +29,15 @@ class TransactionGroupDatabase(BaseDatabase):
         )
 
         return query, {"group": group, "transaction_id": transaction_id}
+    
+    def delete_query(self, transaction_id: int, group: list = []) -> Composable:
+        query = SQL("""
+            DELETE FROM {transaction_group_junction_table_name}
+            WHERE {transaction_id_title} = {transaction_id}
+        """).format(
+            transaction_group_junction_table_name=Identifier(self.table_name),
+            transaction_id_title=Identifier("transaction_id"),
+            transaction_id=Placeholder("transaction_id"),
+        )
+
+        return query, {"group": group, "transaction_id": transaction_id}
