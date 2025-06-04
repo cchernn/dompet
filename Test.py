@@ -3,7 +3,7 @@ import json
 
 if __name__ == "__main__":
     files = [
-        # "transactions_list",
+        "transactions_list",
         # "transactions_create", # pending group and attachment
         # "transactions_get",
         # "transactions_edit", # pending group and attachment
@@ -28,6 +28,6 @@ if __name__ == "__main__":
         with open(f"test/params/{filename}.json", "r") as fp:
             event = json.load(fp)
         result = lambda_handler(event, None)
-        result = json.loads(result)
+        # result = json.loads(result)
         with open(f"test/results/{filename}.json", "w") as fp:
             json.dump(result, fp)

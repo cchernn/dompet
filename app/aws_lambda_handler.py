@@ -10,4 +10,4 @@ def lambda_handler(event: dict, context: Any) -> AWSLambdaResponse:
     return AWSLambdaResponse.generate(
         params=params,
         response=response,
-    ).model_dump_json()
+    ).model_dump()

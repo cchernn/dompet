@@ -117,11 +117,12 @@ if __name__ == "__main__":
         add_help=True
     )
     parser.add_argument(
-        "command",
+        "--command",
         choices=[
             "upload",
             "migrate"
         ],
+        required=True,
         help="Setup commands to run"
     )
 

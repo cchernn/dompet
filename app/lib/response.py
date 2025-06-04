@@ -54,7 +54,7 @@ class AWSLambdaResponse(BaseModel):
         title="API Response headers",
         description="Headers for the API Response"
     )
-    body: Optional[dict] = Field(
+    body: Optional[str] = Field(
         None,
         title="API Response Body",
         description="Body object for the API Response"
@@ -68,7 +68,7 @@ class AWSLambdaResponse(BaseModel):
             "Access-Control-Allow-Headers": "Content-Type, Authorization",
         }
         status_code = 200 # WIP: insert status_code logic here
-        body = response.model_dump(exclude_none=True)
+        body = response.model_dump_json(exclude_none=True)
 
         return cls(
             statusCode=status_code,
