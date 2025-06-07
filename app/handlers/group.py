@@ -6,7 +6,7 @@ from ..lib.exceptions import InvalidDataException
 
 @load_db(GroupDatabase)
 def list(params: Params, db: GroupDatabase) -> list[Group]:
-    if "queryParams" not in params.__dict__:
+    if params.queryParams:
         page = int(params.queryParams.get("page", 1))
         query, _ = db.get_query(page=page)
     else:

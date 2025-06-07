@@ -6,7 +6,7 @@ from ..lib.exceptions import InvalidDataException
 
 @load_db(LocationDatabase)
 def list(params: Params, db: LocationDatabase) -> list[Location]:
-    if "queryParams" not in params.__dict__:
+    if params.queryParams:
         page = int(params.queryParams.get("page", 1))
         query, _ = db.get_query(page=page)
     else:

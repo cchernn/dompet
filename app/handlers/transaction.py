@@ -8,7 +8,7 @@ from ..lib.exceptions import InvalidDataException
 
 @load_db(TransactionDatabase)
 def list(params: Params, db: TransactionDatabase) -> list[Transaction]:
-    if "queryParams" not in params.__dict__:
+    if params.queryParams:
         page = int(params.queryParams.get("page", 1))
         query, _ = db.get_query(page=page)
     else:
