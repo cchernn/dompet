@@ -8,8 +8,11 @@ from ..lib.exceptions import InvalidDataException
 
 @load_db(TransactionDatabase)
 def list(params: Params, db: TransactionDatabase) -> list[Transaction]:
-    page = int(params.queryParams.get("page", 1))
-    query, _ = db.get_query(page=page)
+    if "queryParams" not in params.__dict__:
+        page = int(params.queryParams.get("page", 1))
+        query, _ = db.get_query(page=page)
+    else:
+        query, _ = db.get_query()
     data = db.execute_get(query=query)
     if not data:
         raise InvalidDataException("Data not available or user does not have authorization to access the data")

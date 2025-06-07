@@ -54,8 +54,9 @@ class BaseDatabase(ABC):
         except psycopg2.Error as ex:
             raise DBOperationException(ex)
     
-    def get_query(self, id: int = None, page: int = 1) -> Composable:
-        offset = (page - 1) * self.page_size
+    def get_query(self, id: int = None, page: int = None) -> Composable:
+        if page:
+            offset = (page - 1) * self.page_size
         vars = {}
 
         # get all location data
@@ -77,14 +78,19 @@ class BaseDatabase(ABC):
                 "id": id
             })
 
-        # sort and paginate
+        # sort
         query += SQL("""
             ORDER BY id DESC
-            LIMIT {limit} OFFSET {offset}
-        """).format(
-            limit=Literal(self.page_size),
-            offset=Literal(offset),
-        )
+        """)
+
+        # paginate
+        if page:
+            query += SQL("""
+                LIMIT {limit} OFFSET {offset}
+            """).format(
+                limit=Literal(self.page_size),
+                offset=Literal(offset),
+            )
     
         return query, vars
 

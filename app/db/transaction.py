@@ -25,8 +25,9 @@ class TransactionDatabase(BaseDatabase):
             "is_active",
         ]
 
-    def get_query(self, transaction_id: int = None, page: int = 1) -> Composable:
-        offset = (page - 1) * self.page_size
+    def get_query(self, transaction_id: int = None, page: int = None) -> Composable:
+        if page:
+            offset = (page - 1) * self.page_size
         vars = {}
 
         # get all transaction data
@@ -102,15 +103,20 @@ class TransactionDatabase(BaseDatabase):
                 "transaction_id": transaction_id
             })
 
-        # aggregate, sort and paginate
+        # aggregate and sort
         query += SQL("""
             GROUP BY t.id, lt.name
             ORDER BY t.date DESC, t.id DESC
-            LIMIT {limit} OFFSET {offset}
-        """).format(
-            limit=Literal(self.page_size),
-            offset=Literal(offset),
-        )
+        """)
+
+        # paginate
+        if page:
+            query += SQL("""
+                LIMIT {limit} OFFSET {offset}
+            """).format(
+                limit=Literal(self.page_size),
+                offset=Literal(offset),
+            )
     
         return query, vars
 

@@ -6,7 +6,11 @@ from ..lib.exceptions import InvalidDataException
 
 @load_db(AttachmentDatabase)
 def list(params: Params, db: AttachmentDatabase) -> list[Attachment]:
-    query, _ = db.get_query()
+    if "queryParams" not in params.__dict__:
+        page = int(params.queryParams.get("page", 1))
+        query, _ = db.get_query(page=page)
+    else:
+        query, _ = db.get_query()
     data = db.execute_get(query=query)
     attachments = [Attachment(**t) for t in data]
     return attachments
