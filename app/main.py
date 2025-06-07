@@ -1,6 +1,7 @@
 from .lib.params import Params
 from .lib.response import Response
 from .routes.routes import route
+import traceback
 
 def main(params: Params) -> Response:
     try:
@@ -10,6 +11,7 @@ def main(params: Params) -> Response:
             data=data,
         )
     except Exception as ex:
+        traceback.print_exc()
         message = f"GeneralException: {type(ex).__name__}-{str(ex)}"
         print(message)
         return Response.generate(
