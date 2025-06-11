@@ -24,10 +24,24 @@ class TransactionDatabase(BaseDatabase):
             "category",
             "is_active",
         ]
+        self.filter_keys = [
+            "user"
+        ]
 
-    def get_query(self, transaction_id: int = None, page: int = None) -> Composable:
+    def get_query_filter(self, transaction_id: int = None, query_params: dict = {}) -> Composable:
+        query = None
+        filters = {k: v for k, v in query_params.items() if k in self.filter_keys}
+        if transaction_id:
+            filters.update({"transaction_id": transaction_id})
+        if filters:
+            query = SQL("WHERE ") + SQL(" AND ").join(Composed([Identifier("t", col), SQL(" = "), Placeholder(col)]) for col in filters.keys())
+        return query, filters
+
+    def get_query(self, transaction_id: int = None, query_params: dict = None, page: int = None) -> Composable:
+        page = query_params.get("page", None)
+        filter_query, filter_vars = self.get_query_filter(transaction_id=transaction_id, query_params=query_params)
         if page:
-            offset = (page - 1) * self.page_size
+            offset = (int(page) - 1) * self.page_size
         vars = {}
 
         # get all transaction data
@@ -91,17 +105,9 @@ class TransactionDatabase(BaseDatabase):
         )
 
         # filter by params
-        if transaction_id:
-            query += SQL("""
-                WHERE t.{id} = {transaction_id}
-            """).format(
-                id=Identifier("id"),
-                user_id=Identifier("user"),
-                transaction_id=Placeholder("transaction_id"),
-            )
-            vars.update({
-                "transaction_id": transaction_id
-            })
+        if filter_query:
+            query += filter_query
+            vars.update(**filter_vars)
 
         # aggregate and sort
         query += SQL("""
@@ -137,7 +143,7 @@ class TransactionDatabase(BaseDatabase):
         return query, transaction_values
     
     def edit_query(self, transaction_id: int, body: dict) -> Composable:
-        transaction_body = transaction_body = {k: v for k, v in body.items() if k in self.valid_keys}
+        transaction_body = {k: v for k, v in body.items() if k in self.valid_keys}
         set_clause = SQL(", ").join(Composed([Identifier(col), SQL(" = "), Placeholder(col)]) for col in transaction_body.keys())
         if not set_clause.seq:
             set_clause = Composed([Identifier("id"), SQL(" = "), Placeholder("transaction_id")])
