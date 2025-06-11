@@ -32,19 +32,17 @@ class TransactionDatabase(BaseDatabase):
         query = None
         filters = {k: v for k, v in query_params.items() if k in self.filter_keys}
         if transaction_id:
-            filters.update({"transaction_id": transaction_id})
+            filters.update({"id": transaction_id})
         if filters:
             query = SQL("WHERE ") + SQL(" AND ").join(Composed([Identifier("t", col), SQL(" = "), Placeholder(col)]) for col in filters.keys())
         return query, filters
 
-    def get_query(self, transaction_id: int = None, query_params: dict = None, page: int = None) -> Composable:
-        filter_query = None
-        vars = {}
-        if query_params:
-            page = query_params.get("page", None)
-            filter_query, filter_vars = self.get_query_filter(transaction_id=transaction_id, query_params=query_params)
+    def get_query(self, transaction_id: int = None, query_params: dict = {}, page: int = None) -> Composable:
+        filter_query, filter_vars = self.get_query_filter(transaction_id=transaction_id, query_params=query_params)
+        page = query_params.get("page", page)
         if page:
             offset = (int(page) - 1) * self.page_size
+        vars = {}
 
         # get all transaction data
         query = SQL("""
