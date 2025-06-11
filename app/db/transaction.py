@@ -38,11 +38,13 @@ class TransactionDatabase(BaseDatabase):
         return query, filters
 
     def get_query(self, transaction_id: int = None, query_params: dict = None, page: int = None) -> Composable:
-        page = query_params.get("page", None)
-        filter_query, filter_vars = self.get_query_filter(transaction_id=transaction_id, query_params=query_params)
+        filter_query = None
+        vars = {}
+        if query_params:
+            page = query_params.get("page", None)
+            filter_query, filter_vars = self.get_query_filter(transaction_id=transaction_id, query_params=query_params)
         if page:
             offset = (int(page) - 1) * self.page_size
-        vars = {}
 
         # get all transaction data
         query = SQL("""
@@ -123,7 +125,7 @@ class TransactionDatabase(BaseDatabase):
                 limit=Literal(self.page_size),
                 offset=Literal(offset),
             )
-    
+
         return query, vars
 
     def add_query(self, body: dict, user: str) -> Composable:
