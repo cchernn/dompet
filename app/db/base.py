@@ -74,7 +74,7 @@ class BaseDatabase(ABC):
         filter_query, filter_vars = self.get_query_filter(id=id, query_params=query_params)
         page = query_params.get("page", page)
         if page:
-            offset = (page - 1) * self.page_size
+            offset = (int(page) - 1) * self.page_size
         vars = {}
 
         # get all location data
