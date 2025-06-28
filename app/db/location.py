@@ -16,6 +16,6 @@ class LocationDatabase(BaseDatabase):
             "is_active",
         ]
         self.filter_keys = {
-            "category": {"t", "category"},
-            "access_type": {"t", "access_type"},
+            "category": ("t", "category"),
+            "access_type": ("t", "access_type"),
         }
