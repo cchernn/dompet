@@ -7,11 +7,11 @@ from ..lib.exceptions import InvalidDataException
 @load_db(GroupDatabase)
 def list(params: Params, db: GroupDatabase) -> list[Group]:
     if params.queryParams:
-        page = int(params.queryParams.get("page", 1))
-        query, _ = db.get_query(page=page)
+        query_params = params.queryParams
+        query, vars = db.get_query(query_params=query_params)
     else:
-        query, _ = db.get_query()
-    data = db.execute_get(query=query)
+        query, vars = db.get_query()
+    data = db.execute_get(query=query, vars=vars)
     groups = [Group(**t) for t in data]
     return groups
 
