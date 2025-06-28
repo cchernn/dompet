@@ -39,6 +39,7 @@ class TransactionDatabase(BaseDatabase):
         filters = {k: v for k, v in query_params.items() if k in self.filter_keys}
         if transaction_id:
             filters.update({"id": transaction_id})
+            self.filter_keys.update({"id": ("t", "id")})
         if filters:
             query_parts = []
             for k in filters.keys():
