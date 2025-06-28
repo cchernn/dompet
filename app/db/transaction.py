@@ -24,13 +24,15 @@ class TransactionDatabase(BaseDatabase):
             "category",
             "is_active",
         ]
-        self.filter_keys = [
-            "user",
-            "date",
-            "name",
-            "payment_method",
-            "category",
-        ]
+        self.filter_keys = {
+            "user": ("t", "user"),
+            "date": ("t", "date"),
+            "name": ("t", "name"),
+            "payment_method": ("t", "payment_method"),
+            "category": ("t", "category"),
+            "location": ("t", "location"),
+            "group": ("ttgroup", "transaction_group_id"),
+        }
 
     def get_query_filter(self, transaction_id: int = None, query_params: dict = {}) -> Composable:
         query = None
@@ -38,7 +40,13 @@ class TransactionDatabase(BaseDatabase):
         if transaction_id:
             filters.update({"id": transaction_id})
         if filters:
-            query = SQL("WHERE ") + SQL(" AND ").join(Composed([Identifier("t", col), SQL(" = "), Placeholder(col)]) for col in filters.keys())
+            query_parts = []
+            for k in filters.keys():
+                table_alias, column_name = self.filter_keys[k]
+                query_parts.append(
+                    Composed([Identifier(table_alias, column_name), SQL(" = "), Placeholder(k)])
+                )
+            query = SQL("WHERE ") + SQL(" AND ").join(query_parts)
         return query, filters
 
     def get_query(self, transaction_id: int = None, query_params: dict = {}, page: int = None) -> Composable:
