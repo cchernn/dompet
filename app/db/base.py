@@ -54,33 +54,44 @@ class BaseDatabase(ABC):
         except psycopg2.Error as ex:
             raise DBOperationException(ex)
     
-    def get_query(self, id: int = None, page: int = None) -> Composable:
+    def get_query_filter(self, id: int = None, query_params: dict = {}) -> Composable:
+        query = None
+        filters = {k: v for k, v in query_params.items() if k in self.filter_keys}
+        if id:
+            filters.update({"id": id})
+            self.filter_keys.update({"id": {"t", "id"}})
+        if filters:
+            query_parts = []
+            for k in filters.keys():
+                table_alias, column_name = self.filter_keys[k]
+                query_parts.append(
+                    Composed([Identifier(table_alias, column_name), SQL(" = "), Placeholder(k)])
+                )
+            query = SQL("WHERE ") + SQL(" AND ").join(query_parts)
+        return query, filters
+
+    def get_query(self, id: int = None, query_params: dict = {}, page: int = None) -> Composable:
+        filter_query, filter_vars = self.get_query_filter(id=id, query_params=query_params)
+        page = query_params.get("page", page)
         if page:
             offset = (page - 1) * self.page_size
         vars = {}
 
         # get all location data
         query = SQL("""
-            SELECT * FROM {table_name}
+            SELECT * FROM {table_name} t
         """).format(
             table_name=Identifier(self.table_name),
         )
 
-        # filters if not None
-        if id is not None:
-            query += SQL("""
-                WHERE {id_title} = {id}
-            """).format(
-                id_title=Identifier("id"),
-                id=Placeholder("id")
-            )
-            vars.update({
-                "id": id
-            })
+        # filter by params
+        if filter_query:
+            query += filter_query
+            vars.update(**filter_vars)
 
         # sort
         query += SQL("""
-            ORDER BY id DESC
+            ORDER BY t.id DESC
         """)
 
         # paginate

@@ -14,3 +14,6 @@ class AttachmentDatabase(BaseDatabase):
             "type",
             "is_active",
         ]
+        self.filter_keys = {
+            "user": {"t", "user"},
+        }
