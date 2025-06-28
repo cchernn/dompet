@@ -25,7 +25,11 @@ class TransactionDatabase(BaseDatabase):
             "is_active",
         ]
         self.filter_keys = [
-            "user"
+            "user",
+            "date",
+            "name",
+            "payment_method",
+            "category",
         ]
 
     def get_query_filter(self, transaction_id: int = None, query_params: dict = {}) -> Composable:
