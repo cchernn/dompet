@@ -3,7 +3,6 @@ import boto3
 import shutil
 import subprocess
 import argparse
-from Database import BaseDatabase
 
 def upload():
     uploadLambda()

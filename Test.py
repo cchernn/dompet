@@ -3,7 +3,8 @@ import json
 
 if __name__ == "__main__":
     files = [
-        "transactions_list",
+        # "transactions_list",
+        "transactions_list_filter"
         # "transactions_create", # pending group and attachment
         # "transactions_get",
         # "transactions_edit", # pending group and attachment
@@ -30,4 +31,5 @@ if __name__ == "__main__":
         result = lambda_handler(event, None)
         # result = json.loads(result)
         with open(f"test/results/{filename}.json", "w") as fp:
+            result['body'] = json.loads(result['body'])
             json.dump(result, fp)
