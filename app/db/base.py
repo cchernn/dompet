@@ -59,13 +59,13 @@ class BaseDatabase(ABC):
         filters = {k: v for k, v in query_params.items() if k in self.filter_keys}
         if id:
             filters.update({"id": id})
-            self.filter_keys.update({"id": {"t", "id"}})
+            self.filter_keys.update({"id": ("t", "id", "=")})
         if filters:
             query_parts = []
             for k in filters.keys():
-                table_alias, column_name = self.filter_keys[k]
+                table_alias, column_name, operator = self.filter_keys[k]
                 query_parts.append(
-                    Composed([Identifier(table_alias, column_name), SQL(" = "), Placeholder(k)])
+                    Composed([Identifier(table_alias, column_name), SQL(operator), Placeholder(k)])
                 )
             query = SQL("WHERE ") + SQL(" AND ").join(query_parts)
         return query, filters
