@@ -62,6 +62,18 @@ class Params(BaseModel):
         )
     
     @classmethod
+    def from_local(cls, event: dict) -> "Params":
+        return cls(
+            user = event.get("user"),
+            http_method = event.get("httpMethod"),
+            path = event.get("path"),
+            headers = event.get("headers"),
+            body = event.get("body"),
+            queryParams = event.get("queryParams"),
+            pathParams = event.get("pathParams"),
+        )
+    
+    @classmethod
     def _parse_event_user_id(cls, event: dict) -> UUID:
         try:
             user_id = (

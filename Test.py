@@ -1,10 +1,10 @@
-from app.aws_lambda_handler import lambda_handler
+from app.response_handler import local_handler
 import json
 
 if __name__ == "__main__":
     files = [
         # "transactions_list",
-        "transactions_list_filter"
+        # "transactions_list_filter"
         # "transactions_create", # pending group and attachment
         # "transactions_get",
         # "transactions_edit", # pending group and attachment
@@ -28,8 +28,7 @@ if __name__ == "__main__":
     for filename in files:
         with open(f"test/params/{filename}.json", "r") as fp:
             event = json.load(fp)
-        result = lambda_handler(event, None)
-        # result = json.loads(result)
+        result = local_handler(event, None)
         with open(f"test/results/{filename}.json", "w") as fp:
             result['body'] = json.loads(result['body'])
             json.dump(result, fp)
