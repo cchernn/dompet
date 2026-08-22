@@ -1,3 +1,4 @@
 pydantic==2.9.2
 psycopg2_binary==2.9.9
 boto3==1.35.53
+python-dotenv>=1.0.0

@@ -2,11 +2,12 @@ from ..lib.exceptions import InvalidParamsException, DBConnectionException, DBOp
 from ..lib.params import Params
 from ..utils import config
 
-import os
 import psycopg2
 from psycopg2.sql import SQL, Identifier, Composable, Literal, Placeholder, Composed
 from psycopg2.extras import RealDictCursor
 from abc import ABC
+
+from ..utils.db import connect as db_connect
 
 class BaseDatabase(ABC):
     def __init__(self, params: Params):
@@ -17,19 +18,12 @@ class BaseDatabase(ABC):
         self.valid_keys = []
 
     def connect(self):
-        conn = None
         try:
-            conn = psycopg2.connect(
-                host=os.getenv('DB_POSTGRESQL_HOST'),
-                user=os.getenv('DB_POSTGRESQL_USER'),
-                password=os.getenv('DB_POSTGRESQL_PASSWORD'),
-                dbname=os.getenv('DB_POSTGRESQL_NAME'),
-                port=os.getenv('DB_POSTGRESQL_PORT'),
-            )
+            conn = db_connect()
             print("Connection successful")
         except psycopg2.Error as ex:
             raise DBConnectionException(ex)
-        
+
         return conn
     
     def close(self):

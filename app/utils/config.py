@@ -1,4 +1,7 @@
+import os
+
 # Database Config
+DB_SCHEMA = os.getenv("DB_SCHEMA", "dompet")
 TRANSACTIONS_TABLE_NAME="transactions"
 GROUPS_TABLE_NAME="transaction_groups"
 ATTACHMENTS_TABLE_NAME="attachments"

@@ -1,6 +1,7 @@
 from .lib.params import Params
 from .lib.response import Response, AWSLambdaResponse
 from .main import main
+from .utils.env import load_local_env
 
 from typing import Any
 
@@ -13,5 +14,6 @@ def lambda_handler(event: dict, context: Any) -> AWSLambdaResponse:
     ).model_dump()
 
 def local_handler(event: dict) -> Response:
+    load_local_env()
     params = Params.from_local(event)
     return main(params)
