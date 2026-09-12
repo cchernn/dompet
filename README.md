@@ -64,6 +64,7 @@ Create a `.env` with the following variables
 - `DB_POSTGRESQL_USER`  
 - `GIT_REPO_URL`  
 - `GIT_REPO_BRANCH`  
+- `ATTACHMENTS_S3_BUCKET` — S3 bucket for attachment file storage (bucket + AWS credentials must be provisioned separately; the app only reads the bucket name)  
 
 #### 2. Run migration to set up databases  
 

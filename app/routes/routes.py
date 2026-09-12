@@ -8,6 +8,8 @@ from ..handlers import location
 from ..handlers import account_location
 from ..handlers import tag
 from ..handlers import transaction_tag
+from ..handlers import attachment
+from ..handlers import transaction_attachment
 
 import re
 from typing import Callable, Optional
@@ -55,6 +57,15 @@ routes = {
     (re.compile(rf"^/transactions/{_uuid('transaction_id')}/tags$"), "GET", transaction_tag.list),
     (re.compile(rf"^/transactions/{_uuid('transaction_id')}/tags$"), "POST", transaction_tag.add),
     (re.compile(rf"^/transactions/{_uuid('transaction_id')}/tags/{_uuid('tag_id')}$"), "DELETE", transaction_tag.delete),
+
+    (re.compile(r"^/attachments$"), "GET", attachment.list),
+    (re.compile(r"^/attachments$"), "POST", attachment.add),
+    (re.compile(rf"^/attachments/{_uuid('attachment_id')}$"), "GET", attachment.get),
+    (re.compile(rf"^/attachments/{_uuid('attachment_id')}$"), "DELETE", attachment.delete),
+
+    (re.compile(rf"^/transactions/{_uuid('transaction_id')}/attachments$"), "GET", transaction_attachment.list),
+    (re.compile(rf"^/transactions/{_uuid('transaction_id')}/attachments$"), "POST", transaction_attachment.add),
+    (re.compile(rf"^/transactions/{_uuid('transaction_id')}/attachments/{_uuid('attachment_id')}$"), "DELETE", transaction_attachment.delete),
 }
 
 def match_route(path: str, method: str):

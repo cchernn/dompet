@@ -2,19 +2,50 @@
   "info": {
     "name": "Dompet (local)",
     "_postman_id": "d0mpe7-0000-0000-0000-000000000001",
-    "description": "Local FastAPI/Docker deployment of Dompet. Auth is a plain X-User-Id header (no Cognito locally) — set the `userId` collection variable to a real Cognito UUID that already has data, e.g. 999a05bc-70e1-703d-9eec-df6fd20b8113.\n\nCreate requests have a test script that captures the returned id into a collection variable (accountId, transactionId, locationId, tagId, categoryId) so the folders below can be run top-to-bottom with the Collection Runner.",
+    "description": "Local FastAPI/Docker deployment of Dompet. Auth is a plain X-User-Id header (no Cognito locally) \u2014 set the `userId` collection variable to a real Cognito UUID that already has data, e.g. 999a05bc-70e1-703d-9eec-df6fd20b8113.\n\nCreate requests have a test script that captures the returned id into a collection variable (accountId, transactionId, locationId, tagId, categoryId) so the folders below can be run top-to-bottom with the Collection Runner.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
-    { "key": "base_url", "value": "http://localhost:8000" },
-    { "key": "userId", "value": "999a05bc-70e1-703d-9eec-df6fd20b8113" },
-    { "key": "accountId", "value": "" },
-    { "key": "destinationAccountId", "value": "" },
-    { "key": "categoryId", "value": "" },
-    { "key": "locationId", "value": "" },
-    { "key": "tagId", "value": "" },
-    { "key": "transactionId", "value": "" },
-    { "key": "operationId", "value": "" }
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000"
+    },
+    {
+      "key": "userId",
+      "value": "999a05bc-70e1-703d-9eec-df6fd20b8113"
+    },
+    {
+      "key": "accountId",
+      "value": ""
+    },
+    {
+      "key": "destinationAccountId",
+      "value": ""
+    },
+    {
+      "key": "categoryId",
+      "value": ""
+    },
+    {
+      "key": "locationId",
+      "value": ""
+    },
+    {
+      "key": "tagId",
+      "value": ""
+    },
+    {
+      "key": "transactionId",
+      "value": ""
+    },
+    {
+      "key": "operationId",
+      "value": ""
+    },
+    {
+      "key": "attachmentId",
+      "value": ""
+    }
   ],
   "item": [
     {
@@ -24,12 +55,26 @@
           "name": "List accounts",
           "request": {
             "method": "GET",
-            "header": [{ "key": "X-User-Id", "value": "{{userId}}" }],
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/accounts?include_inactive=false",
-              "host": ["{{base_url}}"],
-              "path": ["accounts"],
-              "query": [{ "key": "include_inactive", "value": "false" }]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "accounts"
+              ],
+              "query": [
+                {
+                  "key": "include_inactive",
+                  "value": "false"
+                }
+              ]
             }
           }
         },
@@ -53,14 +98,28 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "X-User-Id", "value": "{{userId}}" },
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"code\": \"CHECKING\",\n  \"name\": \"Checking Account\",\n  \"description\": \"Created from Postman\"\n}"
             },
-            "url": { "raw": "{{base_url}}/accounts", "host": ["{{base_url}}"], "path": ["accounts"] }
+            "url": {
+              "raw": "{{base_url}}/accounts",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "accounts"
+              ]
+            }
           }
         },
         {
@@ -83,25 +142,49 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "X-User-Id", "value": "{{userId}}" },
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"code\": \"MERCHANT\",\n  \"name\": \"Test Merchant\",\n  \"description\": \"Created from Postman\"\n}"
             },
-            "url": { "raw": "{{base_url}}/accounts", "host": ["{{base_url}}"], "path": ["accounts"] }
+            "url": {
+              "raw": "{{base_url}}/accounts",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "accounts"
+              ]
+            }
           }
         },
         {
           "name": "Get account",
           "request": {
             "method": "GET",
-            "header": [{ "key": "X-User-Id", "value": "{{userId}}" }],
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/accounts/{{accountId}}",
-              "host": ["{{base_url}}"],
-              "path": ["accounts", "{{accountId}}"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "accounts",
+                "{{accountId}}"
+              ]
             }
           }
         },
@@ -110,8 +193,14 @@
           "request": {
             "method": "PUT",
             "header": [
-              { "key": "X-User-Id", "value": "{{userId}}" },
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
@@ -119,8 +208,13 @@
             },
             "url": {
               "raw": "{{base_url}}/accounts/{{accountId}}",
-              "host": ["{{base_url}}"],
-              "path": ["accounts", "{{accountId}}"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "accounts",
+                "{{accountId}}"
+              ]
             }
           }
         },
@@ -128,11 +222,22 @@
           "name": "Deactivate account",
           "request": {
             "method": "POST",
-            "header": [{ "key": "X-User-Id", "value": "{{userId}}" }],
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/accounts/{{accountId}}/deactivate",
-              "host": ["{{base_url}}"],
-              "path": ["accounts", "{{accountId}}", "deactivate"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "accounts",
+                "{{accountId}}",
+                "deactivate"
+              ]
             }
           }
         },
@@ -140,11 +245,22 @@
           "name": "Reactivate account",
           "request": {
             "method": "POST",
-            "header": [{ "key": "X-User-Id", "value": "{{userId}}" }],
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/accounts/{{accountId}}/reactivate",
-              "host": ["{{base_url}}"],
-              "path": ["accounts", "{{accountId}}", "reactivate"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "accounts",
+                "{{accountId}}",
+                "reactivate"
+              ]
             }
           }
         }
@@ -157,8 +273,21 @@
           "name": "List categories",
           "request": {
             "method": "GET",
-            "header": [{ "key": "X-User-Id", "value": "{{userId}}" }],
-            "url": { "raw": "{{base_url}}/categories", "host": ["{{base_url}}"], "path": ["categories"] }
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/categories",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "categories"
+              ]
+            }
           }
         },
         {
@@ -181,14 +310,28 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "X-User-Id", "value": "{{userId}}" },
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Postman Test Category\"\n}"
             },
-            "url": { "raw": "{{base_url}}/categories", "host": ["{{base_url}}"], "path": ["categories"] }
+            "url": {
+              "raw": "{{base_url}}/categories",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "categories"
+              ]
+            }
           }
         }
       ]
@@ -200,8 +343,21 @@
           "name": "List locations",
           "request": {
             "method": "GET",
-            "header": [{ "key": "X-User-Id", "value": "{{userId}}" }],
-            "url": { "raw": "{{base_url}}/locations", "host": ["{{base_url}}"], "path": ["locations"] }
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/locations",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "locations"
+              ]
+            }
           }
         },
         {
@@ -224,25 +380,49 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "X-User-Id", "value": "{{userId}}" },
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"type\": \"physical\",\n  \"name\": \"Postman Test Location\",\n  \"google_maps_url\": \"https://maps.google.com/?q=test\"\n}"
             },
-            "url": { "raw": "{{base_url}}/locations", "host": ["{{base_url}}"], "path": ["locations"] }
+            "url": {
+              "raw": "{{base_url}}/locations",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "locations"
+              ]
+            }
           }
         },
         {
           "name": "Get location",
           "request": {
             "method": "GET",
-            "header": [{ "key": "X-User-Id", "value": "{{userId}}" }],
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/locations/{{locationId}}",
-              "host": ["{{base_url}}"],
-              "path": ["locations", "{{locationId}}"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "locations",
+                "{{locationId}}"
+              ]
             }
           }
         }
@@ -255,11 +435,22 @@
           "name": "List locations for account",
           "request": {
             "method": "GET",
-            "header": [{ "key": "X-User-Id", "value": "{{userId}}" }],
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/accounts/{{accountId}}/locations",
-              "host": ["{{base_url}}"],
-              "path": ["accounts", "{{accountId}}", "locations"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "accounts",
+                "{{accountId}}",
+                "locations"
+              ]
             }
           }
         },
@@ -268,8 +459,14 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "X-User-Id", "value": "{{userId}}" },
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
@@ -277,8 +474,14 @@
             },
             "url": {
               "raw": "{{base_url}}/accounts/{{accountId}}/locations",
-              "host": ["{{base_url}}"],
-              "path": ["accounts", "{{accountId}}", "locations"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "accounts",
+                "{{accountId}}",
+                "locations"
+              ]
             }
           }
         },
@@ -286,11 +489,23 @@
           "name": "Unlink location from account",
           "request": {
             "method": "DELETE",
-            "header": [{ "key": "X-User-Id", "value": "{{userId}}" }],
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/accounts/{{accountId}}/locations/{{locationId}}",
-              "host": ["{{base_url}}"],
-              "path": ["accounts", "{{accountId}}", "locations", "{{locationId}}"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "accounts",
+                "{{accountId}}",
+                "locations",
+                "{{locationId}}"
+              ]
             }
           }
         }
@@ -303,8 +518,21 @@
           "name": "List tags",
           "request": {
             "method": "GET",
-            "header": [{ "key": "X-User-Id", "value": "{{userId}}" }],
-            "url": { "raw": "{{base_url}}/tags", "host": ["{{base_url}}"], "path": ["tags"] }
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/tags",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "tags"
+              ]
+            }
           }
         },
         {
@@ -327,14 +555,28 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "X-User-Id", "value": "{{userId}}" },
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"postman-test\"\n}"
             },
-            "url": { "raw": "{{base_url}}/tags", "host": ["{{base_url}}"], "path": ["tags"] }
+            "url": {
+              "raw": "{{base_url}}/tags",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "tags"
+              ]
+            }
           }
         }
       ]
@@ -346,12 +588,26 @@
           "name": "List transactions",
           "request": {
             "method": "GET",
-            "header": [{ "key": "X-User-Id", "value": "{{userId}}" }],
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/transactions?include_inactive=false",
-              "host": ["{{base_url}}"],
-              "path": ["transactions"],
-              "query": [{ "key": "include_inactive", "value": "false" }]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "transactions"
+              ],
+              "query": [
+                {
+                  "key": "include_inactive",
+                  "value": "false"
+                }
+              ]
             }
           }
         },
@@ -375,25 +631,49 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "X-User-Id", "value": "{{userId}}" },
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"date\": \"2026-09-06\",\n  \"name\": \"Postman Test Transaction\",\n  \"type\": \"expenditure\",\n  \"amount\": \"12.50\",\n  \"currency_code\": \"MYR\",\n  \"category_id\": \"{{categoryId}}\",\n  \"source_account_id\": \"{{accountId}}\",\n  \"destination_account_id\": \"{{destinationAccountId}}\"\n}"
             },
-            "url": { "raw": "{{base_url}}/transactions", "host": ["{{base_url}}"], "path": ["transactions"] }
+            "url": {
+              "raw": "{{base_url}}/transactions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "transactions"
+              ]
+            }
           }
         },
         {
           "name": "Get transaction",
           "request": {
             "method": "GET",
-            "header": [{ "key": "X-User-Id", "value": "{{userId}}" }],
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/transactions/{{transactionId}}",
-              "host": ["{{base_url}}"],
-              "path": ["transactions", "{{transactionId}}"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "transactions",
+                "{{transactionId}}"
+              ]
             }
           }
         },
@@ -402,8 +682,14 @@
           "request": {
             "method": "PUT",
             "header": [
-              { "key": "X-User-Id", "value": "{{userId}}" },
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
@@ -411,8 +697,13 @@
             },
             "url": {
               "raw": "{{base_url}}/transactions/{{transactionId}}",
-              "host": ["{{base_url}}"],
-              "path": ["transactions", "{{transactionId}}"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "transactions",
+                "{{transactionId}}"
+              ]
             }
           }
         },
@@ -435,11 +726,22 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "X-User-Id", "value": "{{userId}}" }],
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/transactions/{{transactionId}}/deactivate",
-              "host": ["{{base_url}}"],
-              "path": ["transactions", "{{transactionId}}", "deactivate"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "transactions",
+                "{{transactionId}}",
+                "deactivate"
+              ]
             }
           }
         },
@@ -447,11 +749,22 @@
           "name": "Reactivate transaction",
           "request": {
             "method": "POST",
-            "header": [{ "key": "X-User-Id", "value": "{{userId}}" }],
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/transactions/{{transactionId}}/reactivate",
-              "host": ["{{base_url}}"],
-              "path": ["transactions", "{{transactionId}}", "reactivate"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "transactions",
+                "{{transactionId}}",
+                "reactivate"
+              ]
             }
           }
         },
@@ -460,8 +773,14 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "X-User-Id", "value": "{{userId}}" },
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
@@ -469,8 +788,14 @@
             },
             "url": {
               "raw": "{{base_url}}/transactions/{{transactionId}}/rollback",
-              "host": ["{{base_url}}"],
-              "path": ["transactions", "{{transactionId}}", "rollback"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "transactions",
+                "{{transactionId}}",
+                "rollback"
+              ]
             }
           }
         }
@@ -483,11 +808,22 @@
           "name": "List tags for transaction",
           "request": {
             "method": "GET",
-            "header": [{ "key": "X-User-Id", "value": "{{userId}}" }],
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/transactions/{{transactionId}}/tags",
-              "host": ["{{base_url}}"],
-              "path": ["transactions", "{{transactionId}}", "tags"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "transactions",
+                "{{transactionId}}",
+                "tags"
+              ]
             }
           }
         },
@@ -496,8 +832,14 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "X-User-Id", "value": "{{userId}}" },
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
@@ -505,8 +847,14 @@
             },
             "url": {
               "raw": "{{base_url}}/transactions/{{transactionId}}/tags",
-              "host": ["{{base_url}}"],
-              "path": ["transactions", "{{transactionId}}", "tags"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "transactions",
+                "{{transactionId}}",
+                "tags"
+              ]
             }
           }
         },
@@ -514,11 +862,220 @@
           "name": "Unlink tag from transaction",
           "request": {
             "method": "DELETE",
-            "header": [{ "key": "X-User-Id", "value": "{{userId}}" }],
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/transactions/{{transactionId}}/tags/{{tagId}}",
-              "host": ["{{base_url}}"],
-              "path": ["transactions", "{{transactionId}}", "tags", "{{tagId}}"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "transactions",
+                "{{transactionId}}",
+                "tags",
+                "{{tagId}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Attachments",
+      "item": [
+        {
+          "name": "List attachments",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/attachments",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "attachments"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create attachment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/attachments",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "attachments"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"filename\": \"postman-test.pdf\",\n  \"content_type\": \"application/pdf\",\n  \"size_bytes\": 1024\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const body = pm.response.json();",
+                  "    if (body.data && body.data.attachment.id) {",
+                  "        pm.collectionVariables.set('attachmentId', body.data.attachment.id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get attachment",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/attachments/{{attachmentId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "attachments",
+                "{{attachmentId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete attachment",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/attachments/{{attachmentId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "attachments",
+                "{{attachmentId}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Transaction Attachments",
+      "item": [
+        {
+          "name": "List transaction attachments",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/transactions/{{transactionId}}/attachments",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "transactions",
+                "{{transactionId}}",
+                "attachments"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Link attachment to transaction",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/transactions/{{transactionId}}/attachments",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "transactions",
+                "{{transactionId}}",
+                "attachments"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"attachment_id\": \"{{attachmentId}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Unlink attachment from transaction",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/transactions/{{transactionId}}/attachments/{{attachmentId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "transactions",
+                "{{transactionId}}",
+                "attachments",
+                "{{attachmentId}}"
+              ]
             }
           }
         }
@@ -532,7 +1089,15 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": { "raw": "{{base_url}}/accounts", "host": ["{{base_url}}"], "path": ["accounts"] }
+            "url": {
+              "raw": "{{base_url}}/accounts",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "accounts"
+              ]
+            }
           }
         }
       ]

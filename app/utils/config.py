@@ -10,3 +10,6 @@ TRANSACTION_GROUP_TABLE_NAME="transaction_transaction_group"
 TRANSACTION_ATTACHMENT_TABLE_NAME="transaction_attachment"
 USER_TRANSACTION_GROUP_TABLE_NAME="user_transaction_group"
 PAGE_SIZE=25
+
+# Attachments storage
+ATTACHMENTS_S3_BUCKET = os.getenv("ATTACHMENTS_S3_BUCKET")
