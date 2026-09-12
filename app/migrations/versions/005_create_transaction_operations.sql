@@ -4,10 +4,11 @@ CREATE TABLE IF NOT EXISTS dompet.transaction_operations (
         REFERENCES dompet.transactions (id) ON DELETE CASCADE,
     user_id UUID NOT NULL,
     operation_type VARCHAR(255) NOT NULL
-        CHECK (operation_type IN ('create', 'update', 'delete')),
+        CHECK (operation_type IN ('CREATE', 'UPDATE', 'DEACTIVATE', 'REACTIVATE', 'ROLLBACK')),
     before_data JSONB,
     after_data JSONB,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    metadata JSONB
 );
 
 CREATE INDEX IF NOT EXISTS idx_transaction_operations_transaction_id

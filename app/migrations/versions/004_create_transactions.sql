@@ -7,8 +7,14 @@ CREATE TABLE IF NOT EXISTS dompet.transactions (
         CHECK (type IN ('expenditure', 'income', 'transfer')),
     amount DECIMAL(10, 2) NOT NULL DEFAULT 0.00
         CHECK (amount >= 0),
-    currency_id UUID,
-    category_id UUID,
+    currency_code CHAR(3) NOT NULL
+        REFERENCES dompet.currencies (code),
+    category_id UUID
+        REFERENCES dompet.categories (id),
+    source_account_id UUID NOT NULL
+        REFERENCES dompet.accounts (id),
+    destination_account_id UUID NOT NULL
+        REFERENCES dompet.accounts (id),
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -21,10 +27,15 @@ CREATE INDEX IF NOT EXISTS idx_transactions_user_active
     ON dompet.transactions (user_id)
     WHERE is_active = TRUE;
 
-CREATE INDEX IF NOT EXISTS idx_transactions_currency_id
-    ON dompet.transactions (currency_id)
-    WHERE currency_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_transactions_currency_code
+    ON dompet.transactions (currency_code);
 
 CREATE INDEX IF NOT EXISTS idx_transactions_category_id
     ON dompet.transactions (category_id)
     WHERE category_id IS NOT NULL;
+
+CREATE INDEX IF NOT EXISTS idx_transactions_source_account_id
+    ON dompet.transactions (source_account_id);
+
+CREATE INDEX IF NOT EXISTS idx_transactions_destination_account_id
+    ON dompet.transactions (destination_account_id);

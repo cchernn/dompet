@@ -1,55 +1,26 @@
 from ..lib.params import Params
 from ..models.location import Location
-from ..db.location import LocationDatabase
-from ..utils.decorators import load_db
-from ..lib.exceptions import InvalidDataException
+from ..db import location as location_db
 
-@load_db(LocationDatabase)
-def list(params: Params, db: LocationDatabase) -> list[Location]:
-    if params.queryParams:
-        query_params = params.queryParams
-        query, vars = db.get_query(query_params=query_params)
-    else:
-        query, vars = db.get_query()
-    data = db.execute_get(query=query, vars=vars)
-    locations = [Location(**t) for t in data]
-    return locations
 
-@load_db(LocationDatabase)
-def get(params: Params, db: LocationDatabase) -> Location:
-    location_id = int(params.pathParams.get("location_id"))
-    query, vars = db.get_query(id=location_id)
-    data = db.execute_get(query=query, vars=vars, many=False)
-    if not data:
-        raise InvalidDataException("Data not available or user does not have authorization to access the data")
-    location = Location(**data)
-    return location
+def _include_inactive(params: Params) -> bool:
+    if not params.queryParams:
+        return False
+    return str(params.queryParams.get("include_inactive", "")).lower() == "true"
 
-@load_db(LocationDatabase)
-def add(params: Params, db: LocationDatabase) -> Location:
-    body = params.body
-    query, vars = db.add_query(body=body)
-    data = db.execute_commit(query=query, vars=vars)
-    location = Location(**data)
-    return location
 
-@load_db(LocationDatabase)
-def edit(params: Params, db: LocationDatabase) -> Location:
-    body = params.body
-    location_id = int(params.pathParams.get("location_id"))
-    query, vars = db.edit_query(id=location_id, body=body)
-    data = db.execute_commit(query=query, vars=vars)
-    if not data:
-        raise InvalidDataException("Data not available or user does not have authorization to access the data")
-    location = Location(**data)
-    return location
+def list(params: Params) -> list[Location]:
+    rows = location_db.list_locations(include_inactive=_include_inactive(params))
+    return [Location(**row) for row in rows]
 
-@load_db(LocationDatabase)
-def delete(params: Params, db: LocationDatabase) -> Location:
-    location_id = int(params.pathParams.get("location_id"))
-    query, vars = db.delete_query(id=location_id)
-    data = db.execute_commit(query=query, vars=vars)
-    if not data:
-        raise InvalidDataException("Data not available or user does not have authorization to access the data")
-    location = Location(**data)
-    return location
+
+def get(params: Params) -> Location:
+    location_id = params.pathParams.get("location_id")
+    row = location_db.get_location(location_id)
+    return Location(**row)
+
+
+def add(params: Params) -> Location:
+    body = params.body or {}
+    row = location_db.create_location(body)
+    return Location(**row)

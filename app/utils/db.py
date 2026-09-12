@@ -1,9 +1,11 @@
 import os
 
 import psycopg2
+from psycopg2.extras import RealDictCursor
 from psycopg2.sql import SQL, Identifier
 
 from . import config
+from ..lib.exceptions import DBOperationException
 
 
 def connect():
@@ -19,3 +21,15 @@ def connect():
             SQL("SET search_path TO {}, public").format(Identifier(config.DB_SCHEMA))
         )
     return conn
+
+
+def run_atomic(work):
+    conn = connect()
+    try:
+        with conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+                return work(cursor)
+    except (psycopg2.DatabaseError, psycopg2.IntegrityError) as ex:
+        raise DBOperationException(ex)
+    finally:
+        conn.close()

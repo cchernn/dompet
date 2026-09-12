@@ -3,6 +3,21 @@ import boto3
 import shutil
 import subprocess
 import argparse
+import zipfile
+
+# Local-deployment-only paths that Lambda never needs (it only runs
+# app/routes + app/response_handler::lambda_handler and their dependencies).
+LAMBDA_ZIP_EXCLUDES = {
+    "Dockerfile",
+    "docker-compose.yml",
+    "requirements-local.txt",
+    "app/server.py",
+    "scripts/deploy",
+    "archive",
+    ".git",
+    ".venv",
+    "__pycache__",
+}
 
 def upload():
     uploadLambda()
@@ -25,7 +40,7 @@ def uploadLambda():
     function_name = "dompet"
 
     subprocess.run(["git", "clone", "--branch", repo_branch, repo_url, repo_dir], check=True)
-    shutil.make_archive("/tmp/dompet", "zip", repo_dir)
+    _zip_lambda_package(repo_dir, zip_path)
 
     session = boto3.Session(profile_name="dompet-user")
     client = session.client("lambda")
@@ -39,6 +54,29 @@ def uploadLambda():
 
     shutil.rmtree(repo_dir)
     os.remove(zip_path)
+
+
+def _zip_lambda_package(repo_dir: str, zip_path: str) -> None:
+    excludes = {os.path.normpath(p) for p in LAMBDA_ZIP_EXCLUDES}
+
+    def is_excluded(rel_path: str) -> bool:
+        return any(
+            rel_path == excluded or rel_path.startswith(excluded + os.sep)
+            for excluded in excludes
+        )
+
+    with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
+        for root, dirs, files in os.walk(repo_dir):
+            rel_root = os.path.relpath(root, repo_dir)
+            dirs[:] = [
+                d for d in dirs
+                if not is_excluded(os.path.normpath(os.path.join(rel_root, d)))
+            ]
+            for filename in files:
+                rel_path = os.path.normpath(os.path.join(rel_root, filename))
+                if is_excluded(rel_path):
+                    continue
+                zf.write(os.path.join(root, filename), arcname=rel_path)
 
 
 def createTransactionTable(db):

@@ -1,0 +1,541 @@
+{
+  "info": {
+    "name": "Dompet (local)",
+    "_postman_id": "d0mpe7-0000-0000-0000-000000000001",
+    "description": "Local FastAPI/Docker deployment of Dompet. Auth is a plain X-User-Id header (no Cognito locally) — set the `userId` collection variable to a real Cognito UUID that already has data, e.g. 999a05bc-70e1-703d-9eec-df6fd20b8113.\n\nCreate requests have a test script that captures the returned id into a collection variable (accountId, transactionId, locationId, tagId, categoryId) so the folders below can be run top-to-bottom with the Collection Runner.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8000" },
+    { "key": "userId", "value": "999a05bc-70e1-703d-9eec-df6fd20b8113" },
+    { "key": "accountId", "value": "" },
+    { "key": "destinationAccountId", "value": "" },
+    { "key": "categoryId", "value": "" },
+    { "key": "locationId", "value": "" },
+    { "key": "tagId", "value": "" },
+    { "key": "transactionId", "value": "" },
+    { "key": "operationId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Accounts",
+      "item": [
+        {
+          "name": "List accounts",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "X-User-Id", "value": "{{userId}}" }],
+            "url": {
+              "raw": "{{base_url}}/accounts?include_inactive=false",
+              "host": ["{{base_url}}"],
+              "path": ["accounts"],
+              "query": [{ "key": "include_inactive", "value": "false" }]
+            }
+          }
+        },
+        {
+          "name": "Create account",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const body = pm.response.json();",
+                  "    if (body.data && body.data.id) {",
+                  "        pm.collectionVariables.set('accountId', body.data.id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-User-Id", "value": "{{userId}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"CHECKING\",\n  \"name\": \"Checking Account\",\n  \"description\": \"Created from Postman\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/accounts", "host": ["{{base_url}}"], "path": ["accounts"] }
+          }
+        },
+        {
+          "name": "Create destination account",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const body = pm.response.json();",
+                  "    if (body.data && body.data.id) {",
+                  "        pm.collectionVariables.set('destinationAccountId', body.data.id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-User-Id", "value": "{{userId}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"MERCHANT\",\n  \"name\": \"Test Merchant\",\n  \"description\": \"Created from Postman\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/accounts", "host": ["{{base_url}}"], "path": ["accounts"] }
+          }
+        },
+        {
+          "name": "Get account",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "X-User-Id", "value": "{{userId}}" }],
+            "url": {
+              "raw": "{{base_url}}/accounts/{{accountId}}",
+              "host": ["{{base_url}}"],
+              "path": ["accounts", "{{accountId}}"]
+            }
+          }
+        },
+        {
+          "name": "Edit account",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "X-User-Id", "value": "{{userId}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Updated from Postman\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/accounts/{{accountId}}",
+              "host": ["{{base_url}}"],
+              "path": ["accounts", "{{accountId}}"]
+            }
+          }
+        },
+        {
+          "name": "Deactivate account",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "X-User-Id", "value": "{{userId}}" }],
+            "url": {
+              "raw": "{{base_url}}/accounts/{{accountId}}/deactivate",
+              "host": ["{{base_url}}"],
+              "path": ["accounts", "{{accountId}}", "deactivate"]
+            }
+          }
+        },
+        {
+          "name": "Reactivate account",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "X-User-Id", "value": "{{userId}}" }],
+            "url": {
+              "raw": "{{base_url}}/accounts/{{accountId}}/reactivate",
+              "host": ["{{base_url}}"],
+              "path": ["accounts", "{{accountId}}", "reactivate"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Categories",
+      "item": [
+        {
+          "name": "List categories",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "X-User-Id", "value": "{{userId}}" }],
+            "url": { "raw": "{{base_url}}/categories", "host": ["{{base_url}}"], "path": ["categories"] }
+          }
+        },
+        {
+          "name": "Create category",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const body = pm.response.json();",
+                  "    if (body.data && body.data.id) {",
+                  "        pm.collectionVariables.set('categoryId', body.data.id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-User-Id", "value": "{{userId}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Postman Test Category\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/categories", "host": ["{{base_url}}"], "path": ["categories"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Locations",
+      "item": [
+        {
+          "name": "List locations",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "X-User-Id", "value": "{{userId}}" }],
+            "url": { "raw": "{{base_url}}/locations", "host": ["{{base_url}}"], "path": ["locations"] }
+          }
+        },
+        {
+          "name": "Create location",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const body = pm.response.json();",
+                  "    if (body.data && body.data.id) {",
+                  "        pm.collectionVariables.set('locationId', body.data.id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-User-Id", "value": "{{userId}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"physical\",\n  \"name\": \"Postman Test Location\",\n  \"google_maps_url\": \"https://maps.google.com/?q=test\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/locations", "host": ["{{base_url}}"], "path": ["locations"] }
+          }
+        },
+        {
+          "name": "Get location",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "X-User-Id", "value": "{{userId}}" }],
+            "url": {
+              "raw": "{{base_url}}/locations/{{locationId}}",
+              "host": ["{{base_url}}"],
+              "path": ["locations", "{{locationId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Account Locations",
+      "item": [
+        {
+          "name": "List locations for account",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "X-User-Id", "value": "{{userId}}" }],
+            "url": {
+              "raw": "{{base_url}}/accounts/{{accountId}}/locations",
+              "host": ["{{base_url}}"],
+              "path": ["accounts", "{{accountId}}", "locations"]
+            }
+          }
+        },
+        {
+          "name": "Link location to account",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-User-Id", "value": "{{userId}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"location_id\": \"{{locationId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/accounts/{{accountId}}/locations",
+              "host": ["{{base_url}}"],
+              "path": ["accounts", "{{accountId}}", "locations"]
+            }
+          }
+        },
+        {
+          "name": "Unlink location from account",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "X-User-Id", "value": "{{userId}}" }],
+            "url": {
+              "raw": "{{base_url}}/accounts/{{accountId}}/locations/{{locationId}}",
+              "host": ["{{base_url}}"],
+              "path": ["accounts", "{{accountId}}", "locations", "{{locationId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tags",
+      "item": [
+        {
+          "name": "List tags",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "X-User-Id", "value": "{{userId}}" }],
+            "url": { "raw": "{{base_url}}/tags", "host": ["{{base_url}}"], "path": ["tags"] }
+          }
+        },
+        {
+          "name": "Create tag",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const body = pm.response.json();",
+                  "    if (body.data && body.data.id) {",
+                  "        pm.collectionVariables.set('tagId', body.data.id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-User-Id", "value": "{{userId}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"postman-test\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/tags", "host": ["{{base_url}}"], "path": ["tags"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Transactions",
+      "item": [
+        {
+          "name": "List transactions",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "X-User-Id", "value": "{{userId}}" }],
+            "url": {
+              "raw": "{{base_url}}/transactions?include_inactive=false",
+              "host": ["{{base_url}}"],
+              "path": ["transactions"],
+              "query": [{ "key": "include_inactive", "value": "false" }]
+            }
+          }
+        },
+        {
+          "name": "Create transaction",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const body = pm.response.json();",
+                  "    if (body.data && body.data.id) {",
+                  "        pm.collectionVariables.set('transactionId', body.data.id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-User-Id", "value": "{{userId}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"date\": \"2026-09-06\",\n  \"name\": \"Postman Test Transaction\",\n  \"type\": \"expenditure\",\n  \"amount\": \"12.50\",\n  \"currency_code\": \"MYR\",\n  \"category_id\": \"{{categoryId}}\",\n  \"source_account_id\": \"{{accountId}}\",\n  \"destination_account_id\": \"{{destinationAccountId}}\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/transactions", "host": ["{{base_url}}"], "path": ["transactions"] }
+          }
+        },
+        {
+          "name": "Get transaction",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "X-User-Id", "value": "{{userId}}" }],
+            "url": {
+              "raw": "{{base_url}}/transactions/{{transactionId}}",
+              "host": ["{{base_url}}"],
+              "path": ["transactions", "{{transactionId}}"]
+            }
+          }
+        },
+        {
+          "name": "Edit transaction",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "X-User-Id", "value": "{{userId}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Postman Test Transaction (edited)\",\n  \"amount\": \"15.00\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/transactions/{{transactionId}}",
+              "host": ["{{base_url}}"],
+              "path": ["transactions", "{{transactionId}}"]
+            }
+          }
+        },
+        {
+          "name": "Deactivate transaction",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const body = pm.response.json();",
+                  "    if (body.data && body.data.id) {",
+                  "        pm.collectionVariables.set('operationId', body.data.id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "X-User-Id", "value": "{{userId}}" }],
+            "url": {
+              "raw": "{{base_url}}/transactions/{{transactionId}}/deactivate",
+              "host": ["{{base_url}}"],
+              "path": ["transactions", "{{transactionId}}", "deactivate"]
+            }
+          }
+        },
+        {
+          "name": "Reactivate transaction",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "X-User-Id", "value": "{{userId}}" }],
+            "url": {
+              "raw": "{{base_url}}/transactions/{{transactionId}}/reactivate",
+              "host": ["{{base_url}}"],
+              "path": ["transactions", "{{transactionId}}", "reactivate"]
+            }
+          }
+        },
+        {
+          "name": "Rollback transaction",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-User-Id", "value": "{{userId}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"operation_id\": \"{{operationId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/transactions/{{transactionId}}/rollback",
+              "host": ["{{base_url}}"],
+              "path": ["transactions", "{{transactionId}}", "rollback"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Transaction Tags",
+      "item": [
+        {
+          "name": "List tags for transaction",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "X-User-Id", "value": "{{userId}}" }],
+            "url": {
+              "raw": "{{base_url}}/transactions/{{transactionId}}/tags",
+              "host": ["{{base_url}}"],
+              "path": ["transactions", "{{transactionId}}", "tags"]
+            }
+          }
+        },
+        {
+          "name": "Link tag to transaction",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-User-Id", "value": "{{userId}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tag_id\": \"{{tagId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/transactions/{{transactionId}}/tags",
+              "host": ["{{base_url}}"],
+              "path": ["transactions", "{{transactionId}}", "tags"]
+            }
+          }
+        },
+        {
+          "name": "Unlink tag from transaction",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "X-User-Id", "value": "{{userId}}" }],
+            "url": {
+              "raw": "{{base_url}}/transactions/{{transactionId}}/tags/{{tagId}}",
+              "host": ["{{base_url}}"],
+              "path": ["transactions", "{{transactionId}}", "tags", "{{tagId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth check",
+      "item": [
+        {
+          "name": "Unauthenticated request (expect 401)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/accounts", "host": ["{{base_url}}"], "path": ["accounts"] }
+          }
+        }
+      ]
+    }
+  ]
+}
