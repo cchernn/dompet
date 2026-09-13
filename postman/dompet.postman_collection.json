@@ -45,6 +45,10 @@
     {
       "key": "attachmentId",
       "value": ""
+    },
+    {
+      "key": "budgetId",
+      "value": ""
     }
   ],
   "item": [
@@ -1075,6 +1079,259 @@
                 "{{transactionId}}",
                 "attachments",
                 "{{attachmentId}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Budgets",
+      "item": [
+        {
+          "name": "List budgets",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/budgets",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "budgets"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create budget",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/budgets",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "budgets"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"postman-test-budget\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const body = pm.response.json();",
+                  "    if (body.data && body.data.id) {",
+                  "        pm.collectionVariables.set('budgetId', body.data.id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get budget",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/budgets/{{budgetId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "budgets",
+                "{{budgetId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "List budget members",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/budgets/{{budgetId}}/members",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "budgets",
+                "{{budgetId}}",
+                "members"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add budget member",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/budgets/{{budgetId}}/members",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "budgets",
+                "{{budgetId}}",
+                "members"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": \"{{userId}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Remove budget member",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/budgets/{{budgetId}}/members/{{userId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "budgets",
+                "{{budgetId}}",
+                "members",
+                "{{userId}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Transaction Budgets",
+      "item": [
+        {
+          "name": "List transaction budgets",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/transactions/{{transactionId}}/budgets",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "transactions",
+                "{{transactionId}}",
+                "budgets"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Link budget to transaction",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/transactions/{{transactionId}}/budgets",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "transactions",
+                "{{transactionId}}",
+                "budgets"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"budget_id\": \"{{budgetId}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Unlink budget from transaction",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/transactions/{{transactionId}}/budgets/{{budgetId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "transactions",
+                "{{transactionId}}",
+                "budgets",
+                "{{budgetId}}"
               ]
             }
           }

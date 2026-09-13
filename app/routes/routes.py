@@ -10,6 +10,9 @@ from ..handlers import tag
 from ..handlers import transaction_tag
 from ..handlers import attachment
 from ..handlers import transaction_attachment
+from ..handlers import budget
+from ..handlers import budget_member
+from ..handlers import transaction_budget
 
 import re
 from typing import Callable, Optional
@@ -66,6 +69,18 @@ routes = {
     (re.compile(rf"^/transactions/{_uuid('transaction_id')}/attachments$"), "GET", transaction_attachment.list),
     (re.compile(rf"^/transactions/{_uuid('transaction_id')}/attachments$"), "POST", transaction_attachment.add),
     (re.compile(rf"^/transactions/{_uuid('transaction_id')}/attachments/{_uuid('attachment_id')}$"), "DELETE", transaction_attachment.delete),
+
+    (re.compile(r"^/budgets$"), "GET", budget.list),
+    (re.compile(r"^/budgets$"), "POST", budget.add),
+    (re.compile(rf"^/budgets/{_uuid('budget_id')}$"), "GET", budget.get),
+
+    (re.compile(rf"^/budgets/{_uuid('budget_id')}/members$"), "GET", budget_member.list),
+    (re.compile(rf"^/budgets/{_uuid('budget_id')}/members$"), "POST", budget_member.add),
+    (re.compile(rf"^/budgets/{_uuid('budget_id')}/members/{_uuid('member_user_id')}$"), "DELETE", budget_member.delete),
+
+    (re.compile(rf"^/transactions/{_uuid('transaction_id')}/budgets$"), "GET", transaction_budget.list),
+    (re.compile(rf"^/transactions/{_uuid('transaction_id')}/budgets$"), "POST", transaction_budget.add),
+    (re.compile(rf"^/transactions/{_uuid('transaction_id')}/budgets/{_uuid('budget_id')}$"), "DELETE", transaction_budget.delete),
 }
 
 def match_route(path: str, method: str):
