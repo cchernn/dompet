@@ -37,8 +37,6 @@ def create_location(body: dict) -> dict:
 
     google_maps_url = body.get("google_maps_url")
     url = body.get("url")
-    if loc_type == "physical" and not google_maps_url:
-        raise InvalidDataException(ValueError("google_maps_url is required for physical locations"))
     if loc_type == "online" and not url:
         raise InvalidDataException(ValueError("url is required for online locations"))
 
