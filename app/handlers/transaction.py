@@ -3,6 +3,7 @@ from ..lib.exceptions import InvalidDataException
 from ..models.transaction import Transaction
 from ..db import transaction as transaction_db
 from ..db import transaction_operation
+from ..utils.pagination import PaginatedResult, parse_pagination
 
 
 def _include_inactive(params: Params) -> bool:
@@ -11,9 +12,10 @@ def _include_inactive(params: Params) -> bool:
     return str(params.queryParams.get("include_inactive", "")).lower() == "true"
 
 
-def list(params: Params) -> list[Transaction]:
-    rows = transaction_db.list_transactions(params.user, include_inactive=_include_inactive(params))
-    return [Transaction(**row) for row in rows]
+def list(params: Params) -> PaginatedResult:
+    page, page_size = parse_pagination(params)
+    rows, metadata = transaction_db.list_transactions(params.user, page, page_size, include_inactive=_include_inactive(params))
+    return PaginatedResult([Transaction(**row) for row in rows], metadata)
 
 
 def get(params: Params) -> Transaction:

@@ -27,12 +27,13 @@ class Response(BaseModel):
     )
 
     @classmethod
-    def generate(cls, data: Optional[Union[list, dict]] = None, message: Optional[str] = None) -> "Response":
+    def generate(cls, data: Optional[Union[list, dict]] = None, message: Optional[str] = None, metadata: Optional[dict] = None) -> "Response":
         success = False if message else True
         return cls(
             success=success,
             data=data,
             message=message,
+            metadata=metadata or {},
         )
 
 class AWSLambdaResponse(BaseModel):

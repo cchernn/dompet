@@ -1,5 +1,5 @@
 from ..lib.exceptions import InvalidDataException
-from ..utils.db import run_atomic
+from ..utils.db import run_atomic, paginate
 
 
 def _require_owned_transaction(cursor, user_id, transaction_id) -> None:
@@ -11,24 +11,21 @@ def _require_owned_transaction(cursor, user_id, transaction_id) -> None:
         raise InvalidDataException(ValueError(f"Transaction not found or not owned by user: {transaction_id}"))
 
 
-def list_transaction_budgets(user_id, transaction_id) -> list[dict]:
+def list_transaction_budgets(user_id, transaction_id, page: int, page_size: int) -> tuple[list[dict], dict]:
     def work(cursor):
         _require_owned_transaction(cursor, user_id, transaction_id)
-        cursor.execute(
-            """
+        query = """
             SELECT b.* FROM dompet.transaction_budgets tb
             JOIN dompet.budgets b ON b.id = tb.budget_id
             WHERE tb.transaction_id = %s
             ORDER BY b.name
-            """,
-            (str(transaction_id),),
-        )
-        return cursor.fetchall()
+        """
+        return paginate(cursor, query, [str(transaction_id)], page, page_size)
 
     return run_atomic(work)
 
 
-def list_budget_transactions(user_id, budget_id) -> list[dict]:
+def list_budget_transactions(user_id, budget_id, page: int, page_size: int) -> tuple[list[dict], dict]:
     """The reverse direction of list_transaction_budgets: a budget's
     transactions, not a transaction's budgets. Returns every linked
     transaction regardless of which member owns it -- a shared budget is
@@ -42,16 +39,13 @@ def list_budget_transactions(user_id, budget_id) -> list[dict]:
         if not cursor.fetchone():
             raise InvalidDataException(ValueError(f"Budget not found or not accessible by user: {budget_id}"))
 
-        cursor.execute(
-            """
+        query = """
             SELECT t.* FROM dompet.transaction_budgets tb
             JOIN dompet.transactions t ON t.id = tb.transaction_id
             WHERE tb.budget_id = %s
             ORDER BY t.date DESC, t.created_at DESC
-            """,
-            (str(budget_id),),
-        )
-        return cursor.fetchall()
+        """
+        return paginate(cursor, query, [str(budget_id)], page, page_size)
 
     return run_atomic(work)
 

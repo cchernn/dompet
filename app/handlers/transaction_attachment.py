@@ -2,13 +2,15 @@ from ..lib.params import Params
 from ..lib.exceptions import InvalidDataException
 from ..models.transaction_attachment import TransactionAttachmentLink
 from ..db import transaction_attachment as transaction_attachment_db
+from ..utils.pagination import PaginatedResult, parse_pagination
 from .attachment import _to_attachment
 
 
-def list(params: Params) -> list:
+def list(params: Params) -> PaginatedResult:
     transaction_id = params.pathParams.get("transaction_id")
-    rows = transaction_attachment_db.list_transaction_attachments(params.user, transaction_id)
-    return [_to_attachment(row) for row in rows]
+    page, page_size = parse_pagination(params)
+    rows, metadata = transaction_attachment_db.list_transaction_attachments(params.user, transaction_id, page, page_size)
+    return PaginatedResult([_to_attachment(row) for row in rows], metadata)
 
 
 def add(params: Params) -> TransactionAttachmentLink:

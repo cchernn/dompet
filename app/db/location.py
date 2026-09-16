@@ -1,18 +1,17 @@
 from ..lib.exceptions import InvalidDataException
-from ..utils.db import run_atomic
+from ..utils.db import run_atomic, paginate
 
 LOCATION_TYPES = ("physical", "online")
 UPDATABLE_FIELDS = ("name", "google_maps_url", "url")
 
 
-def list_locations(include_inactive: bool = False) -> list[dict]:
+def list_locations(page: int, page_size: int, include_inactive: bool = False) -> tuple[list[dict], dict]:
     def work(cursor):
         query = "SELECT * FROM dompet.locations"
         if not include_inactive:
             query += " WHERE is_active = TRUE"
         query += " ORDER BY name"
-        cursor.execute(query)
-        return cursor.fetchall()
+        return paginate(cursor, query, [], page, page_size)
 
     return run_atomic(work)
 

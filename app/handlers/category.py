@@ -1,6 +1,7 @@
 from ..lib.params import Params
 from ..models.category import Category
 from ..db import category as category_db
+from ..utils.pagination import PaginatedResult, parse_pagination
 
 
 def _include_inactive(params: Params) -> bool:
@@ -9,9 +10,10 @@ def _include_inactive(params: Params) -> bool:
     return str(params.queryParams.get("include_inactive", "")).lower() == "true"
 
 
-def list(params: Params) -> list[Category]:
-    rows = category_db.list_categories(params.user, include_inactive=_include_inactive(params))
-    return [Category(**row) for row in rows]
+def list(params: Params) -> PaginatedResult:
+    page, page_size = parse_pagination(params)
+    rows, metadata = category_db.list_categories(params.user, page, page_size, include_inactive=_include_inactive(params))
+    return PaginatedResult([Category(**row) for row in rows], metadata)
 
 
 def add(params: Params) -> Category:

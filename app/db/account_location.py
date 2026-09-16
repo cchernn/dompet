@@ -1,5 +1,5 @@
 from ..lib.exceptions import InvalidDataException
-from ..utils.db import run_atomic
+from ..utils.db import run_atomic, paginate
 
 
 def _require_owned_account(cursor, user_id, account_id) -> None:
@@ -11,19 +11,16 @@ def _require_owned_account(cursor, user_id, account_id) -> None:
         raise InvalidDataException(ValueError(f"Account not found or not owned by user: {account_id}"))
 
 
-def list_account_locations(user_id, account_id) -> list[dict]:
+def list_account_locations(user_id, account_id, page: int, page_size: int) -> tuple[list[dict], dict]:
     def work(cursor):
         _require_owned_account(cursor, user_id, account_id)
-        cursor.execute(
-            """
+        query = """
             SELECT l.* FROM dompet.account_locations al
             JOIN dompet.locations l ON l.id = al.location_id
             WHERE al.account_id = %s
             ORDER BY l.name
-            """,
-            (str(account_id),),
-        )
-        return cursor.fetchall()
+        """
+        return paginate(cursor, query, [str(account_id)], page, page_size)
 
     return run_atomic(work)
 

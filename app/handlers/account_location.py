@@ -3,12 +3,14 @@ from ..lib.exceptions import InvalidDataException
 from ..models.location import Location
 from ..models.account_location import AccountLocationLink
 from ..db import account_location as account_location_db
+from ..utils.pagination import PaginatedResult, parse_pagination
 
 
-def list(params: Params) -> list[Location]:
+def list(params: Params) -> PaginatedResult:
     account_id = params.pathParams.get("account_id")
-    rows = account_location_db.list_account_locations(params.user, account_id)
-    return [Location(**row) for row in rows]
+    page, page_size = parse_pagination(params)
+    rows, metadata = account_location_db.list_account_locations(params.user, account_id, page, page_size)
+    return PaginatedResult([Location(**row) for row in rows], metadata)
 
 
 def add(params: Params) -> AccountLocationLink:

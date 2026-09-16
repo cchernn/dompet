@@ -1,18 +1,17 @@
 from ..lib.exceptions import InvalidDataException
-from ..utils.db import run_atomic
+from ..utils.db import run_atomic, paginate
 
 UPDATABLE_FIELDS = ("name", "parent_id")
 
 
-def list_categories(user_id, include_inactive: bool = False) -> list[dict]:
+def list_categories(user_id, page: int, page_size: int, include_inactive: bool = False) -> tuple[list[dict], dict]:
     def work(cursor):
         query = "SELECT * FROM dompet.categories WHERE (user_id = %s OR user_id IS NULL)"
         params = [str(user_id)]
         if not include_inactive:
             query += " AND is_active = TRUE"
         query += " ORDER BY parent_id NULLS FIRST, name"
-        cursor.execute(query, params)
-        return cursor.fetchall()
+        return paginate(cursor, query, params, page, page_size)
 
     return run_atomic(work)
 

@@ -1,10 +1,10 @@
 from ..lib.exceptions import InvalidDataException
-from ..utils.db import run_atomic
+from ..utils.db import run_atomic, paginate
 
 UPDATABLE_FIELDS = ("name",)
 
 
-def list_budgets(user_id, include_inactive: bool = False) -> list[dict]:
+def list_budgets(user_id, page: int, page_size: int, include_inactive: bool = False) -> tuple[list[dict], dict]:
     def work(cursor):
         query = """
             SELECT b.* FROM dompet.budgets b
@@ -15,8 +15,7 @@ def list_budgets(user_id, include_inactive: bool = False) -> list[dict]:
         if not include_inactive:
             query += " AND b.is_active = TRUE"
         query += " ORDER BY b.name"
-        cursor.execute(query, params)
-        return cursor.fetchall()
+        return paginate(cursor, query, params, page, page_size)
 
     return run_atomic(work)
 

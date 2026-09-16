@@ -2,12 +2,14 @@ from ..lib.params import Params
 from ..lib.exceptions import InvalidDataException
 from ..models.budget_member import BudgetMember
 from ..db import budget_member as budget_member_db
+from ..utils.pagination import PaginatedResult, parse_pagination
 
 
-def list(params: Params) -> list[BudgetMember]:
+def list(params: Params) -> PaginatedResult:
     budget_id = params.pathParams.get("budget_id")
-    rows = budget_member_db.list_members(params.user, budget_id)
-    return [BudgetMember(**row) for row in rows]
+    page, page_size = parse_pagination(params)
+    rows, metadata = budget_member_db.list_members(params.user, budget_id, page, page_size)
+    return PaginatedResult([BudgetMember(**row) for row in rows], metadata)
 
 
 def add(params: Params) -> BudgetMember:

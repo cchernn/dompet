@@ -1,20 +1,19 @@
 import uuid
 
 from ..lib.exceptions import InvalidDataException
-from ..utils.db import run_atomic
+from ..utils.db import run_atomic, paginate
 
 UPDATABLE_FIELDS = ("filename", "content_type")
 
 
-def list_attachments(user_id, include_inactive: bool = False) -> list[dict]:
+def list_attachments(user_id, page: int, page_size: int, include_inactive: bool = False) -> tuple[list[dict], dict]:
     def work(cursor):
         query = "SELECT * FROM dompet.attachments WHERE user_id = %s"
         params = [str(user_id)]
         if not include_inactive:
             query += " AND is_active = TRUE"
         query += " ORDER BY created_at DESC"
-        cursor.execute(query, params)
-        return cursor.fetchall()
+        return paginate(cursor, query, params, page, page_size)
 
     return run_atomic(work)
 

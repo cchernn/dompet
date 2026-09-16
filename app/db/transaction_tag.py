@@ -1,5 +1,5 @@
 from ..lib.exceptions import InvalidDataException
-from ..utils.db import run_atomic
+from ..utils.db import run_atomic, paginate
 
 
 def _require_owned_transaction(cursor, user_id, transaction_id) -> None:
@@ -11,19 +11,16 @@ def _require_owned_transaction(cursor, user_id, transaction_id) -> None:
         raise InvalidDataException(ValueError(f"Transaction not found or not owned by user: {transaction_id}"))
 
 
-def list_transaction_tags(user_id, transaction_id) -> list[dict]:
+def list_transaction_tags(user_id, transaction_id, page: int, page_size: int) -> tuple[list[dict], dict]:
     def work(cursor):
         _require_owned_transaction(cursor, user_id, transaction_id)
-        cursor.execute(
-            """
+        query = """
             SELECT t.* FROM dompet.transaction_tags tt
             JOIN dompet.tags t ON t.id = tt.tag_id
             WHERE tt.transaction_id = %s
             ORDER BY t.name
-            """,
-            (str(transaction_id),),
-        )
-        return cursor.fetchall()
+        """
+        return paginate(cursor, query, [str(transaction_id)], page, page_size)
 
     return run_atomic(work)
 

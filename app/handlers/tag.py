@@ -1,6 +1,7 @@
 from ..lib.params import Params
 from ..models.tag import Tag
 from ..db import tag as tag_db
+from ..utils.pagination import PaginatedResult, parse_pagination
 
 
 def _include_inactive(params: Params) -> bool:
@@ -9,9 +10,10 @@ def _include_inactive(params: Params) -> bool:
     return str(params.queryParams.get("include_inactive", "")).lower() == "true"
 
 
-def list(params: Params) -> list[Tag]:
-    rows = tag_db.list_tags(params.user, include_inactive=_include_inactive(params))
-    return [Tag(**row) for row in rows]
+def list(params: Params) -> PaginatedResult:
+    page, page_size = parse_pagination(params)
+    rows, metadata = tag_db.list_tags(params.user, page, page_size, include_inactive=_include_inactive(params))
+    return PaginatedResult([Tag(**row) for row in rows], metadata)
 
 
 def add(params: Params) -> Tag:

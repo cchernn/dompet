@@ -1,5 +1,5 @@
 from ..lib.exceptions import InvalidDataException
-from ..utils.db import run_atomic
+from ..utils.db import run_atomic, paginate
 
 
 def _require_owner(cursor, user_id, budget_id) -> dict:
@@ -13,7 +13,7 @@ def _require_owner(cursor, user_id, budget_id) -> dict:
     return budget
 
 
-def list_members(user_id, budget_id) -> list[dict]:
+def list_members(user_id, budget_id, page: int, page_size: int) -> tuple[list[dict], dict]:
     def work(cursor):
         cursor.execute(
             "SELECT 1 FROM dompet.budget_members WHERE budget_id = %s AND user_id = %s",
@@ -22,11 +22,8 @@ def list_members(user_id, budget_id) -> list[dict]:
         if not cursor.fetchone():
             raise InvalidDataException(ValueError(f"Budget not found or not accessible by user: {budget_id}"))
 
-        cursor.execute(
-            "SELECT budget_id, user_id, created_at FROM dompet.budget_members WHERE budget_id = %s ORDER BY created_at",
-            (str(budget_id),),
-        )
-        return cursor.fetchall()
+        query = "SELECT budget_id, user_id, created_at FROM dompet.budget_members WHERE budget_id = %s ORDER BY created_at"
+        return paginate(cursor, query, [str(budget_id)], page, page_size)
 
     return run_atomic(work)
 

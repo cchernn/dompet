@@ -1,6 +1,7 @@
 from ..lib.params import Params
 from ..models.account import Account
 from ..db import account as account_db
+from ..utils.pagination import PaginatedResult, parse_pagination
 
 
 def _include_inactive(params: Params) -> bool:
@@ -9,9 +10,10 @@ def _include_inactive(params: Params) -> bool:
     return str(params.queryParams.get("include_inactive", "")).lower() == "true"
 
 
-def list(params: Params) -> list[Account]:
-    rows = account_db.list_accounts(params.user, include_inactive=_include_inactive(params))
-    return [Account(**row) for row in rows]
+def list(params: Params) -> PaginatedResult:
+    page, page_size = parse_pagination(params)
+    rows, metadata = account_db.list_accounts(params.user, page, page_size, include_inactive=_include_inactive(params))
+    return PaginatedResult([Account(**row) for row in rows], metadata)
 
 
 def get(params: Params) -> Account:

@@ -1,10 +1,9 @@
-from typing import List
-
 from ..lib.params import Params
 from ..models.budget import Budget
 from ..models.transaction import Transaction
 from ..db import budget as budget_db
 from ..db import transaction_budget as transaction_budget_db
+from ..utils.pagination import PaginatedResult, parse_pagination
 
 
 def _include_inactive(params: Params) -> bool:
@@ -13,9 +12,10 @@ def _include_inactive(params: Params) -> bool:
     return str(params.queryParams.get("include_inactive", "")).lower() == "true"
 
 
-def list(params: Params) -> list[Budget]:
-    rows = budget_db.list_budgets(params.user, include_inactive=_include_inactive(params))
-    return [Budget(**row) for row in rows]
+def list(params: Params) -> PaginatedResult:
+    page, page_size = parse_pagination(params)
+    rows, metadata = budget_db.list_budgets(params.user, page, page_size, include_inactive=_include_inactive(params))
+    return PaginatedResult([Budget(**row) for row in rows], metadata)
 
 
 def get(params: Params) -> Budget:
@@ -43,7 +43,8 @@ def delete(params: Params) -> Budget:
     return Budget(**row)
 
 
-def list_transactions(params: Params) -> List[Transaction]:
+def list_transactions(params: Params) -> PaginatedResult:
     budget_id = params.pathParams.get("budget_id")
-    rows = transaction_budget_db.list_budget_transactions(params.user, budget_id)
-    return [Transaction(**row) for row in rows]
+    page, page_size = parse_pagination(params)
+    rows, metadata = transaction_budget_db.list_budget_transactions(params.user, budget_id, page, page_size)
+    return PaginatedResult([Transaction(**row) for row in rows], metadata)

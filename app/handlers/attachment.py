@@ -3,6 +3,7 @@ from ..lib.exceptions import InvalidDataException
 from ..models.attachment import Attachment
 from ..db import attachment as attachment_db
 from ..utils import s3
+from ..utils.pagination import PaginatedResult, parse_pagination
 
 
 def _to_attachment(row: dict) -> Attachment:
@@ -18,9 +19,10 @@ def _include_inactive(params: Params) -> bool:
     return str(params.queryParams.get("include_inactive", "")).lower() == "true"
 
 
-def list(params: Params) -> list[Attachment]:
-    rows = attachment_db.list_attachments(params.user, include_inactive=_include_inactive(params))
-    return [_to_attachment(row) for row in rows]
+def list(params: Params) -> PaginatedResult:
+    page, page_size = parse_pagination(params)
+    rows, metadata = attachment_db.list_attachments(params.user, page, page_size, include_inactive=_include_inactive(params))
+    return PaginatedResult([_to_attachment(row) for row in rows], metadata)
 
 
 def get(params: Params) -> Attachment:

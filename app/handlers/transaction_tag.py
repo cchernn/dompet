@@ -3,12 +3,14 @@ from ..lib.exceptions import InvalidDataException
 from ..models.tag import Tag
 from ..models.transaction_tag import TransactionTagLink
 from ..db import transaction_tag as transaction_tag_db
+from ..utils.pagination import PaginatedResult, parse_pagination
 
 
-def list(params: Params) -> list[Tag]:
+def list(params: Params) -> PaginatedResult:
     transaction_id = params.pathParams.get("transaction_id")
-    rows = transaction_tag_db.list_transaction_tags(params.user, transaction_id)
-    return [Tag(**row) for row in rows]
+    page, page_size = parse_pagination(params)
+    rows, metadata = transaction_tag_db.list_transaction_tags(params.user, transaction_id, page, page_size)
+    return PaginatedResult([Tag(**row) for row in rows], metadata)
 
 
 def add(params: Params) -> TransactionTagLink:

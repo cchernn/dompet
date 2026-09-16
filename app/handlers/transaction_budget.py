@@ -3,12 +3,14 @@ from ..lib.exceptions import InvalidDataException
 from ..models.budget import Budget
 from ..models.transaction_budget import TransactionBudgetLink
 from ..db import transaction_budget as transaction_budget_db
+from ..utils.pagination import PaginatedResult, parse_pagination
 
 
-def list(params: Params) -> list[Budget]:
+def list(params: Params) -> PaginatedResult:
     transaction_id = params.pathParams.get("transaction_id")
-    rows = transaction_budget_db.list_transaction_budgets(params.user, transaction_id)
-    return [Budget(**row) for row in rows]
+    page, page_size = parse_pagination(params)
+    rows, metadata = transaction_budget_db.list_transaction_budgets(params.user, transaction_id, page, page_size)
+    return PaginatedResult([Budget(**row) for row in rows], metadata)
 
 
 def add(params: Params) -> TransactionBudgetLink:
