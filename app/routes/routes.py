@@ -45,10 +45,14 @@ routes = {
 
     (re.compile(r"^/categories$"), "GET", category.list),
     (re.compile(r"^/categories$"), "POST", category.add),
+    (re.compile(rf"^/categories/{_uuid('category_id')}$"), "PUT", category.edit),
+    (re.compile(rf"^/categories/{_uuid('category_id')}$"), "DELETE", category.delete),
 
     (re.compile(r"^/locations$"), "GET", location.list),
     (re.compile(r"^/locations$"), "POST", location.add),
     (re.compile(rf"^/locations/{_uuid('location_id')}$"), "GET", location.get),
+    (re.compile(rf"^/locations/{_uuid('location_id')}$"), "PUT", location.edit),
+    (re.compile(rf"^/locations/{_uuid('location_id')}$"), "DELETE", location.delete),
 
     (re.compile(rf"^/accounts/{_uuid('account_id')}/locations$"), "GET", account_location.list),
     (re.compile(rf"^/accounts/{_uuid('account_id')}/locations$"), "POST", account_location.add),
@@ -56,6 +60,8 @@ routes = {
 
     (re.compile(r"^/tags$"), "GET", tag.list),
     (re.compile(r"^/tags$"), "POST", tag.add),
+    (re.compile(rf"^/tags/{_uuid('tag_id')}$"), "PUT", tag.edit),
+    (re.compile(rf"^/tags/{_uuid('tag_id')}$"), "DELETE", tag.delete),
 
     (re.compile(rf"^/transactions/{_uuid('transaction_id')}/tags$"), "GET", transaction_tag.list),
     (re.compile(rf"^/transactions/{_uuid('transaction_id')}/tags$"), "POST", transaction_tag.add),
@@ -64,6 +70,7 @@ routes = {
     (re.compile(r"^/attachments$"), "GET", attachment.list),
     (re.compile(r"^/attachments$"), "POST", attachment.add),
     (re.compile(rf"^/attachments/{_uuid('attachment_id')}$"), "GET", attachment.get),
+    (re.compile(rf"^/attachments/{_uuid('attachment_id')}$"), "PUT", attachment.edit),
     (re.compile(rf"^/attachments/{_uuid('attachment_id')}$"), "DELETE", attachment.delete),
 
     (re.compile(rf"^/transactions/{_uuid('transaction_id')}/attachments$"), "GET", transaction_attachment.list),
@@ -73,6 +80,10 @@ routes = {
     (re.compile(r"^/budgets$"), "GET", budget.list),
     (re.compile(r"^/budgets$"), "POST", budget.add),
     (re.compile(rf"^/budgets/{_uuid('budget_id')}$"), "GET", budget.get),
+    (re.compile(rf"^/budgets/{_uuid('budget_id')}$"), "PUT", budget.edit),
+    (re.compile(rf"^/budgets/{_uuid('budget_id')}$"), "DELETE", budget.delete),
+
+    (re.compile(rf"^/budgets/{_uuid('budget_id')}/transactions$"), "GET", budget.list_transactions),
 
     (re.compile(rf"^/budgets/{_uuid('budget_id')}/members$"), "GET", budget_member.list),
     (re.compile(rf"^/budgets/{_uuid('budget_id')}/members$"), "POST", budget_member.add),

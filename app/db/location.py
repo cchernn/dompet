@@ -2,6 +2,7 @@ from ..lib.exceptions import InvalidDataException
 from ..utils.db import run_atomic
 
 LOCATION_TYPES = ("physical", "online")
+UPDATABLE_FIELDS = ("name", "google_maps_url", "url")
 
 
 def list_locations(include_inactive: bool = False) -> list[dict]:
@@ -54,5 +55,43 @@ def create_location(body: dict) -> dict:
             ),
         )
         return cursor.fetchone()
+
+    return run_atomic(work)
+
+
+def update_location(location_id, body: dict) -> dict:
+    patch = {k: v for k, v in body.items() if k in UPDATABLE_FIELDS}
+    if not patch:
+        raise InvalidDataException(ValueError("No updatable fields provided"))
+
+    def work(cursor):
+        cursor.execute("SELECT * FROM dompet.locations WHERE id = %s FOR UPDATE", (str(location_id),))
+        existing = cursor.fetchone()
+        if not existing:
+            raise InvalidDataException(ValueError(f"Location not found: {location_id}"))
+
+        if existing["type"] == "online" and not patch.get("url", existing["url"]):
+            raise InvalidDataException(ValueError("url is required for online locations"))
+
+        set_clause = ", ".join(f"{field} = %s" for field in patch)
+        cursor.execute(
+            f"UPDATE dompet.locations SET {set_clause}, updated_at = NOW() WHERE id = %s RETURNING *",
+            (*patch.values(), str(location_id)),
+        )
+        return cursor.fetchone()
+
+    return run_atomic(work)
+
+
+def delete_location(location_id) -> dict:
+    def work(cursor):
+        cursor.execute(
+            "UPDATE dompet.locations SET is_active = FALSE, updated_at = NOW() WHERE id = %s RETURNING *",
+            (str(location_id),),
+        )
+        row = cursor.fetchone()
+        if not row:
+            raise InvalidDataException(ValueError(f"Location not found: {location_id}"))
+        return row
 
     return run_atomic(work)

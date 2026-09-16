@@ -3,6 +3,8 @@ import uuid
 from ..lib.exceptions import InvalidDataException
 from ..utils.db import run_atomic
 
+UPDATABLE_FIELDS = ("filename", "content_type")
+
 
 def list_attachments(user_id, include_inactive: bool = False) -> list[dict]:
     def work(cursor):
@@ -46,6 +48,32 @@ def create_attachment_record(user_id, filename: str, content_type: str = None, s
             RETURNING *
             """,
             (str(attachment_id), str(user_id), filename, content_type, size_bytes, storage_key),
+        )
+        return cursor.fetchone()
+
+    return run_atomic(work)
+
+
+def update_attachment(user_id, attachment_id, body: dict) -> dict:
+    """Metadata-only rename (filename/content_type) -- the underlying S3
+    object at storage_key is left untouched, so the presigned URLs
+    generated from it keep working."""
+    patch = {k: v for k, v in body.items() if k in UPDATABLE_FIELDS}
+    if not patch:
+        raise InvalidDataException(ValueError("No updatable fields provided"))
+
+    def work(cursor):
+        cursor.execute(
+            "SELECT 1 FROM dompet.attachments WHERE id = %s AND user_id = %s FOR UPDATE",
+            (str(attachment_id), str(user_id)),
+        )
+        if not cursor.fetchone():
+            raise InvalidDataException(ValueError(f"Attachment not found or not owned by user: {attachment_id}"))
+
+        set_clause = ", ".join(f"{field} = %s" for field in patch)
+        cursor.execute(
+            f"UPDATE dompet.attachments SET {set_clause}, updated_at = NOW() WHERE id = %s AND user_id = %s RETURNING *",
+            (*patch.values(), str(attachment_id), str(user_id)),
         )
         return cursor.fetchone()
 

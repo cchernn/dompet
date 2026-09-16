@@ -46,6 +46,13 @@ def add(params: Params) -> dict:
     }
 
 
+def edit(params: Params) -> Attachment:
+    attachment_id = params.pathParams.get("attachment_id")
+    body = params.body or {}
+    row = attachment_db.update_attachment(params.user, attachment_id, body)
+    return _to_attachment(row)
+
+
 def delete(params: Params) -> dict:
     attachment_id = params.pathParams.get("attachment_id")
     row = attachment_db.delete_attachment(params.user, attachment_id)

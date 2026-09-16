@@ -18,3 +18,16 @@ def add(params: Params) -> Tag:
     body = params.body or {}
     row = tag_db.create_tag(params.user, body)
     return Tag(**row)
+
+
+def edit(params: Params) -> Tag:
+    tag_id = params.pathParams.get("tag_id")
+    body = params.body or {}
+    row = tag_db.update_tag(params.user, tag_id, body)
+    return Tag(**row)
+
+
+def delete(params: Params) -> Tag:
+    tag_id = params.pathParams.get("tag_id")
+    row = tag_db.delete_tag(params.user, tag_id)
+    return Tag(**row)

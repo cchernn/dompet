@@ -28,6 +28,34 @@ def list_transaction_budgets(user_id, transaction_id) -> list[dict]:
     return run_atomic(work)
 
 
+def list_budget_transactions(user_id, budget_id) -> list[dict]:
+    """The reverse direction of list_transaction_budgets: a budget's
+    transactions, not a transaction's budgets. Returns every linked
+    transaction regardless of which member owns it -- a shared budget is
+    meant to show the group's combined spending, not just the caller's own
+    transactions."""
+    def work(cursor):
+        cursor.execute(
+            "SELECT 1 FROM dompet.budget_members WHERE budget_id = %s AND user_id = %s",
+            (str(budget_id), str(user_id)),
+        )
+        if not cursor.fetchone():
+            raise InvalidDataException(ValueError(f"Budget not found or not accessible by user: {budget_id}"))
+
+        cursor.execute(
+            """
+            SELECT t.* FROM dompet.transaction_budgets tb
+            JOIN dompet.transactions t ON t.id = tb.transaction_id
+            WHERE tb.budget_id = %s
+            ORDER BY t.date DESC, t.created_at DESC
+            """,
+            (str(budget_id),),
+        )
+        return cursor.fetchall()
+
+    return run_atomic(work)
+
+
 def link_budget(user_id, transaction_id, budget_id) -> dict:
     def work(cursor):
         _require_owned_transaction(cursor, user_id, transaction_id)

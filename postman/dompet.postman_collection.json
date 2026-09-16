@@ -337,6 +337,58 @@
               ]
             }
           }
+        },
+        {
+          "name": "Edit category",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/categories/{{categoryId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "categories",
+                "{{categoryId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"postman-test-renamed\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete category",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/categories/{{categoryId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "categories",
+                "{{categoryId}}"
+              ]
+            }
+          }
         }
       ]
     },
@@ -412,6 +464,58 @@
           "name": "Get location",
           "request": {
             "method": "GET",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/locations/{{locationId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "locations",
+                "{{locationId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Edit location",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/locations/{{locationId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "locations",
+                "{{locationId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"postman-test-location-renamed\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete location",
+          "request": {
+            "method": "DELETE",
             "header": [
               {
                 "key": "X-User-Id",
@@ -579,6 +683,58 @@
               ],
               "path": [
                 "tags"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Edit tag",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/tags/{{tagId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "tags",
+                "{{tagId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"postman-test-renamed\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete tag",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/tags/{{tagId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "tags",
+                "{{tagId}}"
               ]
             }
           }
@@ -979,6 +1135,36 @@
           }
         },
         {
+          "name": "Edit attachment",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/attachments/{{attachmentId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "attachments",
+                "{{attachmentId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"filename\": \"renamed.pdf\"\n}"
+            }
+          }
+        },
+        {
           "name": "Delete attachment",
           "request": {
             "method": "DELETE",
@@ -1171,6 +1357,81 @@
               "path": [
                 "budgets",
                 "{{budgetId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Edit budget",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/budgets/{{budgetId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "budgets",
+                "{{budgetId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"postman-test-budget-renamed\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete budget",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/budgets/{{budgetId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "budgets",
+                "{{budgetId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "List budget transactions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/budgets/{{budgetId}}/transactions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "budgets",
+                "{{budgetId}}",
+                "transactions"
               ]
             }
           }

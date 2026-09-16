@@ -1,6 +1,10 @@
+from typing import List
+
 from ..lib.params import Params
 from ..models.budget import Budget
+from ..models.transaction import Transaction
 from ..db import budget as budget_db
+from ..db import transaction_budget as transaction_budget_db
 
 
 def _include_inactive(params: Params) -> bool:
@@ -24,3 +28,22 @@ def add(params: Params) -> Budget:
     body = params.body or {}
     row = budget_db.create_budget(params.user, body)
     return Budget(**row)
+
+
+def edit(params: Params) -> Budget:
+    budget_id = params.pathParams.get("budget_id")
+    body = params.body or {}
+    row = budget_db.update_budget(params.user, budget_id, body)
+    return Budget(**row)
+
+
+def delete(params: Params) -> Budget:
+    budget_id = params.pathParams.get("budget_id")
+    row = budget_db.delete_budget(params.user, budget_id)
+    return Budget(**row)
+
+
+def list_transactions(params: Params) -> List[Transaction]:
+    budget_id = params.pathParams.get("budget_id")
+    rows = transaction_budget_db.list_budget_transactions(params.user, budget_id)
+    return [Transaction(**row) for row in rows]
