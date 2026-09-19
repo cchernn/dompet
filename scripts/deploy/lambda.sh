@@ -3,13 +3,13 @@
 # GIT_REPO_URL@GIT_REPO_BRANCH fresh and pushes it as the function code for
 # the "dompet" Lambda function under the "dompet-user" AWS profile.
 #
-# Required env vars: GIT_REPO_URL, GIT_REPO_BRANCH.
+# Required: GIT_REPO_URL and GIT_REPO_BRANCH, either already exported in
+# the shell or present in .env -- uploadLambda() loads .env itself, so no
+# shell-level check is done here (a hard require at this point would block
+# the common case of setting them only in .env).
 # Requires AWS credentials configured for the "dompet-user" profile.
 set -euo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")/../.."
-
-: "${GIT_REPO_URL:?GIT_REPO_URL must be set}"
-: "${GIT_REPO_BRANCH:?GIT_REPO_BRANCH must be set}"
 
 python3 Setup.py --command upload

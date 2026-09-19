@@ -5,6 +5,8 @@ import subprocess
 import argparse
 import zipfile
 
+from app.utils.env import load_local_env
+
 # Local-deployment-only paths that Lambda never needs (it only runs
 # app/routes + app/response_handler::lambda_handler and their dependencies).
 LAMBDA_ZIP_EXCLUDES = {
@@ -33,6 +35,7 @@ def migrate():
     createTransactionAttachmentTable(db)
 
 def uploadLambda():
+    load_local_env()
     repo_url = os.getenv('GIT_REPO_URL')
     repo_branch = os.getenv('GIT_REPO_BRANCH')
     repo_dir = "/tmp/dompet"
