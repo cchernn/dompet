@@ -88,6 +88,86 @@ inspecting any AWS account:
      https://<rest-api-id>.execute-api.<region>.amazonaws.com/prod/accounts
    ```
 
+## Manual setup via the AWS Console (no CLI import)
+
+If `dompet-user` doesn't have the API Gateway CLI permissions needed for
+`put-rest-api`/`import-rest-api` and you don't want to change that, the
+same result can be built by hand in the console. It's the same ~52
+method configurations either way; this just does it through clicking
+instead of one file upload.
+
+### One-time setup
+
+1. **Authorizer**: your REST API → **Authorizers** → **Create New Authorizer**
+   → Type: **Cognito** → select your User Pool → Token Source: `Authorization`.
+
+### Per resource path (repeat for all 30 rows below)
+
+1. **Actions → Create Resource.** For a path segment in `{curly braces}`
+   (e.g. `{account_id}`), type it exactly like that as the resource path —
+   the console treats `{name}` as a path parameter automatically, same as
+   the OpenAPI spec does.
+2. **For each method** listed for that path: **Actions → Create Method** →
+   pick GET/POST/PUT/DELETE → Integration type **Lambda Function** → check
+   **Use Lambda Proxy integration** → Lambda function: `dompet` (same
+   region) → Save. The console will prompt to add Lambda's resource
+   policy permission automatically the first time — accept it (this
+   replaces the CLI's `lambda add-permission` step, and only needs
+   granting once per REST API, not once per method).
+3. **Method Request** (for each method) → **Authorization** → select the
+   Cognito authorizer created above.
+4. **After all of that resource's methods are added**: **Actions → Enable
+   CORS** → accept the defaults, or set Access-Control-Allow-Headers to
+   `Content-Type,Authorization` to match `app/lib/response.py`'s existing
+   CORS headers exactly. Re-run this any time you add another method to
+   an already-CORS-enabled resource, since it needs to know about every
+   method to list them in `Access-Control-Allow-Methods`.
+
+### All 30 paths + methods
+
+```
+/accounts                                                    GET POST
+/accounts/{account_id}                                       GET PUT
+/accounts/{account_id}/deactivate                            POST
+/accounts/{account_id}/locations                             GET POST
+/accounts/{account_id}/locations/{location_id}                    DELETE
+/accounts/{account_id}/reactivate                            POST
+/attachments                                                 GET POST
+/attachments/{attachment_id}                            DELETE GET PUT
+/budgets                                                     GET POST
+/budgets/{budget_id}                                    DELETE GET PUT
+/budgets/{budget_id}/members                                 GET POST
+/budgets/{budget_id}/members/{member_user_id}                    DELETE
+/budgets/{budget_id}/transactions                            GET
+/categories                                                  GET POST
+/categories/{category_id}                                DELETE PUT
+/locations                                                   GET POST
+/locations/{location_id}                                DELETE GET PUT
+/tags                                                        GET POST
+/tags/{tag_id}                                           DELETE PUT
+/transactions                                                GET POST
+/transactions/{transaction_id}                               GET PUT
+/transactions/{transaction_id}/attachments                   GET POST
+/transactions/{transaction_id}/attachments/{attachment_id}       DELETE
+/transactions/{transaction_id}/budgets                       GET POST
+/transactions/{transaction_id}/budgets/{budget_id}               DELETE
+/transactions/{transaction_id}/deactivate                    POST
+/transactions/{transaction_id}/reactivate                    POST
+/transactions/{transaction_id}/rollback                      POST
+/transactions/{transaction_id}/tags                          GET POST
+/transactions/{transaction_id}/tags/{tag_id}                     DELETE
+```
+
+A path like `/accounts/{account_id}/locations` needs its parent
+(`/accounts/{account_id}`) created first — the console requires building
+the resource tree top-down, same as the path structure implies.
+
+### Deploy
+
+**Actions → Deploy API** → Deployment stage: `staging` (existing) →
+Deploy. Repeat this after every batch of changes — nothing is live until
+a deployment is made, same as the CLI's `create-deployment` step.
+
 ## Not covered here
 
 - Custom domain name / ACM certificate — set up separately if wanted, unrelated to this file.
