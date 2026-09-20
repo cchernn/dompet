@@ -22,7 +22,7 @@ def list_transaction_budgets(user_id, transaction_id, page: int, page_size: int)
         """
         return paginate(cursor, query, [str(transaction_id)], page, page_size)
 
-    return run_atomic(work)
+    return run_atomic(work, user_id=user_id)
 
 
 def list_budget_transactions(user_id, budget_id, page: int, page_size: int) -> tuple[list[dict], dict]:
@@ -47,7 +47,7 @@ def list_budget_transactions(user_id, budget_id, page: int, page_size: int) -> t
         """
         return paginate(cursor, query, [str(budget_id)], page, page_size)
 
-    return run_atomic(work)
+    return run_atomic(work, user_id=user_id)
 
 
 def link_budget(user_id, transaction_id, budget_id) -> dict:
@@ -82,7 +82,7 @@ def link_budget(user_id, transaction_id, budget_id) -> dict:
         )
         return cursor.fetchone()
 
-    return run_atomic(work)
+    return run_atomic(work, user_id=user_id)
 
 
 def unlink_budget(user_id, transaction_id, budget_id) -> None:
@@ -95,4 +95,4 @@ def unlink_budget(user_id, transaction_id, budget_id) -> None:
         if not cursor.fetchone():
             raise InvalidDataException(ValueError("Link not found"))
 
-    return run_atomic(work)
+    return run_atomic(work, user_id=user_id)

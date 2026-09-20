@@ -11,7 +11,7 @@ def list_transactions(user_id, page: int, page_size: int, include_inactive: bool
         query += " ORDER BY date DESC, created_at DESC"
         return paginate(cursor, query, params, page, page_size)
 
-    return run_atomic(work)
+    return run_atomic(work, user_id=user_id)
 
 
 def get_transaction(user_id, transaction_id) -> dict:
@@ -25,4 +25,4 @@ def get_transaction(user_id, transaction_id) -> dict:
             raise InvalidDataException(ValueError(f"Transaction not found: {transaction_id}"))
         return row
 
-    return run_atomic(work)
+    return run_atomic(work, user_id=user_id)

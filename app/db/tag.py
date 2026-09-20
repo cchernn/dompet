@@ -13,7 +13,7 @@ def list_tags(user_id, page: int, page_size: int, include_inactive: bool = False
         query += " ORDER BY name"
         return paginate(cursor, query, params, page, page_size)
 
-    return run_atomic(work)
+    return run_atomic(work, user_id=user_id)
 
 
 def create_tag(user_id, body: dict) -> dict:
@@ -36,7 +36,7 @@ def create_tag(user_id, body: dict) -> dict:
         )
         return cursor.fetchone()
 
-    return run_atomic(work)
+    return run_atomic(work, user_id=user_id)
 
 
 def update_tag(user_id, tag_id, body: dict) -> dict:
@@ -59,7 +59,7 @@ def update_tag(user_id, tag_id, body: dict) -> dict:
         )
         return cursor.fetchone()
 
-    return run_atomic(work)
+    return run_atomic(work, user_id=user_id)
 
 
 def delete_tag(user_id, tag_id) -> dict:
@@ -73,4 +73,4 @@ def delete_tag(user_id, tag_id) -> dict:
             raise InvalidDataException(ValueError(f"Tag not found or not owned by user: {tag_id}"))
         return row
 
-    return run_atomic(work)
+    return run_atomic(work, user_id=user_id)

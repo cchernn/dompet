@@ -17,7 +17,7 @@ def list_budgets(user_id, page: int, page_size: int, include_inactive: bool = Fa
         query += " ORDER BY b.name"
         return paginate(cursor, query, params, page, page_size)
 
-    return run_atomic(work)
+    return run_atomic(work, user_id=user_id)
 
 
 def get_budget(user_id, budget_id) -> dict:
@@ -35,7 +35,7 @@ def get_budget(user_id, budget_id) -> dict:
             raise InvalidDataException(ValueError(f"Budget not found or not accessible by user: {budget_id}"))
         return row
 
-    return run_atomic(work)
+    return run_atomic(work, user_id=user_id)
 
 
 def create_budget(user_id, body: dict) -> dict:
@@ -68,7 +68,7 @@ def create_budget(user_id, body: dict) -> dict:
         )
         return row
 
-    return run_atomic(work)
+    return run_atomic(work, user_id=user_id)
 
 
 def update_budget(user_id, budget_id, body: dict) -> dict:
@@ -93,7 +93,7 @@ def update_budget(user_id, budget_id, body: dict) -> dict:
         )
         return cursor.fetchone()
 
-    return run_atomic(work)
+    return run_atomic(work, user_id=user_id)
 
 
 def delete_budget(user_id, budget_id) -> dict:
@@ -107,4 +107,4 @@ def delete_budget(user_id, budget_id) -> dict:
             raise InvalidDataException(ValueError(f"Budget not found or not owned by user: {budget_id}"))
         return row
 
-    return run_atomic(work)
+    return run_atomic(work, user_id=user_id)

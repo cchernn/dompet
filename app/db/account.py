@@ -13,7 +13,7 @@ def list_accounts(user_id, page: int, page_size: int, include_inactive: bool = F
         query += " ORDER BY code"
         return paginate(cursor, query, params, page, page_size)
 
-    return run_atomic(work)
+    return run_atomic(work, user_id=user_id)
 
 
 def get_account(user_id, account_id) -> dict:
@@ -27,7 +27,7 @@ def get_account(user_id, account_id) -> dict:
             raise InvalidDataException(ValueError(f"Account not found: {account_id}"))
         return row
 
-    return run_atomic(work)
+    return run_atomic(work, user_id=user_id)
 
 
 def create_account(user_id, body: dict) -> dict:
@@ -47,7 +47,7 @@ def create_account(user_id, body: dict) -> dict:
         )
         return cursor.fetchone()
 
-    return run_atomic(work)
+    return run_atomic(work, user_id=user_id)
 
 
 def update_account(user_id, account_id, body: dict) -> dict:
@@ -74,7 +74,7 @@ def update_account(user_id, account_id, body: dict) -> dict:
         )
         return cursor.fetchone()
 
-    return run_atomic(work)
+    return run_atomic(work, user_id=user_id)
 
 
 def _set_active_state(user_id, account_id, active: bool) -> dict:
@@ -92,7 +92,7 @@ def _set_active_state(user_id, account_id, active: bool) -> dict:
             raise InvalidDataException(ValueError(f"Account not found: {account_id}"))
         return row
 
-    return run_atomic(work)
+    return run_atomic(work, user_id=user_id)
 
 
 def deactivate_account(user_id, account_id) -> dict:

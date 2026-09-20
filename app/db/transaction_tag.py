@@ -22,7 +22,7 @@ def list_transaction_tags(user_id, transaction_id, page: int, page_size: int) ->
         """
         return paginate(cursor, query, [str(transaction_id)], page, page_size)
 
-    return run_atomic(work)
+    return run_atomic(work, user_id=user_id)
 
 
 def link_tag(user_id, transaction_id, tag_id) -> dict:
@@ -53,7 +53,7 @@ def link_tag(user_id, transaction_id, tag_id) -> dict:
         )
         return cursor.fetchone()
 
-    return run_atomic(work)
+    return run_atomic(work, user_id=user_id)
 
 
 def unlink_tag(user_id, transaction_id, tag_id) -> None:
@@ -66,4 +66,4 @@ def unlink_tag(user_id, transaction_id, tag_id) -> None:
         if not cursor.fetchone():
             raise InvalidDataException(ValueError("Link not found"))
 
-    return run_atomic(work)
+    return run_atomic(work, user_id=user_id)

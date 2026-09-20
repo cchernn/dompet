@@ -140,7 +140,7 @@ def create_transaction(user_id, body: dict, metadata: dict = None) -> dict:
         _record_operation(cursor, transaction_id, user_id, "CREATE", None, after_row, metadata)
         return after_row
 
-    return run_atomic(work)
+    return run_atomic(work, user_id=user_id)
 
 
 def update_transaction(user_id, transaction_id, body: dict, metadata: dict = None) -> dict:
@@ -176,7 +176,7 @@ def update_transaction(user_id, transaction_id, body: dict, metadata: dict = Non
         _record_operation(cursor, transaction_id, user_id, "UPDATE", before_row, after_row, metadata)
         return after_row
 
-    return run_atomic(work)
+    return run_atomic(work, user_id=user_id)
 
 
 def _set_active_state(user_id, transaction_id, active: bool, operation_type: str, metadata: dict = None) -> dict:
@@ -202,7 +202,7 @@ def _set_active_state(user_id, transaction_id, active: bool, operation_type: str
         _record_operation(cursor, transaction_id, user_id, operation_type, before_row, after_row, metadata)
         return after_row
 
-    return run_atomic(work)
+    return run_atomic(work, user_id=user_id)
 
 
 def deactivate_transaction(user_id, transaction_id, metadata: dict = None) -> dict:
@@ -254,4 +254,4 @@ def rollback_transaction(user_id, transaction_id, target_operation_id, metadata:
         _record_operation(cursor, transaction_id, user_id, "ROLLBACK", before_row, after_row, rollback_metadata)
         return after_row
 
-    return run_atomic(work)
+    return run_atomic(work, user_id=user_id)

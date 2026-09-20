@@ -15,7 +15,7 @@ def list_attachments(user_id, page: int, page_size: int, include_inactive: bool 
         query += " ORDER BY created_at DESC"
         return paginate(cursor, query, params, page, page_size)
 
-    return run_atomic(work)
+    return run_atomic(work, user_id=user_id)
 
 
 def get_attachment(user_id, attachment_id) -> dict:
@@ -29,7 +29,7 @@ def get_attachment(user_id, attachment_id) -> dict:
             raise InvalidDataException(ValueError(f"Attachment not found or not owned by user: {attachment_id}"))
         return row
 
-    return run_atomic(work)
+    return run_atomic(work, user_id=user_id)
 
 
 def create_attachment_record(user_id, filename: str, content_type: str = None, size_bytes: int = None) -> dict:
@@ -50,7 +50,7 @@ def create_attachment_record(user_id, filename: str, content_type: str = None, s
         )
         return cursor.fetchone()
 
-    return run_atomic(work)
+    return run_atomic(work, user_id=user_id)
 
 
 def update_attachment(user_id, attachment_id, body: dict) -> dict:
@@ -76,7 +76,7 @@ def update_attachment(user_id, attachment_id, body: dict) -> dict:
         )
         return cursor.fetchone()
 
-    return run_atomic(work)
+    return run_atomic(work, user_id=user_id)
 
 
 def delete_attachment(user_id, attachment_id) -> dict:
@@ -90,4 +90,4 @@ def delete_attachment(user_id, attachment_id) -> dict:
             raise InvalidDataException(ValueError(f"Attachment not found or not owned by user: {attachment_id}"))
         return row
 
-    return run_atomic(work)
+    return run_atomic(work, user_id=user_id)

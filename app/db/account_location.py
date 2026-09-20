@@ -22,7 +22,7 @@ def list_account_locations(user_id, account_id, page: int, page_size: int) -> tu
         """
         return paginate(cursor, query, [str(account_id)], page, page_size)
 
-    return run_atomic(work)
+    return run_atomic(work, user_id=user_id)
 
 
 def link_location(user_id, account_id, location_id) -> dict:
@@ -53,7 +53,7 @@ def link_location(user_id, account_id, location_id) -> dict:
         )
         return cursor.fetchone()
 
-    return run_atomic(work)
+    return run_atomic(work, user_id=user_id)
 
 
 def unlink_location(user_id, account_id, location_id) -> None:
@@ -66,4 +66,4 @@ def unlink_location(user_id, account_id, location_id) -> None:
         if not cursor.fetchone():
             raise InvalidDataException(ValueError("Link not found"))
 
-    return run_atomic(work)
+    return run_atomic(work, user_id=user_id)

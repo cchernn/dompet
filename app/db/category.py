@@ -13,7 +13,7 @@ def list_categories(user_id, page: int, page_size: int, include_inactive: bool =
         query += " ORDER BY parent_id NULLS FIRST, name"
         return paginate(cursor, query, params, page, page_size)
 
-    return run_atomic(work)
+    return run_atomic(work, user_id=user_id)
 
 
 def create_category(user_id, body: dict) -> dict:
@@ -48,7 +48,7 @@ def create_category(user_id, body: dict) -> dict:
         )
         return cursor.fetchone()
 
-    return run_atomic(work)
+    return run_atomic(work, user_id=user_id)
 
 
 def update_category(user_id, category_id, body: dict) -> dict:
@@ -86,7 +86,7 @@ def update_category(user_id, category_id, body: dict) -> dict:
         )
         return cursor.fetchone()
 
-    return run_atomic(work)
+    return run_atomic(work, user_id=user_id)
 
 
 def delete_category(user_id, category_id) -> dict:
@@ -104,4 +104,4 @@ def delete_category(user_id, category_id) -> dict:
             raise InvalidDataException(ValueError(f"Category not found or not owned by user: {category_id}"))
         return row
 
-    return run_atomic(work)
+    return run_atomic(work, user_id=user_id)

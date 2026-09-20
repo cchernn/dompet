@@ -25,7 +25,7 @@ def list_members(user_id, budget_id, page: int, page_size: int) -> tuple[list[di
         query = "SELECT budget_id, user_id, created_at FROM dompet.budget_members WHERE budget_id = %s ORDER BY created_at"
         return paginate(cursor, query, [str(budget_id)], page, page_size)
 
-    return run_atomic(work)
+    return run_atomic(work, user_id=user_id)
 
 
 def add_member(user_id, budget_id, member_user_id) -> dict:
@@ -46,7 +46,7 @@ def add_member(user_id, budget_id, member_user_id) -> dict:
         )
         return cursor.fetchone()
 
-    return run_atomic(work)
+    return run_atomic(work, user_id=user_id)
 
 
 def remove_member(user_id, budget_id, member_user_id) -> None:
@@ -62,4 +62,4 @@ def remove_member(user_id, budget_id, member_user_id) -> None:
         if not cursor.fetchone():
             raise InvalidDataException(ValueError("Membership not found"))
 
-    return run_atomic(work)
+    return run_atomic(work, user_id=user_id)
