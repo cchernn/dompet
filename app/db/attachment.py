@@ -1,5 +1,7 @@
 import uuid
 
+from psycopg2.extras import Json
+
 from ..lib.exceptions import InvalidDataException
 from ..utils.db import run_atomic, paginate
 
@@ -32,7 +34,9 @@ def get_attachment(user_id, attachment_id) -> dict:
     return run_atomic(work, user_id=user_id)
 
 
-def create_attachment_record(user_id, filename: str, content_type: str = None, size_bytes: int = None) -> dict:
+def create_attachment_record(
+    user_id, filename: str, content_type: str = None, size_bytes: int = None, metadata: dict = None
+) -> dict:
     if not filename:
         raise InvalidDataException(ValueError("filename is required"))
 
@@ -42,11 +46,19 @@ def create_attachment_record(user_id, filename: str, content_type: str = None, s
     def work(cursor):
         cursor.execute(
             """
-            INSERT INTO dompet.attachments (id, user_id, filename, content_type, size_bytes, storage_key)
-            VALUES (%s, %s, %s, %s, %s, %s)
+            INSERT INTO dompet.attachments (id, user_id, filename, content_type, size_bytes, storage_key, metadata)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
             RETURNING *
             """,
-            (str(attachment_id), str(user_id), filename, content_type, size_bytes, storage_key),
+            (
+                str(attachment_id),
+                str(user_id),
+                filename,
+                content_type,
+                size_bytes,
+                storage_key,
+                Json(metadata) if metadata is not None else None,
+            ),
         )
         return cursor.fetchone()
 
