@@ -8,7 +8,7 @@ def list_transactions(user_id, page: int, page_size: int, include_inactive: bool
         params = [str(user_id)]
         if not include_inactive:
             query += " AND is_active = TRUE"
-        query += " ORDER BY date DESC, created_at DESC"
+        query += " ORDER BY datetime DESC, created_at DESC"
         return paginate(cursor, query, params, page, page_size)
 
     return run_atomic(work, user_id=user_id)

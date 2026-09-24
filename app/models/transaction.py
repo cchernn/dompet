@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import Optional, Literal
-from datetime import date as Date, datetime
+from datetime import date as Date, datetime as DateTime
 from decimal import Decimal
 from uuid import UUID
 
@@ -20,6 +20,11 @@ class Transaction(BaseModel):
         ...,
         title="Transaction Date",
         description="The date the financial transaction occurred",
+    )
+    datetime: DateTime = Field(
+        ...,
+        title="Transaction Date & Time",
+        description="Full timestamp including hour:minute; defaults to midnight of `date` if not provided",
     )
     name: str = Field(
         ...,
@@ -59,5 +64,5 @@ class Transaction(BaseModel):
         True,
         title="Transaction Active Status",
     )
-    created_at: datetime
-    updated_at: datetime
+    created_at: DateTime
+    updated_at: DateTime

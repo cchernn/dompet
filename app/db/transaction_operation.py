@@ -15,7 +15,7 @@ CREATE_REQUIRED_FIELDS = (
     "source_account_id", "destination_account_id",
 )
 UPDATABLE_FIELDS = (
-    "date", "name", "type", "amount", "currency_code",
+    "date", "datetime", "name", "type", "amount", "currency_code",
     "category_id", "source_account_id", "destination_account_id",
 )
 
@@ -116,6 +116,7 @@ def create_transaction(user_id, body: dict, metadata: dict = None) -> dict:
 
     fields = {field: body[field] for field in CREATE_REQUIRED_FIELDS}
     fields["category_id"] = body.get("category_id")
+    fields["datetime"] = body.get("datetime") or f"{fields['date']} 00:00:00"
 
     def work(cursor):
         _validate_fields(cursor, user_id, fields)
@@ -124,13 +125,13 @@ def create_transaction(user_id, body: dict, metadata: dict = None) -> dict:
         cursor.execute(
             """
             INSERT INTO dompet.transactions
-                (id, user_id, date, name, type, amount, currency_code,
+                (id, user_id, date, datetime, name, type, amount, currency_code,
                  category_id, source_account_id, destination_account_id)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING *
             """,
             (
-                str(transaction_id), str(user_id), fields["date"], fields["name"],
+                str(transaction_id), str(user_id), fields["date"], fields["datetime"], fields["name"],
                 fields["type"], fields["amount"], fields["currency_code"],
                 fields["category_id"], fields["source_account_id"], fields["destination_account_id"],
             ),
@@ -158,14 +159,14 @@ def update_transaction(user_id, transaction_id, body: dict, metadata: dict = Non
         cursor.execute(
             """
             UPDATE dompet.transactions
-            SET date = %s, name = %s, type = %s, amount = %s, currency_code = %s,
+            SET date = %s, datetime = %s, name = %s, type = %s, amount = %s, currency_code = %s,
                 category_id = %s, source_account_id = %s, destination_account_id = %s,
                 updated_at = NOW()
             WHERE id = %s AND user_id = %s
             RETURNING *
             """,
             (
-                merged["date"], merged["name"], merged["type"], merged["amount"],
+                merged["date"], merged["datetime"], merged["name"], merged["type"], merged["amount"],
                 merged["currency_code"], merged["category_id"],
                 merged["source_account_id"], merged["destination_account_id"],
                 str(transaction_id), str(user_id),
@@ -232,17 +233,22 @@ def rollback_transaction(user_id, transaction_id, target_operation_id, metadata:
             )
         restore = target["after_data"]
 
+        # Snapshots recorded before the `datetime` column existed have no such
+        # key at all -- fall back to midnight of that snapshot's date rather
+        # than KeyError on an old rollback target.
+        restore_datetime = restore.get("datetime") or f"{restore['date']} 00:00:00"
+
         cursor.execute(
             """
             UPDATE dompet.transactions
-            SET date = %s, name = %s, type = %s, amount = %s, currency_code = %s,
+            SET date = %s, datetime = %s, name = %s, type = %s, amount = %s, currency_code = %s,
                 category_id = %s, source_account_id = %s, destination_account_id = %s,
                 is_active = %s, updated_at = NOW()
             WHERE id = %s AND user_id = %s
             RETURNING *
             """,
             (
-                restore["date"], restore["name"], restore["type"], restore["amount"],
+                restore["date"], restore_datetime, restore["name"], restore["type"], restore["amount"],
                 restore["currency_code"], restore["category_id"],
                 restore["source_account_id"], restore["destination_account_id"],
                 restore["is_active"], str(transaction_id), str(user_id),
