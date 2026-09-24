@@ -1,4 +1,9 @@
-.env
+.env*
 __pycache__
 /dump
 /test
+*.sql.gz
+*.tar.gz
+*:Zone.Identifier
+legacy_migration_excluded_rows.txt
+legacy_migration_excluded_rows.xlsx

@@ -1,15 +1,34 @@
-import Main
+from app.response_handler import local_handler
 import json
 
 if __name__ == "__main__":
-    # with open("test/transactions_create.json", "r") as fp:
-    # with open("test/transactions_list.json", "r") as fp:        
-    # with open("test/transactions_get.json", "r") as fp:        
-    with open("test/transactions_edit.json", "r") as fp:        
-        test_params = json.load(fp)
-    result = Main.main(test_params, {})
-    result['body'] = json.loads(result['body'])
-    # with open("test/transactions_create_result.json", "w") as fp:
-    # with open("test/transactions_list_result.json", "w") as fp:
-    # with open("test/transactions_get_result.json", "w") as fp:
-    #     json.dump(result, fp)
+    files = [
+        # "transactions_list",
+        # "transactions_list_filter"
+        # "transactions_create", # pending group and attachment
+        # "transactions_get",
+        # "transactions_edit", # pending group and attachment
+        # "transactions_delete",
+        # "groups_list", 
+        # "groups_create", # pending user
+        # "groups_get",
+        # "groups_edit", # pending user
+        # "groups_delete",
+        # "locations_list",
+        # "locations_create",
+        # "locations_get",
+        # "locations_edit",
+        # "locations_delete",
+        # "attachments_list"
+        # "attachments_create"
+        # "attachments_get"
+        # "attachments_edit"
+        # "attachments_delete"
+    ]
+    for filename in files:
+        with open(f"test/params/{filename}.json", "r") as fp:
+            event = json.load(fp)
+        result = local_handler(event, None)
+        with open(f"test/results/{filename}.json", "w") as fp:
+            result['body'] = json.loads(result['body'])
+            json.dump(result, fp)
