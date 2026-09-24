@@ -2,3 +2,7 @@ pydantic==2.9.2
 psycopg2_binary==2.9.9
 boto3==1.35.53
 python-dotenv>=1.0.0
+# Transitive dep of botocore, which only requires >=1.25.4 -- pinned
+# directly since that range includes several fixed CVEs (GHSA-pq67-6m6q-mj2v,
+# GHSA-48p4-8xcf-vxj5, and others), all patched by 2.5.0.
+urllib3>=2.5.0

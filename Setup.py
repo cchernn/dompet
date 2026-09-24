@@ -32,9 +32,10 @@ LAYER_RUNTIME = "python3.10"
 LAYER_PYTHON_VERSION = "3.10"
 LAYER_ABI = "cp310"
 LAYER_PLATFORM = "manylinux2014_x86_64"
-# boto3/botocore are already provided by the Lambda Python runtime itself --
-# bundling a second copy in the layer just bloats it.
-LAYER_EXCLUDED_PACKAGES = {"boto3", "botocore"}
+# boto3/botocore (and their own urllib3 dependency) are already provided by
+# the Lambda Python runtime itself -- bundling a second copy in the layer
+# just bloats it.
+LAYER_EXCLUDED_PACKAGES = {"boto3", "botocore", "urllib3"}
 
 def upload():
     uploadLambda()
