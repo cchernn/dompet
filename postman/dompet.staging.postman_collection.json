@@ -1,0 +1,1387 @@
+{
+  "info": {
+    "name": "Dompet (staging)",
+    "_postman_id": "d0mpe7-0000-0000-0000-000000000002",
+    "description": "Deployed staging API (API Gateway -> Cognito authorizer -> Lambda). Auth is a real Cognito ID token, not a header \u2014 set this collection's Authorization tab to OAuth 2.0 with your User Pool's token URL/client id/scope (same config you already verified working on the Transactions folder), then every request below inherits it automatically.\n\nCreate requests have a test script that captures the returned id into a collection variable (accountId, transactionId, locationId, tagId, categoryId, budgetId, attachmentId) so folders can be run top-to-bottom with the Collection Runner.\n\nThe `userId` variable is NOT your own identity (that comes from the token) \u2014 it's only used where the API needs a *target* user id, e.g. adding another member to a budget.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://df3r5hrar9.execute-api.ap-southeast-1.amazonaws.com/staging"
+    },
+    {
+      "key": "userId",
+      "value": "999a05bc-70e1-703d-9eec-df6fd20b8113"
+    },
+    {
+      "key": "accountId",
+      "value": ""
+    },
+    {
+      "key": "destinationAccountId",
+      "value": ""
+    },
+    {
+      "key": "categoryId",
+      "value": ""
+    },
+    {
+      "key": "locationId",
+      "value": ""
+    },
+    {
+      "key": "tagId",
+      "value": ""
+    },
+    {
+      "key": "transactionId",
+      "value": ""
+    },
+    {
+      "key": "operationId",
+      "value": ""
+    },
+    {
+      "key": "attachmentId",
+      "value": ""
+    },
+    {
+      "key": "budgetId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Accounts",
+      "item": [
+        {
+          "name": "List accounts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/accounts?include_inactive=false",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "accounts"
+              ],
+              "query": [
+                {
+                  "key": "include_inactive",
+                  "value": "false"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create account",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const body = pm.response.json();",
+                  "    if (body.data && body.data.id) {",
+                  "        pm.collectionVariables.set('accountId', body.data.id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"CHECKING\",\n  \"name\": \"Checking Account\",\n  \"description\": \"Created from Postman\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/accounts",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "accounts"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create destination account",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const body = pm.response.json();",
+                  "    if (body.data && body.data.id) {",
+                  "        pm.collectionVariables.set('destinationAccountId', body.data.id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"MERCHANT\",\n  \"name\": \"Test Merchant\",\n  \"description\": \"Created from Postman\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/accounts",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "accounts"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get account",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/accounts/{{accountId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "accounts",
+                "{{accountId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Edit account",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Updated from Postman\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/accounts/{{accountId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "accounts",
+                "{{accountId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Deactivate account",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/accounts/{{accountId}}/deactivate",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "accounts",
+                "{{accountId}}",
+                "deactivate"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Reactivate account",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/accounts/{{accountId}}/reactivate",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "accounts",
+                "{{accountId}}",
+                "reactivate"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Categories",
+      "item": [
+        {
+          "name": "List categories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/categories",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "categories"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create category",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const body = pm.response.json();",
+                  "    if (body.data && body.data.id) {",
+                  "        pm.collectionVariables.set('categoryId', body.data.id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Postman Test Category\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/categories",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "categories"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Edit category",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/categories/{{categoryId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "categories",
+                "{{categoryId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"postman-test-renamed\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete category",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/categories/{{categoryId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "categories",
+                "{{categoryId}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Locations",
+      "item": [
+        {
+          "name": "List locations",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/locations",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "locations"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create location",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const body = pm.response.json();",
+                  "    if (body.data && body.data.id) {",
+                  "        pm.collectionVariables.set('locationId', body.data.id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"physical\",\n  \"name\": \"Postman Test Location\",\n  \"google_maps_url\": \"https://maps.google.com/?q=test\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/locations",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "locations"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get location",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/locations/{{locationId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "locations",
+                "{{locationId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Edit location",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/locations/{{locationId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "locations",
+                "{{locationId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"postman-test-location-renamed\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete location",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/locations/{{locationId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "locations",
+                "{{locationId}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Account Locations",
+      "item": [
+        {
+          "name": "List locations for account",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/accounts/{{accountId}}/locations",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "accounts",
+                "{{accountId}}",
+                "locations"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Link location to account",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"location_id\": \"{{locationId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/accounts/{{accountId}}/locations",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "accounts",
+                "{{accountId}}",
+                "locations"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Unlink location from account",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/accounts/{{accountId}}/locations/{{locationId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "accounts",
+                "{{accountId}}",
+                "locations",
+                "{{locationId}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tags",
+      "item": [
+        {
+          "name": "List tags",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/tags",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "tags"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create tag",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const body = pm.response.json();",
+                  "    if (body.data && body.data.id) {",
+                  "        pm.collectionVariables.set('tagId', body.data.id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"postman-test\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/tags",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "tags"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Edit tag",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/tags/{{tagId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "tags",
+                "{{tagId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"postman-test-renamed\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete tag",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/tags/{{tagId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "tags",
+                "{{tagId}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Transactions",
+      "item": [
+        {
+          "name": "List transactions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/transactions?include_inactive=false",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "transactions"
+              ],
+              "query": [
+                {
+                  "key": "include_inactive",
+                  "value": "false"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create transaction",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const body = pm.response.json();",
+                  "    if (body.data && body.data.id) {",
+                  "        pm.collectionVariables.set('transactionId', body.data.id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"date\": \"2026-09-06\",\n  \"name\": \"Postman Test Transaction\",\n  \"type\": \"expenditure\",\n  \"amount\": \"12.50\",\n  \"currency_code\": \"MYR\",\n  \"category_id\": \"{{categoryId}}\",\n  \"source_account_id\": \"{{accountId}}\",\n  \"destination_account_id\": \"{{destinationAccountId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/transactions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "transactions"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get transaction",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/transactions/{{transactionId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "transactions",
+                "{{transactionId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Edit transaction",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Postman Test Transaction (edited)\",\n  \"amount\": \"15.00\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/transactions/{{transactionId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "transactions",
+                "{{transactionId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Deactivate transaction",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const body = pm.response.json();",
+                  "    if (body.data && body.data.id) {",
+                  "        pm.collectionVariables.set('operationId', body.data.id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/transactions/{{transactionId}}/deactivate",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "transactions",
+                "{{transactionId}}",
+                "deactivate"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Reactivate transaction",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/transactions/{{transactionId}}/reactivate",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "transactions",
+                "{{transactionId}}",
+                "reactivate"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Rollback transaction",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"operation_id\": \"{{operationId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/transactions/{{transactionId}}/rollback",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "transactions",
+                "{{transactionId}}",
+                "rollback"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Transaction Tags",
+      "item": [
+        {
+          "name": "List tags for transaction",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/transactions/{{transactionId}}/tags",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "transactions",
+                "{{transactionId}}",
+                "tags"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Link tag to transaction",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tag_id\": \"{{tagId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/transactions/{{transactionId}}/tags",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "transactions",
+                "{{transactionId}}",
+                "tags"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Unlink tag from transaction",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/transactions/{{transactionId}}/tags/{{tagId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "transactions",
+                "{{transactionId}}",
+                "tags",
+                "{{tagId}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Attachments",
+      "item": [
+        {
+          "name": "List attachments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/attachments",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "attachments"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create attachment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/attachments",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "attachments"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"filename\": \"postman-test.pdf\",\n  \"content_type\": \"application/pdf\",\n  \"size_bytes\": 1024\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const body = pm.response.json();",
+                  "    if (body.data && body.data.attachment.id) {",
+                  "        pm.collectionVariables.set('attachmentId', body.data.attachment.id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get attachment",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/attachments/{{attachmentId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "attachments",
+                "{{attachmentId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Edit attachment",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/attachments/{{attachmentId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "attachments",
+                "{{attachmentId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"filename\": \"renamed.pdf\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete attachment",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/attachments/{{attachmentId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "attachments",
+                "{{attachmentId}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Transaction Attachments",
+      "item": [
+        {
+          "name": "List transaction attachments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/transactions/{{transactionId}}/attachments",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "transactions",
+                "{{transactionId}}",
+                "attachments"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Link attachment to transaction",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/transactions/{{transactionId}}/attachments",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "transactions",
+                "{{transactionId}}",
+                "attachments"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"attachment_id\": \"{{attachmentId}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Unlink attachment from transaction",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/transactions/{{transactionId}}/attachments/{{attachmentId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "transactions",
+                "{{transactionId}}",
+                "attachments",
+                "{{attachmentId}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Budgets",
+      "item": [
+        {
+          "name": "List budgets",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/budgets",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "budgets"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create budget",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/budgets",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "budgets"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"postman-test-budget\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const body = pm.response.json();",
+                  "    if (body.data && body.data.id) {",
+                  "        pm.collectionVariables.set('budgetId', body.data.id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get budget",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/budgets/{{budgetId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "budgets",
+                "{{budgetId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Edit budget",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/budgets/{{budgetId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "budgets",
+                "{{budgetId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"postman-test-budget-renamed\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete budget",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/budgets/{{budgetId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "budgets",
+                "{{budgetId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "List budget transactions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/budgets/{{budgetId}}/transactions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "budgets",
+                "{{budgetId}}",
+                "transactions"
+              ]
+            }
+          }
+        },
+        {
+          "name": "List budget members",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/budgets/{{budgetId}}/members",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "budgets",
+                "{{budgetId}}",
+                "members"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add budget member",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/budgets/{{budgetId}}/members",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "budgets",
+                "{{budgetId}}",
+                "members"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": \"{{userId}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Remove budget member",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/budgets/{{budgetId}}/members/{{userId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "budgets",
+                "{{budgetId}}",
+                "members",
+                "{{userId}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Transaction Budgets",
+      "item": [
+        {
+          "name": "List transaction budgets",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/transactions/{{transactionId}}/budgets",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "transactions",
+                "{{transactionId}}",
+                "budgets"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Link budget to transaction",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/transactions/{{transactionId}}/budgets",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "transactions",
+                "{{transactionId}}",
+                "budgets"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"budget_id\": \"{{budgetId}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Unlink budget from transaction",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/transactions/{{transactionId}}/budgets/{{budgetId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "transactions",
+                "{{transactionId}}",
+                "budgets",
+                "{{budgetId}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth check",
+      "item": [
+        {
+          "name": "Unauthenticated request (expect 401)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/accounts",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "accounts"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "auth": {
+    "type": "oauth2",
+    "oauth2": []
+  }
+}
