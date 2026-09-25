@@ -43,7 +43,7 @@ def list_budget_transactions(user_id, budget_id, page: int, page_size: int) -> t
             SELECT t.* FROM dompet.transaction_budgets tb
             JOIN dompet.transactions t ON t.id = tb.transaction_id
             WHERE tb.budget_id = %s
-            ORDER BY t.date DESC, t.created_at DESC
+            ORDER BY t.datetime DESC, t.created_at DESC
         """
         return paginate(cursor, query, [str(budget_id)], page, page_size)
 

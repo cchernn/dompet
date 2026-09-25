@@ -146,6 +146,7 @@ instead of one file upload.
 /tags                                                        GET POST
 /tags/{tag_id}                                           DELETE PUT
 /transactions                                                GET POST
+/transactions/search                                         GET
 /transactions/{transaction_id}                               GET PUT
 /transactions/{transaction_id}/attachments                   GET POST
 /transactions/{transaction_id}/attachments/{attachment_id}       DELETE
@@ -161,6 +162,13 @@ instead of one file upload.
 A path like `/accounts/{account_id}/locations` needs its parent
 (`/accounts/{account_id}`) created first — the console requires building
 the resource tree top-down, same as the path structure implies.
+
+`/transactions/search` is the one case where a literal child resource
+(`search`) sits alongside a `{transaction_id}` parameter resource under
+the same parent (`/transactions`) — API Gateway supports both existing
+as siblings and matches the literal one first for an exact `/transactions/search`
+request, same as the app's own route matching already does (`search` never
+matches the UUID-shaped `{transaction_id}` pattern).
 
 ### Deploy
 

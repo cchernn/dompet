@@ -662,6 +662,29 @@
           }
         },
         {
+          "name": "Search transactions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/transactions/search?page_size=5",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "transactions",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "page_size",
+                  "value": "5"
+                }
+              ]
+            }
+          }
+        },
+        {
           "name": "Create transaction",
           "event": [
             {

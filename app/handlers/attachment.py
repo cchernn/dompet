@@ -13,6 +13,17 @@ def _to_attachment(row: dict) -> Attachment:
     return Attachment(**row)
 
 
+def _to_attachment_summary(row: dict) -> Attachment:
+    """Same as _to_attachment but skips the S3 presigned-URL generation --
+    for list results, where a caller listing many rows (e.g. an add/edit
+    page's picker, or a transaction's linked-attachments list) doesn't need
+    a download link for every row, only for the one it actually opens via
+    GET /attachments/{id}."""
+    row = dict(row)
+    row.pop("storage_key", None)
+    return Attachment(**row)
+
+
 def _include_inactive(params: Params) -> bool:
     if not params.queryParams:
         return False
@@ -22,7 +33,7 @@ def _include_inactive(params: Params) -> bool:
 def list(params: Params) -> PaginatedResult:
     page, page_size = parse_pagination(params)
     rows, metadata = attachment_db.list_attachments(params.user, page, page_size, include_inactive=_include_inactive(params))
-    return PaginatedResult([_to_attachment(row) for row in rows], metadata)
+    return PaginatedResult([_to_attachment_summary(row) for row in rows], metadata)
 
 
 def get(params: Params) -> Attachment:
