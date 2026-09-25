@@ -5,11 +5,27 @@ from decimal import Decimal
 from uuid import UUID
 
 
+class AttachmentRef(BaseModel):
+    """A minimal attachment reference for search results -- id lets the
+    caller fetch a fresh presigned download_url on demand via
+    GET /attachments/{id} instead of one being generated eagerly for every
+    attachment on every search page load."""
+
+    id: UUID = Field(
+        ...,
+        title="Attachment ID",
+    )
+    filename: str = Field(
+        ...,
+        title="Attachment Filename",
+    )
+
+
 class TransactionSearchResult(BaseModel):
     """Shape of a row from dompet.vw_transactions -- distinct from
     Transaction (app/models/transaction.py): joined names instead of ids,
-    no user_id/account ids, pipe-delimited tags/attachments split into
-    lists. Active transactions only, since the view is already filtered."""
+    no user_id/account ids, pipe-delimited tags/budgets split into lists.
+    Active transactions only, since the view is already filtered."""
 
     id: UUID = Field(
         ...,
@@ -52,9 +68,9 @@ class TransactionSearchResult(BaseModel):
         default_factory=list,
         title="Tag Names",
     )
-    attachments: List[str] = Field(
+    attachments: List[AttachmentRef] = Field(
         default_factory=list,
-        title="Attachment Filenames",
+        title="Attachments",
     )
     budgets: List[str] = Field(
         default_factory=list,

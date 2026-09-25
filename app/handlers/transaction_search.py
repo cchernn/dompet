@@ -18,7 +18,9 @@ def search(params: Params) -> PaginatedResult:
     for row in rows:
         row = dict(row)
         row["tags"] = row["tags"].split("|") if row["tags"] else []
-        row["attachments"] = row["attachments"].split("|") if row["attachments"] else []
+        # attachments is already a parsed list of {id, filename} dicts —
+        # psycopg2 adapts the view's json column automatically.
+        row["attachments"] = row["attachments"] or []
         row["budgets"] = row["budgets"].split("|") if row["budgets"] else []
         results.append(TransactionSearchResult(**row))
     return PaginatedResult(results, metadata)
