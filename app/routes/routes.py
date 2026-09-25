@@ -2,6 +2,7 @@ from ..lib.params import Params
 from ..lib.response import Response
 from ..lib.exceptions import InvalidFunctionException
 from ..handlers import transaction
+from ..handlers import transaction_search
 from ..handlers import account
 from ..handlers import category
 from ..handlers import location
@@ -30,6 +31,7 @@ def _uuid(name: str) -> str:
 routes = {
     (re.compile(r"^/transactions$"), "GET", transaction.list),
     (re.compile(r"^/transactions$"), "POST", transaction.add),
+    (re.compile(r"^/transactions/search$"), "GET", transaction_search.search),
     (re.compile(rf"^/transactions/{_uuid('transaction_id')}$"), "GET", transaction.get),
     (re.compile(rf"^/transactions/{_uuid('transaction_id')}$"), "PUT", transaction.edit),
     (re.compile(rf"^/transactions/{_uuid('transaction_id')}/deactivate$"), "POST", transaction.deactivate),
