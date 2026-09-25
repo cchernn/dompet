@@ -56,3 +56,7 @@ class TransactionSearchResult(BaseModel):
         default_factory=list,
         title="Attachment Filenames",
     )
+    budgets: List[str] = Field(
+        default_factory=list,
+        title="Budget Names",
+    )

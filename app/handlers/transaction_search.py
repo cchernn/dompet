@@ -18,5 +18,6 @@ def search(params: Params) -> PaginatedResult:
         row = dict(row)
         row["tags"] = row["tags"].split("|") if row["tags"] else []
         row["attachments"] = row["attachments"].split("|") if row["attachments"] else []
+        row["budgets"] = row["budgets"].split("|") if row["budgets"] else []
         results.append(TransactionSearchResult(**row))
     return PaginatedResult(results, metadata)
