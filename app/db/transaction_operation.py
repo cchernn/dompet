@@ -11,13 +11,29 @@ OPERATION_TYPES = ("CREATE", "UPDATE", "DEACTIVATE", "REACTIVATE", "ROLLBACK")
 TRANSACTION_TYPES = ("expenditure", "income", "transfer")
 
 CREATE_REQUIRED_FIELDS = (
-    "date", "name", "type", "amount", "currency_code",
+    "name", "type", "amount", "currency_code",
     "source_account_id", "destination_account_id",
 )
 UPDATABLE_FIELDS = (
-    "date", "datetime", "name", "type", "amount", "currency_code",
+    "datetime", "name", "type", "amount", "currency_code",
     "category_id", "source_account_id", "destination_account_id",
 )
+
+
+def _resolve_datetime(body: dict, current: dict = None) -> str:
+    """`date` is accepted as a convenience input (defaults to midnight, or on
+    an edit preserves the existing time-of-day) but only `datetime` is
+    persisted -- there's no separate stored date column."""
+    if body.get("datetime"):
+        return body["datetime"]
+    if body.get("date"):
+        new_date = date.fromisoformat(body["date"])
+        if current is not None:
+            return current["datetime"].replace(year=new_date.year, month=new_date.month, day=new_date.day)
+        return f"{body['date']} 00:00:00"
+    if current is not None:
+        return current["datetime"]
+    raise InvalidDataException(ValueError("Either 'date' or 'datetime' is required"))
 
 
 def _jsonable(value):
@@ -116,7 +132,7 @@ def create_transaction(user_id, body: dict, metadata: dict = None) -> dict:
 
     fields = {field: body[field] for field in CREATE_REQUIRED_FIELDS}
     fields["category_id"] = body.get("category_id")
-    fields["datetime"] = body.get("datetime") or f"{fields['date']} 00:00:00"
+    fields["datetime"] = _resolve_datetime(body)
 
     def work(cursor):
         _validate_fields(cursor, user_id, fields)
@@ -125,13 +141,13 @@ def create_transaction(user_id, body: dict, metadata: dict = None) -> dict:
         cursor.execute(
             """
             INSERT INTO dompet.transactions
-                (id, user_id, date, datetime, name, type, amount, currency_code,
+                (id, user_id, datetime, name, type, amount, currency_code,
                  category_id, source_account_id, destination_account_id)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING *
             """,
             (
-                str(transaction_id), str(user_id), fields["date"], fields["datetime"], fields["name"],
+                str(transaction_id), str(user_id), fields["datetime"], fields["name"],
                 fields["type"], fields["amount"], fields["currency_code"],
                 fields["category_id"], fields["source_account_id"], fields["destination_account_id"],
             ),
@@ -146,7 +162,7 @@ def create_transaction(user_id, body: dict, metadata: dict = None) -> dict:
 
 def update_transaction(user_id, transaction_id, body: dict, metadata: dict = None) -> dict:
     patch = {k: v for k, v in body.items() if k in UPDATABLE_FIELDS}
-    if not patch:
+    if not patch and "date" not in body:
         raise InvalidDataException(ValueError("No updatable fields provided"))
 
     def work(cursor):
@@ -154,19 +170,20 @@ def update_transaction(user_id, transaction_id, body: dict, metadata: dict = Non
         before_row = _row_to_dict(current)
 
         merged = {field: patch.get(field, current[field]) for field in UPDATABLE_FIELDS}
+        merged["datetime"] = _resolve_datetime(body, current)
         _validate_fields(cursor, user_id, merged)
 
         cursor.execute(
             """
             UPDATE dompet.transactions
-            SET date = %s, datetime = %s, name = %s, type = %s, amount = %s, currency_code = %s,
+            SET datetime = %s, name = %s, type = %s, amount = %s, currency_code = %s,
                 category_id = %s, source_account_id = %s, destination_account_id = %s,
                 updated_at = NOW()
             WHERE id = %s AND user_id = %s
             RETURNING *
             """,
             (
-                merged["date"], merged["datetime"], merged["name"], merged["type"], merged["amount"],
+                merged["datetime"], merged["name"], merged["type"], merged["amount"],
                 merged["currency_code"], merged["category_id"],
                 merged["source_account_id"], merged["destination_account_id"],
                 str(transaction_id), str(user_id),
@@ -241,14 +258,14 @@ def rollback_transaction(user_id, transaction_id, target_operation_id, metadata:
         cursor.execute(
             """
             UPDATE dompet.transactions
-            SET date = %s, datetime = %s, name = %s, type = %s, amount = %s, currency_code = %s,
+            SET datetime = %s, name = %s, type = %s, amount = %s, currency_code = %s,
                 category_id = %s, source_account_id = %s, destination_account_id = %s,
                 is_active = %s, updated_at = NOW()
             WHERE id = %s AND user_id = %s
             RETURNING *
             """,
             (
-                restore["date"], restore_datetime, restore["name"], restore["type"], restore["amount"],
+                restore_datetime, restore["name"], restore["type"], restore["amount"],
                 restore["currency_code"], restore["category_id"],
                 restore["source_account_id"], restore["destination_account_id"],
                 restore["is_active"], str(transaction_id), str(user_id),

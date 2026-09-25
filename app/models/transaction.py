@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import Optional, Literal
-from datetime import date as Date, datetime as DateTime
+from datetime import datetime as DateTime
 from decimal import Decimal
 from uuid import UUID
 
@@ -15,11 +15,6 @@ class Transaction(BaseModel):
         ...,
         title="Owner User ID",
         description="Cognito UUID of the transaction owner",
-    )
-    date: Date = Field(
-        ...,
-        title="Transaction Date",
-        description="The date the financial transaction occurred",
     )
     datetime: DateTime = Field(
         ...,
