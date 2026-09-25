@@ -1,11 +1,20 @@
 from ..utils.db import run_atomic, paginate
 
 
+def _substring_pattern(value: str) -> str:
+    """Escapes LIKE wildcards in a literal search term so `%`/`_` typed by
+    the caller are matched literally, not treated as pattern metacharacters,
+    then wraps it for a substring match."""
+    escaped = value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+    return f"%{escaped}%"
+
+
 def search_transactions(
     user_id, page: int, page_size: int,
     date_from: str = None, date_to: str = None,
     category: str = None, type: str = None,
-    source: str = None, destination: str = None, tags: str = None,
+    source: str = None, destination: str = None,
+    tags: str = None, budgets: str = None,
 ) -> tuple[list[dict], dict]:
     def work(cursor):
         query = "SELECT * FROM dompet.vw_transactions WHERE 1=1"
@@ -29,8 +38,11 @@ def search_transactions(
             query += " AND destination = %s"
             params.append(destination)
         if tags:
-            query += " AND tags = %s"
-            params.append(tags)
+            query += " AND tags LIKE %s"
+            params.append(_substring_pattern(tags))
+        if budgets:
+            query += " AND budgets LIKE %s"
+            params.append(_substring_pattern(budgets))
         query += " ORDER BY date DESC"
         return paginate(cursor, query, params, page, page_size)
 
