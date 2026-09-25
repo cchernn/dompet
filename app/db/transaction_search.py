@@ -5,6 +5,7 @@ def search_transactions(
     user_id, page: int, page_size: int,
     date_from: str = None, date_to: str = None,
     category: str = None, type: str = None,
+    source: str = None, destination: str = None, tags: str = None,
 ) -> tuple[list[dict], dict]:
     def work(cursor):
         query = "SELECT * FROM dompet.vw_transactions WHERE 1=1"
@@ -21,6 +22,15 @@ def search_transactions(
         if type:
             query += " AND type = %s"
             params.append(type)
+        if source:
+            query += " AND source = %s"
+            params.append(source)
+        if destination:
+            query += " AND destination = %s"
+            params.append(destination)
+        if tags:
+            query += " AND tags = %s"
+            params.append(tags)
         query += " ORDER BY date DESC"
         return paginate(cursor, query, params, page, page_size)
 

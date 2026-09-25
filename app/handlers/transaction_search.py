@@ -11,6 +11,7 @@ def search(params: Params) -> PaginatedResult:
         params.user, page, page_size,
         date_from=q.get("from"), date_to=q.get("to"),
         category=q.get("category"), type=q.get("type"),
+        source=q.get("source"), destination=q.get("destination"), tags=q.get("tags"),
     )
     results = []
     for row in rows:
