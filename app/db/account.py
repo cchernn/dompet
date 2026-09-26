@@ -1,5 +1,6 @@
 from ..lib.exceptions import InvalidDataException
 from ..utils.db import run_atomic, paginate
+from .operations import row_to_dict, record_operation
 
 UPDATABLE_FIELDS = ("code", "name", "description")
 
@@ -45,7 +46,9 @@ def create_account(user_id, body: dict) -> dict:
             """,
             (str(user_id), code, name, body.get("description")),
         )
-        return cursor.fetchone()
+        row = cursor.fetchone()
+        record_operation(cursor, "account", row["id"], user_id, "CREATE", None, row_to_dict(row))
+        return row
 
     return run_atomic(work, user_id=user_id)
 
@@ -57,10 +60,11 @@ def update_account(user_id, account_id, body: dict) -> dict:
 
     def work(cursor):
         cursor.execute(
-            "SELECT 1 FROM dompet.accounts WHERE id = %s AND user_id = %s FOR UPDATE",
+            "SELECT * FROM dompet.accounts WHERE id = %s AND user_id = %s FOR UPDATE",
             (str(account_id), str(user_id)),
         )
-        if not cursor.fetchone():
+        before = cursor.fetchone()
+        if not before:
             raise InvalidDataException(ValueError(f"Account not found: {account_id}"))
 
         set_clause = ", ".join(f"{field} = %s" for field in patch)
@@ -72,13 +76,23 @@ def update_account(user_id, account_id, body: dict) -> dict:
             """,
             (*patch.values(), str(account_id), str(user_id)),
         )
-        return cursor.fetchone()
+        after = cursor.fetchone()
+        record_operation(cursor, "account", account_id, user_id, "UPDATE", row_to_dict(before), row_to_dict(after))
+        return after
 
     return run_atomic(work, user_id=user_id)
 
 
-def _set_active_state(user_id, account_id, active: bool) -> dict:
+def _set_active_state(user_id, account_id, active: bool, operation_type: str) -> dict:
     def work(cursor):
+        cursor.execute(
+            "SELECT * FROM dompet.accounts WHERE id = %s AND user_id = %s FOR UPDATE",
+            (str(account_id), str(user_id)),
+        )
+        before = cursor.fetchone()
+        if not before:
+            raise InvalidDataException(ValueError(f"Account not found: {account_id}"))
+
         cursor.execute(
             """
             UPDATE dompet.accounts SET is_active = %s, updated_at = NOW()
@@ -87,17 +101,16 @@ def _set_active_state(user_id, account_id, active: bool) -> dict:
             """,
             (active, str(account_id), str(user_id)),
         )
-        row = cursor.fetchone()
-        if not row:
-            raise InvalidDataException(ValueError(f"Account not found: {account_id}"))
-        return row
+        after = cursor.fetchone()
+        record_operation(cursor, "account", account_id, user_id, operation_type, row_to_dict(before), row_to_dict(after))
+        return after
 
     return run_atomic(work, user_id=user_id)
 
 
 def deactivate_account(user_id, account_id) -> dict:
-    return _set_active_state(user_id, account_id, False)
+    return _set_active_state(user_id, account_id, False, "DEACTIVATE")
 
 
 def reactivate_account(user_id, account_id) -> dict:
-    return _set_active_state(user_id, account_id, True)
+    return _set_active_state(user_id, account_id, True, "REACTIVATE")

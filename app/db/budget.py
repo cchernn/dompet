@@ -1,5 +1,6 @@
 from ..lib.exceptions import InvalidDataException
 from ..utils.db import run_atomic, paginate
+from .operations import row_to_dict, record_operation
 
 UPDATABLE_FIELDS = ("name",)
 
@@ -57,6 +58,7 @@ def create_budget(user_id, body: dict) -> dict:
                 (str(user_id), name),
             )
             row = cursor.fetchone()
+            record_operation(cursor, "budget", row["id"], user_id, "CREATE", None, row_to_dict(row))
 
         cursor.execute(
             """
@@ -80,10 +82,11 @@ def update_budget(user_id, budget_id, body: dict) -> dict:
 
     def work(cursor):
         cursor.execute(
-            "SELECT 1 FROM dompet.budgets WHERE id = %s AND user_id = %s FOR UPDATE",
+            "SELECT * FROM dompet.budgets WHERE id = %s AND user_id = %s FOR UPDATE",
             (str(budget_id), str(user_id)),
         )
-        if not cursor.fetchone():
+        before = cursor.fetchone()
+        if not before:
             raise InvalidDataException(ValueError(f"Budget not found or not owned by user: {budget_id}"))
 
         set_clause = ", ".join(f"{field} = %s" for field in patch)
@@ -91,7 +94,9 @@ def update_budget(user_id, budget_id, body: dict) -> dict:
             f"UPDATE dompet.budgets SET {set_clause}, updated_at = NOW() WHERE id = %s AND user_id = %s RETURNING *",
             (*patch.values(), str(budget_id), str(user_id)),
         )
-        return cursor.fetchone()
+        after = cursor.fetchone()
+        record_operation(cursor, "budget", budget_id, user_id, "UPDATE", row_to_dict(before), row_to_dict(after))
+        return after
 
     return run_atomic(work, user_id=user_id)
 
@@ -99,12 +104,19 @@ def update_budget(user_id, budget_id, body: dict) -> dict:
 def delete_budget(user_id, budget_id) -> dict:
     def work(cursor):
         cursor.execute(
+            "SELECT * FROM dompet.budgets WHERE id = %s AND user_id = %s FOR UPDATE",
+            (str(budget_id), str(user_id)),
+        )
+        before = cursor.fetchone()
+        if not before:
+            raise InvalidDataException(ValueError(f"Budget not found or not owned by user: {budget_id}"))
+
+        cursor.execute(
             "UPDATE dompet.budgets SET is_active = FALSE, updated_at = NOW() WHERE id = %s AND user_id = %s RETURNING *",
             (str(budget_id), str(user_id)),
         )
-        row = cursor.fetchone()
-        if not row:
-            raise InvalidDataException(ValueError(f"Budget not found or not owned by user: {budget_id}"))
-        return row
+        after = cursor.fetchone()
+        record_operation(cursor, "budget", budget_id, user_id, "DEACTIVATE", row_to_dict(before), row_to_dict(after))
+        return after
 
     return run_atomic(work, user_id=user_id)

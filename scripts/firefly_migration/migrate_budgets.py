@@ -4,7 +4,7 @@ Standalone from migrate.py on purpose -- see the docstring in
 scripts/legacy_dompet_migration/migrate_budgets.py for why (Phase 4 already
 executed; create_transaction is not idempotent). This script only touches
 dompet.budgets/budget_members/transaction_budgets, resolving already-migrated
-transactions via transaction_operations.metadata->>'source_id'.
+transactions via operations.metadata->>'source_id'.
 
 Only the historical budget_transaction_journal links are migrated (plain
 data -- these are just the already-decided output of Firefly's Rules
@@ -39,9 +39,10 @@ from ..budget_aliases import canonical_name
 def build_transaction_id_map(cursor, user_id: str) -> dict:
     cursor.execute(
         """
-        SELECT transaction_id, metadata->>'source_id' AS source_id
-        FROM dompet.transaction_operations
-        WHERE operation_type = 'CREATE' AND metadata->>'source' = 'firefly' AND user_id = %s
+        SELECT entity_id AS transaction_id, metadata->>'source_id' AS source_id
+        FROM dompet.operations
+        WHERE entity_type = 'transaction' AND operation_type = 'CREATE'
+              AND metadata->>'source' = 'firefly' AND user_id = %s
         """,
         (str(user_id),),
     )

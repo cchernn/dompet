@@ -161,7 +161,7 @@ def migrate_bucket_2(cursor, tables: dict, user_id: str, execute: bool):
         """
         SELECT t.id AS transaction_id, t.name, t.destination_account_id, da.name AS destination_account_name
         FROM dompet.transactions t
-        JOIN dompet.transaction_operations o ON o.transaction_id = t.id AND o.operation_type = 'CREATE'
+        JOIN dompet.operations o ON o.entity_type = 'transaction' AND o.entity_id = t.id AND o.operation_type = 'CREATE'
         JOIN dompet.accounts da ON da.id = t.destination_account_id
         WHERE o.metadata->>'source' = 'firefly'
           AND t.name ~ '\\[.*\\]'

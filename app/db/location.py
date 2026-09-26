@@ -1,5 +1,6 @@
 from ..lib.exceptions import InvalidDataException
 from ..utils.db import run_atomic, paginate
+from .operations import row_to_dict, record_operation
 
 LOCATION_TYPES = ("physical", "online")
 UPDATABLE_FIELDS = ("name", "google_maps_url", "url")
@@ -27,7 +28,7 @@ def get_location(location_id) -> dict:
     return run_atomic(work)
 
 
-def create_location(body: dict) -> dict:
+def create_location(user_id, body: dict) -> dict:
     loc_type = body.get("type")
     name = body.get("name")
     if loc_type not in LOCATION_TYPES:
@@ -53,12 +54,14 @@ def create_location(body: dict) -> dict:
                 url if loc_type == "online" else None,
             ),
         )
-        return cursor.fetchone()
+        row = cursor.fetchone()
+        record_operation(cursor, "location", row["id"], user_id, "CREATE", None, row_to_dict(row))
+        return row
 
-    return run_atomic(work)
+    return run_atomic(work, user_id=user_id)
 
 
-def update_location(location_id, body: dict) -> dict:
+def update_location(user_id, location_id, body: dict) -> dict:
     patch = {k: v for k, v in body.items() if k in UPDATABLE_FIELDS}
     if not patch:
         raise InvalidDataException(ValueError("No updatable fields provided"))
@@ -77,20 +80,26 @@ def update_location(location_id, body: dict) -> dict:
             f"UPDATE dompet.locations SET {set_clause}, updated_at = NOW() WHERE id = %s RETURNING *",
             (*patch.values(), str(location_id)),
         )
-        return cursor.fetchone()
+        after = cursor.fetchone()
+        record_operation(cursor, "location", location_id, user_id, "UPDATE", row_to_dict(existing), row_to_dict(after))
+        return after
 
-    return run_atomic(work)
+    return run_atomic(work, user_id=user_id)
 
 
-def delete_location(location_id) -> dict:
+def delete_location(user_id, location_id) -> dict:
     def work(cursor):
+        cursor.execute("SELECT * FROM dompet.locations WHERE id = %s FOR UPDATE", (str(location_id),))
+        before = cursor.fetchone()
+        if not before:
+            raise InvalidDataException(ValueError(f"Location not found: {location_id}"))
+
         cursor.execute(
             "UPDATE dompet.locations SET is_active = FALSE, updated_at = NOW() WHERE id = %s RETURNING *",
             (str(location_id),),
         )
-        row = cursor.fetchone()
-        if not row:
-            raise InvalidDataException(ValueError(f"Location not found: {location_id}"))
-        return row
+        after = cursor.fetchone()
+        record_operation(cursor, "location", location_id, user_id, "DEACTIVATE", row_to_dict(before), row_to_dict(after))
+        return after
 
-    return run_atomic(work)
+    return run_atomic(work, user_id=user_id)

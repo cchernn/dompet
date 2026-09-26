@@ -1,5 +1,6 @@
 from ..lib.exceptions import InvalidDataException
 from ..utils.db import run_atomic, paginate
+from .operations import row_to_dict, record_operation
 
 UPDATABLE_FIELDS = ("name", "parent_id")
 
@@ -46,7 +47,9 @@ def create_category(user_id, body: dict) -> dict:
             "INSERT INTO dompet.categories (user_id, name, parent_id) VALUES (%s, %s, %s) RETURNING *",
             (str(user_id), name, parent_id),
         )
-        return cursor.fetchone()
+        row = cursor.fetchone()
+        record_operation(cursor, "category", row["id"], user_id, "CREATE", None, row_to_dict(row))
+        return row
 
     return run_atomic(work, user_id=user_id)
 
@@ -58,10 +61,11 @@ def update_category(user_id, category_id, body: dict) -> dict:
 
     def work(cursor):
         cursor.execute(
-            "SELECT 1 FROM dompet.categories WHERE id = %s AND user_id = %s FOR UPDATE",
+            "SELECT * FROM dompet.categories WHERE id = %s AND user_id = %s FOR UPDATE",
             (str(category_id), str(user_id)),
         )
-        if not cursor.fetchone():
+        before = cursor.fetchone()
+        if not before:
             raise InvalidDataException(ValueError(f"Category not found or not owned by user: {category_id}"))
 
         parent_id = patch.get("parent_id")
@@ -84,13 +88,23 @@ def update_category(user_id, category_id, body: dict) -> dict:
             """,
             (*patch.values(), str(category_id), str(user_id)),
         )
-        return cursor.fetchone()
+        after = cursor.fetchone()
+        record_operation(cursor, "category", category_id, user_id, "UPDATE", row_to_dict(before), row_to_dict(after))
+        return after
 
     return run_atomic(work, user_id=user_id)
 
 
 def delete_category(user_id, category_id) -> dict:
     def work(cursor):
+        cursor.execute(
+            "SELECT * FROM dompet.categories WHERE id = %s AND user_id = %s FOR UPDATE",
+            (str(category_id), str(user_id)),
+        )
+        before = cursor.fetchone()
+        if not before:
+            raise InvalidDataException(ValueError(f"Category not found or not owned by user: {category_id}"))
+
         cursor.execute(
             """
             UPDATE dompet.categories SET is_active = FALSE, updated_at = NOW()
@@ -99,9 +113,8 @@ def delete_category(user_id, category_id) -> dict:
             """,
             (str(category_id), str(user_id)),
         )
-        row = cursor.fetchone()
-        if not row:
-            raise InvalidDataException(ValueError(f"Category not found or not owned by user: {category_id}"))
-        return row
+        after = cursor.fetchone()
+        record_operation(cursor, "category", category_id, user_id, "DEACTIVATE", row_to_dict(before), row_to_dict(after))
+        return after
 
     return run_atomic(work, user_id=user_id)

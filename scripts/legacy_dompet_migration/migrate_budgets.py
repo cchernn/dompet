@@ -5,7 +5,7 @@ against live data, and app.db.transaction_operation.create_transaction is
 not idempotent, so re-running migrate.py --execute would create duplicate
 transactions. This script only touches dompet.budgets/budget_members/
 transaction_budgets, resolving already-migrated transactions via the same
-transaction_operations.metadata->>'source_id' traceability every other
+operations.metadata->>'source_id' traceability every other
 migration script relies on.
 
 Two legacy sources, two eras of the same "shared group of transactions"
@@ -64,9 +64,9 @@ def build_transaction_id_map(cursor) -> dict:
     transactions) -- links must be performed as that owner, or
     transaction_budget_db.link_budget's ownership check rejects them."""
     cursor.execute("""
-        SELECT transaction_id, user_id, metadata->>'source' AS source, metadata->>'source_id' AS source_id
-        FROM dompet.transaction_operations
-        WHERE operation_type = 'CREATE'
+        SELECT entity_id AS transaction_id, user_id, metadata->>'source' AS source, metadata->>'source_id' AS source_id
+        FROM dompet.operations
+        WHERE entity_type = 'transaction' AND operation_type = 'CREATE'
           AND metadata->>'source' IN ('legacy_dompet', 'legacy_expenditure')
     """)
     return {

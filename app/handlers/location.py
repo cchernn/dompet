@@ -24,18 +24,18 @@ def get(params: Params) -> Location:
 
 def add(params: Params) -> Location:
     body = params.body or {}
-    row = location_db.create_location(body)
+    row = location_db.create_location(params.user, body)
     return Location(**row)
 
 
 def edit(params: Params) -> Location:
     location_id = params.pathParams.get("location_id")
     body = params.body or {}
-    row = location_db.update_location(location_id, body)
+    row = location_db.update_location(params.user, location_id, body)
     return Location(**row)
 
 
 def delete(params: Params) -> Location:
     location_id = params.pathParams.get("location_id")
-    row = location_db.delete_location(location_id)
+    row = location_db.delete_location(params.user, location_id)
     return Location(**row)

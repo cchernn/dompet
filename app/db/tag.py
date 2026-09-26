@@ -1,5 +1,6 @@
 from ..lib.exceptions import InvalidDataException
 from ..utils.db import run_atomic, paginate
+from .operations import row_to_dict, record_operation
 
 UPDATABLE_FIELDS = ("name",)
 
@@ -34,7 +35,9 @@ def create_tag(user_id, body: dict) -> dict:
             "INSERT INTO dompet.tags (user_id, name) VALUES (%s, %s) RETURNING *",
             (str(user_id), name),
         )
-        return cursor.fetchone()
+        row = cursor.fetchone()
+        record_operation(cursor, "tag", row["id"], user_id, "CREATE", None, row_to_dict(row))
+        return row
 
     return run_atomic(work, user_id=user_id)
 
@@ -46,10 +49,11 @@ def update_tag(user_id, tag_id, body: dict) -> dict:
 
     def work(cursor):
         cursor.execute(
-            "SELECT 1 FROM dompet.tags WHERE id = %s AND user_id = %s FOR UPDATE",
+            "SELECT * FROM dompet.tags WHERE id = %s AND user_id = %s FOR UPDATE",
             (str(tag_id), str(user_id)),
         )
-        if not cursor.fetchone():
+        before = cursor.fetchone()
+        if not before:
             raise InvalidDataException(ValueError(f"Tag not found or not owned by user: {tag_id}"))
 
         set_clause = ", ".join(f"{field} = %s" for field in patch)
@@ -57,7 +61,9 @@ def update_tag(user_id, tag_id, body: dict) -> dict:
             f"UPDATE dompet.tags SET {set_clause}, updated_at = NOW() WHERE id = %s AND user_id = %s RETURNING *",
             (*patch.values(), str(tag_id), str(user_id)),
         )
-        return cursor.fetchone()
+        after = cursor.fetchone()
+        record_operation(cursor, "tag", tag_id, user_id, "UPDATE", row_to_dict(before), row_to_dict(after))
+        return after
 
     return run_atomic(work, user_id=user_id)
 
@@ -65,12 +71,19 @@ def update_tag(user_id, tag_id, body: dict) -> dict:
 def delete_tag(user_id, tag_id) -> dict:
     def work(cursor):
         cursor.execute(
+            "SELECT * FROM dompet.tags WHERE id = %s AND user_id = %s FOR UPDATE",
+            (str(tag_id), str(user_id)),
+        )
+        before = cursor.fetchone()
+        if not before:
+            raise InvalidDataException(ValueError(f"Tag not found or not owned by user: {tag_id}"))
+
+        cursor.execute(
             "UPDATE dompet.tags SET is_active = FALSE, updated_at = NOW() WHERE id = %s AND user_id = %s RETURNING *",
             (str(tag_id), str(user_id)),
         )
-        row = cursor.fetchone()
-        if not row:
-            raise InvalidDataException(ValueError(f"Tag not found or not owned by user: {tag_id}"))
-        return row
+        after = cursor.fetchone()
+        record_operation(cursor, "tag", tag_id, user_id, "DEACTIVATE", row_to_dict(before), row_to_dict(after))
+        return after
 
     return run_atomic(work, user_id=user_id)

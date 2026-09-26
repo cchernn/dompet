@@ -1,11 +1,10 @@
 import uuid
-from datetime import date, datetime
+from datetime import date
 from decimal import Decimal
-
-from psycopg2.extras import Json
 
 from ..lib.exceptions import InvalidDataException
 from ..utils.db import run_atomic
+from .operations import row_to_dict, record_operation
 
 OPERATION_TYPES = ("CREATE", "UPDATE", "DEACTIVATE", "REACTIVATE", "ROLLBACK")
 TRANSACTION_TYPES = ("expenditure", "income", "transfer")
@@ -34,20 +33,6 @@ def _resolve_datetime(body: dict, current: dict = None) -> str:
     if current is not None:
         return current["datetime"]
     raise InvalidDataException(ValueError("Either 'date' or 'datetime' is required"))
-
-
-def _jsonable(value):
-    if isinstance(value, uuid.UUID):
-        return str(value)
-    if isinstance(value, (date, datetime)):
-        return value.isoformat()
-    if isinstance(value, Decimal):
-        return str(value)
-    return value
-
-
-def _row_to_dict(row) -> dict:
-    return {k: _jsonable(v) for k, v in dict(row).items()}
 
 
 def _require_currency(cursor, currency_code: str) -> None:
@@ -105,26 +90,6 @@ def _lock_owned_transaction(cursor, user_id, transaction_id) -> dict:
     return row
 
 
-def _record_operation(cursor, transaction_id, user_id, operation_type, before_data, after_data, metadata=None):
-    cursor.execute(
-        """
-        INSERT INTO dompet.transaction_operations
-            (transaction_id, user_id, operation_type, before_data, after_data, metadata)
-        VALUES (%s, %s, %s, %s, %s, %s)
-        RETURNING id
-        """,
-        (
-            str(transaction_id),
-            str(user_id),
-            operation_type,
-            Json(before_data) if before_data is not None else None,
-            Json(after_data) if after_data is not None else None,
-            Json(metadata) if metadata is not None else None,
-        ),
-    )
-    return cursor.fetchone()["id"]
-
-
 def create_transaction(user_id, body: dict, metadata: dict = None) -> dict:
     missing = [f for f in CREATE_REQUIRED_FIELDS if body.get(f) in (None, "")]
     if missing:
@@ -152,9 +117,9 @@ def create_transaction(user_id, body: dict, metadata: dict = None) -> dict:
                 fields["category_id"], fields["source_account_id"], fields["destination_account_id"],
             ),
         )
-        after_row = _row_to_dict(cursor.fetchone())
+        after_row = row_to_dict(cursor.fetchone())
 
-        _record_operation(cursor, transaction_id, user_id, "CREATE", None, after_row, metadata)
+        record_operation(cursor, "transaction", transaction_id, user_id, "CREATE", None, after_row, metadata)
         return after_row
 
     return run_atomic(work, user_id=user_id)
@@ -167,7 +132,7 @@ def update_transaction(user_id, transaction_id, body: dict, metadata: dict = Non
 
     def work(cursor):
         current = _lock_owned_transaction(cursor, user_id, transaction_id)
-        before_row = _row_to_dict(current)
+        before_row = row_to_dict(current)
 
         merged = {field: patch.get(field, current[field]) for field in UPDATABLE_FIELDS}
         merged["datetime"] = _resolve_datetime(body, current)
@@ -189,9 +154,9 @@ def update_transaction(user_id, transaction_id, body: dict, metadata: dict = Non
                 str(transaction_id), str(user_id),
             ),
         )
-        after_row = _row_to_dict(cursor.fetchone())
+        after_row = row_to_dict(cursor.fetchone())
 
-        _record_operation(cursor, transaction_id, user_id, "UPDATE", before_row, after_row, metadata)
+        record_operation(cursor, "transaction", transaction_id, user_id, "UPDATE", before_row, after_row, metadata)
         return after_row
 
     return run_atomic(work, user_id=user_id)
@@ -200,7 +165,7 @@ def update_transaction(user_id, transaction_id, body: dict, metadata: dict = Non
 def _set_active_state(user_id, transaction_id, active: bool, operation_type: str, metadata: dict = None) -> dict:
     def work(cursor):
         current = _lock_owned_transaction(cursor, user_id, transaction_id)
-        before_row = _row_to_dict(current)
+        before_row = row_to_dict(current)
 
         if current["is_active"] == active:
             state = "active" if active else "inactive"
@@ -215,9 +180,9 @@ def _set_active_state(user_id, transaction_id, active: bool, operation_type: str
             """,
             (active, str(transaction_id), str(user_id)),
         )
-        after_row = _row_to_dict(cursor.fetchone())
+        after_row = row_to_dict(cursor.fetchone())
 
-        _record_operation(cursor, transaction_id, user_id, operation_type, before_row, after_row, metadata)
+        record_operation(cursor, "transaction", transaction_id, user_id, operation_type, before_row, after_row, metadata)
         return after_row
 
     return run_atomic(work, user_id=user_id)
@@ -234,12 +199,12 @@ def reactivate_transaction(user_id, transaction_id, metadata: dict = None) -> di
 def rollback_transaction(user_id, transaction_id, target_operation_id, metadata: dict = None) -> dict:
     def work(cursor):
         current = _lock_owned_transaction(cursor, user_id, transaction_id)
-        before_row = _row_to_dict(current)
+        before_row = row_to_dict(current)
 
         cursor.execute(
             """
-            SELECT after_data FROM dompet.transaction_operations
-            WHERE id = %s AND transaction_id = %s AND user_id = %s
+            SELECT after_data FROM dompet.operations
+            WHERE id = %s AND entity_type = 'transaction' AND entity_id = %s AND user_id = %s
             """,
             (str(target_operation_id), str(transaction_id), str(user_id)),
         )
@@ -271,10 +236,10 @@ def rollback_transaction(user_id, transaction_id, target_operation_id, metadata:
                 restore["is_active"], str(transaction_id), str(user_id),
             ),
         )
-        after_row = _row_to_dict(cursor.fetchone())
+        after_row = row_to_dict(cursor.fetchone())
 
         rollback_metadata = {**(metadata or {}), "rollback_target_operation_id": str(target_operation_id)}
-        _record_operation(cursor, transaction_id, user_id, "ROLLBACK", before_row, after_row, rollback_metadata)
+        record_operation(cursor, "transaction", transaction_id, user_id, "ROLLBACK", before_row, after_row, rollback_metadata)
         return after_row
 
     return run_atomic(work, user_id=user_id)
