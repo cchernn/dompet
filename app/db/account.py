@@ -1,8 +1,22 @@
+import re
+import uuid
+
 from ..lib.exceptions import InvalidDataException
 from ..utils.db import run_atomic, paginate
 from .operations import row_to_dict, record_operation
 
-UPDATABLE_FIELDS = ("code", "name", "description")
+UPDATABLE_FIELDS = ("name", "description")
+
+
+def _generate_code(name: str) -> str:
+    """code is no longer something a user needs to pick -- accounts are
+    created by name, duplicates and all, since `id` is what actually
+    distinguishes rows. Auto-generates a short, effectively-unique code so
+    the underlying UNIQUE(user_id, code) constraint (and the migration
+    scripts' existing slugify_code-based dedup trick) keep working
+    unchanged for anyone still passing one explicitly."""
+    slug = re.sub(r"[^A-Za-z0-9]+", "", name).upper()[:20] or "ACCT"
+    return f"{slug}-{uuid.uuid4().hex[:8]}"
 
 
 def list_accounts(user_id, page: int, page_size: int, include_inactive: bool = False) -> tuple[list[dict], dict]:
@@ -11,7 +25,7 @@ def list_accounts(user_id, page: int, page_size: int, include_inactive: bool = F
         params = [str(user_id)]
         if not include_inactive:
             query += " AND is_active = TRUE"
-        query += " ORDER BY code"
+        query += " ORDER BY name"
         return paginate(cursor, query, params, page, page_size)
 
     return run_atomic(work, user_id=user_id)
@@ -32,10 +46,10 @@ def get_account(user_id, account_id) -> dict:
 
 
 def create_account(user_id, body: dict) -> dict:
-    code = body.get("code")
     name = body.get("name")
-    if not code or not name:
-        raise InvalidDataException(ValueError("code and name are required"))
+    if not name:
+        raise InvalidDataException(ValueError("name is required"))
+    code = body.get("code") or _generate_code(name)
 
     def work(cursor):
         cursor.execute(
