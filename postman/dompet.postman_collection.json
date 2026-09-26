@@ -113,7 +113,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"code\": \"CHECKING\",\n  \"name\": \"Checking Account\",\n  \"description\": \"Created from Postman\"\n}"
+              "raw": "{\n  \"name\": \"Checking Account\",\n  \"description\": \"Created from Postman\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/accounts",
@@ -157,7 +157,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"code\": \"MERCHANT\",\n  \"name\": \"Test Merchant\",\n  \"description\": \"Created from Postman\"\n}"
+              "raw": "{\n  \"name\": \"Test Merchant\",\n  \"description\": \"Created from Postman\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/accounts",
