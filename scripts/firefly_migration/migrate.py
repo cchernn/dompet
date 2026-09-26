@@ -196,6 +196,7 @@ def build_transaction(journal: dict, ctx: dict, account_map: dict, category_map:
 
     body = {
         "date": journal["date"][:10],
+        "datetime": journal["date"],
         "name": journal["description"],
         "type": tx_type,
         "amount": str(amount),
