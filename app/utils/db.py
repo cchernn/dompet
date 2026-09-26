@@ -42,6 +42,14 @@ def run_atomic(work, user_id=None):
         conn.close()
 
 
+def like_pattern(value: str) -> str:
+    """Escapes LIKE/ILIKE wildcards in a literal search term so `%`/`_`
+    typed by the caller are matched literally, not treated as pattern
+    metacharacters, then wraps it for a substring match."""
+    escaped = value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+    return f"%{escaped}%"
+
+
 def paginate(cursor, query: str, params, page: int, page_size: int):
     """Runs an already-filtered, already-ordered SELECT (no LIMIT/OFFSET)
     as one page, returning (rows, metadata). The query is wrapped as a

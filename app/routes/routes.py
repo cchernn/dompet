@@ -4,14 +4,20 @@ from ..lib.exceptions import InvalidFunctionException
 from ..handlers import transaction
 from ..handlers import transaction_search
 from ..handlers import account
+from ..handlers import account_search
 from ..handlers import category
+from ..handlers import category_search
 from ..handlers import location
+from ..handlers import location_search
 from ..handlers import account_location
 from ..handlers import tag
+from ..handlers import tag_search
 from ..handlers import transaction_tag
 from ..handlers import attachment
+from ..handlers import attachment_search
 from ..handlers import transaction_attachment
 from ..handlers import budget
+from ..handlers import budget_search
 from ..handlers import budget_member
 from ..handlers import transaction_budget
 
@@ -40,6 +46,7 @@ routes = {
 
     (re.compile(r"^/accounts$"), "GET", account.list),
     (re.compile(r"^/accounts$"), "POST", account.add),
+    (re.compile(r"^/accounts/search$"), "GET", account_search.search),
     (re.compile(rf"^/accounts/{_uuid('account_id')}$"), "GET", account.get),
     (re.compile(rf"^/accounts/{_uuid('account_id')}$"), "PUT", account.edit),
     (re.compile(rf"^/accounts/{_uuid('account_id')}/deactivate$"), "POST", account.deactivate),
@@ -47,11 +54,13 @@ routes = {
 
     (re.compile(r"^/categories$"), "GET", category.list),
     (re.compile(r"^/categories$"), "POST", category.add),
+    (re.compile(r"^/categories/search$"), "GET", category_search.search),
     (re.compile(rf"^/categories/{_uuid('category_id')}$"), "PUT", category.edit),
     (re.compile(rf"^/categories/{_uuid('category_id')}$"), "DELETE", category.delete),
 
     (re.compile(r"^/locations$"), "GET", location.list),
     (re.compile(r"^/locations$"), "POST", location.add),
+    (re.compile(r"^/locations/search$"), "GET", location_search.search),
     (re.compile(rf"^/locations/{_uuid('location_id')}$"), "GET", location.get),
     (re.compile(rf"^/locations/{_uuid('location_id')}$"), "PUT", location.edit),
     (re.compile(rf"^/locations/{_uuid('location_id')}$"), "DELETE", location.delete),
@@ -62,6 +71,7 @@ routes = {
 
     (re.compile(r"^/tags$"), "GET", tag.list),
     (re.compile(r"^/tags$"), "POST", tag.add),
+    (re.compile(r"^/tags/search$"), "GET", tag_search.search),
     (re.compile(rf"^/tags/{_uuid('tag_id')}$"), "PUT", tag.edit),
     (re.compile(rf"^/tags/{_uuid('tag_id')}$"), "DELETE", tag.delete),
 
@@ -71,6 +81,7 @@ routes = {
 
     (re.compile(r"^/attachments$"), "GET", attachment.list),
     (re.compile(r"^/attachments$"), "POST", attachment.add),
+    (re.compile(r"^/attachments/search$"), "GET", attachment_search.search),
     (re.compile(rf"^/attachments/{_uuid('attachment_id')}$"), "GET", attachment.get),
     (re.compile(rf"^/attachments/{_uuid('attachment_id')}$"), "PUT", attachment.edit),
     (re.compile(rf"^/attachments/{_uuid('attachment_id')}$"), "DELETE", attachment.delete),
@@ -81,6 +92,7 @@ routes = {
 
     (re.compile(r"^/budgets$"), "GET", budget.list),
     (re.compile(r"^/budgets$"), "POST", budget.add),
+    (re.compile(r"^/budgets/search$"), "GET", budget_search.search),
     (re.compile(rf"^/budgets/{_uuid('budget_id')}$"), "GET", budget.get),
     (re.compile(rf"^/budgets/{_uuid('budget_id')}$"), "PUT", budget.edit),
     (re.compile(rf"^/budgets/{_uuid('budget_id')}$"), "DELETE", budget.delete),

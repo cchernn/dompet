@@ -127,23 +127,29 @@ instead of one file upload.
 
 ```
 /accounts                                                    GET POST
+/accounts/search                                             GET
 /accounts/{account_id}                                       GET PUT
 /accounts/{account_id}/deactivate                            POST
 /accounts/{account_id}/locations                             GET POST
 /accounts/{account_id}/locations/{location_id}                    DELETE
 /accounts/{account_id}/reactivate                            POST
 /attachments                                                 GET POST
+/attachments/search                                          GET
 /attachments/{attachment_id}                            DELETE GET PUT
 /budgets                                                     GET POST
+/budgets/search                                              GET
 /budgets/{budget_id}                                    DELETE GET PUT
 /budgets/{budget_id}/members                                 GET POST
 /budgets/{budget_id}/members/{member_user_id}                    DELETE
 /budgets/{budget_id}/transactions                            GET
 /categories                                                  GET POST
+/categories/search                                           GET
 /categories/{category_id}                                DELETE PUT
 /locations                                                   GET POST
+/locations/search                                            GET
 /locations/{location_id}                                DELETE GET PUT
 /tags                                                        GET POST
+/tags/search                                                 GET
 /tags/{tag_id}                                           DELETE PUT
 /transactions                                                GET POST
 /transactions/search                                         GET
@@ -163,12 +169,14 @@ A path like `/accounts/{account_id}/locations` needs its parent
 (`/accounts/{account_id}`) created first — the console requires building
 the resource tree top-down, same as the path structure implies.
 
-`/transactions/search` is the one case where a literal child resource
-(`search`) sits alongside a `{transaction_id}` parameter resource under
-the same parent (`/transactions`) — API Gateway supports both existing
-as siblings and matches the literal one first for an exact `/transactions/search`
-request, same as the app's own route matching already does (`search` never
-matches the UUID-shaped `{transaction_id}` pattern).
+`/transactions/search`, `/accounts/search`, `/categories/search`,
+`/tags/search`, `/budgets/search`, and `/locations/search` are all the
+same case: a literal child resource (`search`) sitting alongside that
+parent's own `{..._id}` parameter resource. API Gateway supports both
+existing as siblings and matches the literal one first for an exact
+`.../search` request, same as the app's own route matching already does
+(`search` never matches a UUID-shaped `{..._id}` pattern). `/attachments/search`
+is the same case too, alongside `{attachment_id}`.
 
 ### Deploy
 

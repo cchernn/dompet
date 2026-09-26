@@ -1,12 +1,4 @@
-from ..utils.db import run_atomic, paginate
-
-
-def _substring_pattern(value: str) -> str:
-    """Escapes LIKE wildcards in a literal search term so `%`/`_` typed by
-    the caller are matched literally, not treated as pattern metacharacters,
-    then wraps it for a substring match."""
-    escaped = value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
-    return f"%{escaped}%"
+from ..utils.db import run_atomic, paginate, like_pattern
 
 
 def search_transactions(
@@ -39,10 +31,10 @@ def search_transactions(
             params.append(destination)
         if tags:
             query += " AND tags LIKE %s"
-            params.append(_substring_pattern(tags))
+            params.append(like_pattern(tags))
         if budgets:
             query += " AND budgets LIKE %s"
-            params.append(_substring_pattern(budgets))
+            params.append(like_pattern(budgets))
         query += " ORDER BY date DESC"
         return paginate(cursor, query, params, page, page_size)
 

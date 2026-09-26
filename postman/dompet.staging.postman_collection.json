@@ -78,6 +78,34 @@
           }
         },
         {
+          "name": "Search accounts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/accounts/search?q=&page_size=25",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "accounts",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "",
+                  "description": "substring, case-insensitive"
+                },
+                {
+                  "key": "page_size",
+                  "value": "25"
+                }
+              ]
+            }
+          }
+        },
+        {
           "name": "Create account",
           "event": [
             {
@@ -258,6 +286,34 @@
           }
         },
         {
+          "name": "Search categories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/categories/search?q=&page_size=25",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "categories",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "",
+                  "description": "substring, case-insensitive"
+                },
+                {
+                  "key": "page_size",
+                  "value": "25"
+                }
+              ]
+            }
+          }
+        },
+        {
           "name": "Create category",
           "event": [
             {
@@ -357,6 +413,34 @@
               ],
               "path": [
                 "locations"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search locations",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/locations/search?q=&page_size=25",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "locations",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "",
+                  "description": "substring, case-insensitive"
+                },
+                {
+                  "key": "page_size",
+                  "value": "25"
+                }
               ]
             }
           }
@@ -547,6 +631,34 @@
               ],
               "path": [
                 "tags"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search tags",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/tags/search?q=&page_size=25",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "tags",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "",
+                  "description": "substring, case-insensitive"
+                },
+                {
+                  "key": "page_size",
+                  "value": "25"
+                }
               ]
             }
           }
@@ -936,6 +1048,34 @@
           }
         },
         {
+          "name": "Search attachments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/attachments/search?q=&page_size=25",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "attachments",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "",
+                  "description": "substring, case-insensitive"
+                },
+                {
+                  "key": "page_size",
+                  "value": "25"
+                }
+              ]
+            }
+          }
+        },
+        {
           "name": "Create attachment",
           "request": {
             "method": "POST",
@@ -1121,6 +1261,34 @@
               ],
               "path": [
                 "budgets"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search budgets",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/budgets/search?q=&page_size=25",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "budgets",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "",
+                  "description": "substring, case-insensitive"
+                },
+                {
+                  "key": "page_size",
+                  "value": "25"
+                }
               ]
             }
           }
