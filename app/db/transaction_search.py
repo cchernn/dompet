@@ -35,7 +35,7 @@ def search_transactions(
         if budgets:
             query += " AND budgets LIKE %s"
             params.append(like_pattern(budgets))
-        query += " ORDER BY date DESC"
+        query += " ORDER BY datetime DESC"
         return paginate(cursor, query, params, page, page_size)
 
     return run_atomic(work, user_id=user_id)

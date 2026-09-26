@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import Optional, Literal, List
-from datetime import date as Date
+from datetime import date as Date, datetime as DateTime
 from decimal import Decimal
 from uuid import UUID
 
@@ -35,6 +35,10 @@ class TransactionSearchResult(BaseModel):
         ...,
         title="Transaction Date",
         description="Derived from the transaction's datetime",
+    )
+    datetime: DateTime = Field(
+        ...,
+        title="Transaction Date & Time",
     )
     name: str = Field(
         ...,
