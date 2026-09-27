@@ -20,6 +20,7 @@ from ..handlers import budget
 from ..handlers import budget_search
 from ..handlers import budget_member
 from ..handlers import transaction_budget
+from ..handlers import notification
 
 import re
 from typing import Callable, Optional
@@ -106,6 +107,12 @@ routes = {
     (re.compile(rf"^/transactions/{_uuid('transaction_id')}/budgets$"), "GET", transaction_budget.list),
     (re.compile(rf"^/transactions/{_uuid('transaction_id')}/budgets$"), "POST", transaction_budget.add),
     (re.compile(rf"^/transactions/{_uuid('transaction_id')}/budgets/{_uuid('budget_id')}$"), "DELETE", transaction_budget.delete),
+
+    (re.compile(r"^/notifications$"), "GET", notification.list),
+    (re.compile(r"^/notifications$"), "POST", notification.add),
+    (re.compile(r"^/notifications/read-all$"), "POST", notification.mark_all_read),
+    (re.compile(rf"^/notifications/{_uuid('notification_id')}/read$"), "POST", notification.mark_read),
+    (re.compile(rf"^/notifications/{_uuid('notification_id')}$"), "DELETE", notification.delete),
 }
 
 def match_route(path: str, method: str):

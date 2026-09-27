@@ -148,6 +148,10 @@ instead of one file upload.
 /locations                                                   GET POST
 /locations/search                                            GET
 /locations/{location_id}                                DELETE GET PUT
+/notifications                                               GET POST
+/notifications/read-all                                     POST
+/notifications/{notification_id}                            DELETE
+/notifications/{notification_id}/read                       POST
 /tags                                                        GET POST
 /tags/search                                                 GET
 /tags/{tag_id}                                           DELETE PUT
@@ -176,7 +180,8 @@ parent's own `{..._id}` parameter resource. API Gateway supports both
 existing as siblings and matches the literal one first for an exact
 `.../search` request, same as the app's own route matching already does
 (`search` never matches a UUID-shaped `{..._id}` pattern). `/attachments/search`
-is the same case too, alongside `{attachment_id}`.
+is the same case too, alongside `{attachment_id}`. `/notifications/read-all`
+is the identical situation alongside `/notifications/{notification_id}`.
 
 ### Deploy
 
