@@ -1,5 +1,5 @@
 import uuid
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
 
 from ..lib.exceptions import InvalidDataException
@@ -19,11 +19,34 @@ UPDATABLE_FIELDS = (
 )
 
 
+def _has_timezone_offset(value) -> bool:
+    if isinstance(value, datetime):
+        return value.tzinfo is not None
+    try:
+        parsed = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+    except ValueError:
+        return False
+    return parsed.tzinfo is not None
+
+
 def _resolve_datetime(body: dict, current: dict = None) -> str:
     """`date` is accepted as a convenience input (defaults to midnight, or on
     an edit preserves the existing time-of-day) but only `datetime` is
-    persisted -- there's no separate stored date column."""
+    persisted -- there's no separate stored date column.
+
+    `datetime` must carry an explicit timezone offset (e.g. a trailing `Z`
+    or `+08:00`) -- a naive value would be silently interpreted as UTC by
+    Postgres, which is exactly the bug that corrupted ~2000 Firefly-sourced
+    rows and 8 real user-created transactions (both since corrected). A
+    well-behaved client already produces this for free (e.g. JS's
+    `Date.toISOString()` always ends in `Z`); this just refuses to
+    silently accept the ambiguous case instead of guessing."""
     if body.get("datetime"):
+        if not _has_timezone_offset(body["datetime"]):
+            raise InvalidDataException(ValueError(
+                "datetime must include an explicit timezone offset (e.g. a trailing 'Z' or '+08:00') "
+                "-- a value without one would be silently interpreted as UTC"
+            ))
         return body["datetime"]
     if body.get("date"):
         new_date = date.fromisoformat(body["date"])
