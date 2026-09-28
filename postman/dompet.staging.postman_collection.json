@@ -827,7 +827,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"date\": \"2026-09-06\",\n  \"name\": \"Postman Test Transaction\",\n  \"type\": \"expenditure\",\n  \"amount\": \"12.50\",\n  \"currency_code\": \"MYR\",\n  \"category_id\": \"{{categoryId}}\",\n  \"source_account_id\": \"{{accountId}}\",\n  \"destination_account_id\": \"{{destinationAccountId}}\",\n  \"location_id\": \"{{locationId}}\"\n}"
+              "raw": "{\n  \"date\": \"2026-09-06\",\n  \"name\": \"Postman Test Transaction\",\n  \"type\": \"expenditure\",\n  \"amount\": \"12.50\",\n  \"currency_code\": \"MYR\",\n  \"category_id\": \"{{categoryId}}\",\n  \"source_account_id\": \"{{accountId}}\",\n  \"destination_account_id\": \"{{destinationAccountId}}\",\n  \"source_location_id\": \"{{locationId}}\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/transactions",

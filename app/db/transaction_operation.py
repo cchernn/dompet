@@ -15,7 +15,8 @@ CREATE_REQUIRED_FIELDS = (
 )
 UPDATABLE_FIELDS = (
     "datetime", "name", "type", "amount", "currency_code",
-    "category_id", "source_account_id", "destination_account_id", "location_id",
+    "category_id", "source_account_id", "destination_account_id",
+    "source_location_id", "destination_location_id",
 )
 
 
@@ -89,27 +90,26 @@ def _require_accessible_category(cursor, user_id, category_id) -> None:
         raise InvalidDataException(ValueError(f"Unknown, inactive, or inaccessible category: {category_id}"))
 
 
-def _require_accessible_location(cursor, location_id, source_account_id, destination_account_id) -> None:
+def _require_accessible_location(cursor, location_id, account_id, field_name: str) -> None:
     """Locations have no owner concept (global, like currencies) -- instead
-    a transaction's location must already be linked, via account_locations,
-    to whichever account it's actually happening at."""
+    each leg's location must already be linked, via account_locations, to
+    that same leg's account. Source and destination are validated
+    independently since a transaction can genuinely have two different
+    real-world locations (e.g. cash withdrawn at one place into a wallet
+    destined for spending at another)."""
     if location_id is None:
         return
     cursor.execute(
         """
         SELECT 1 FROM dompet.locations loc
-        WHERE loc.id = %s AND loc.is_active = TRUE
-          AND EXISTS (
-              SELECT 1 FROM dompet.account_locations al
-              WHERE al.location_id = loc.id
-                AND al.account_id IN (%s, %s)
-          )
+        JOIN dompet.account_locations al ON al.location_id = loc.id
+        WHERE loc.id = %s AND loc.is_active = TRUE AND al.account_id = %s
         """,
-        (location_id, source_account_id, destination_account_id),
+        (location_id, account_id),
     )
     if not cursor.fetchone():
         raise InvalidDataException(
-            ValueError(f"Unknown, inactive, or not linked to either account: {location_id}")
+            ValueError(f"Unknown, inactive, or not linked to {field_name}: {location_id}")
         )
 
 
@@ -123,7 +123,10 @@ def _validate_fields(cursor, user_id, fields: dict) -> None:
     _require_owned_account(cursor, user_id, fields["destination_account_id"], "destination_account_id")
     _require_accessible_category(cursor, user_id, fields.get("category_id"))
     _require_accessible_location(
-        cursor, fields.get("location_id"), fields["source_account_id"], fields["destination_account_id"]
+        cursor, fields.get("source_location_id"), fields["source_account_id"], "source_account_id"
+    )
+    _require_accessible_location(
+        cursor, fields.get("destination_location_id"), fields["destination_account_id"], "destination_account_id"
     )
 
 
@@ -147,7 +150,8 @@ def create_transaction(user_id, body: dict, metadata: dict = None) -> dict:
 
     fields = {field: body[field] for field in CREATE_REQUIRED_FIELDS}
     fields["category_id"] = body.get("category_id")
-    fields["location_id"] = body.get("location_id")
+    fields["source_location_id"] = body.get("source_location_id")
+    fields["destination_location_id"] = body.get("destination_location_id")
     fields["datetime"] = _resolve_datetime(body)
 
     def work(cursor):
@@ -158,15 +162,16 @@ def create_transaction(user_id, body: dict, metadata: dict = None) -> dict:
             """
             INSERT INTO dompet.transactions
                 (id, user_id, datetime, name, type, amount, currency_code,
-                 category_id, source_account_id, destination_account_id, location_id)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                 category_id, source_account_id, destination_account_id,
+                 source_location_id, destination_location_id)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING *
             """,
             (
                 str(transaction_id), str(user_id), fields["datetime"], fields["name"],
                 fields["type"], fields["amount"], fields["currency_code"],
                 fields["category_id"], fields["source_account_id"], fields["destination_account_id"],
-                fields["location_id"],
+                fields["source_location_id"], fields["destination_location_id"],
             ),
         )
         after_row = row_to_dict(cursor.fetchone())
@@ -195,14 +200,15 @@ def update_transaction(user_id, transaction_id, body: dict, metadata: dict = Non
             UPDATE dompet.transactions
             SET datetime = %s, name = %s, type = %s, amount = %s, currency_code = %s,
                 category_id = %s, source_account_id = %s, destination_account_id = %s,
-                location_id = %s, updated_at = NOW()
+                source_location_id = %s, destination_location_id = %s, updated_at = NOW()
             WHERE id = %s AND user_id = %s
             RETURNING *
             """,
             (
                 merged["datetime"], merged["name"], merged["type"], merged["amount"],
                 merged["currency_code"], merged["category_id"],
-                merged["source_account_id"], merged["destination_account_id"], merged["location_id"],
+                merged["source_account_id"], merged["destination_account_id"],
+                merged["source_location_id"], merged["destination_location_id"],
                 str(transaction_id), str(user_id),
             ),
         )
@@ -271,15 +277,18 @@ def rollback_transaction(user_id, transaction_id, target_operation_id, metadata:
         # key at all -- fall back to midnight of that snapshot's date rather
         # than KeyError on an old rollback target.
         restore_datetime = restore.get("datetime") or f"{restore['date']} 00:00:00"
-        # Snapshots recorded before location_id existed have no such key either.
-        restore_location_id = restore.get("location_id")
+        # Snapshots recorded before source/destination_location_id existed
+        # (or before the single location_id it briefly replaced) have
+        # neither key -- default both to unset rather than KeyError.
+        restore_source_location_id = restore.get("source_location_id")
+        restore_destination_location_id = restore.get("destination_location_id")
 
         cursor.execute(
             """
             UPDATE dompet.transactions
             SET datetime = %s, name = %s, type = %s, amount = %s, currency_code = %s,
                 category_id = %s, source_account_id = %s, destination_account_id = %s,
-                location_id = %s, is_active = %s, updated_at = NOW()
+                source_location_id = %s, destination_location_id = %s, is_active = %s, updated_at = NOW()
             WHERE id = %s AND user_id = %s
             RETURNING *
             """,
@@ -287,7 +296,8 @@ def rollback_transaction(user_id, transaction_id, target_operation_id, metadata:
                 restore_datetime, restore["name"], restore["type"], restore["amount"],
                 restore["currency_code"], restore["category_id"],
                 restore["source_account_id"], restore["destination_account_id"],
-                restore_location_id, restore["is_active"], str(transaction_id), str(user_id),
+                restore_source_location_id, restore_destination_location_id,
+                restore["is_active"], str(transaction_id), str(user_id),
             ),
         )
         after_row = row_to_dict(cursor.fetchone())

@@ -6,7 +6,8 @@ def search_transactions(
     date_from: str = None, date_to: str = None,
     category: str = None, type: str = None,
     source: str = None, destination: str = None,
-    tags: str = None, budgets: str = None, location: str = None,
+    tags: str = None, budgets: str = None,
+    source_location: str = None, destination_location: str = None,
 ) -> tuple[list[dict], dict]:
     def work(cursor):
         query = "SELECT * FROM dompet.vw_transactions WHERE 1=1"
@@ -35,9 +36,12 @@ def search_transactions(
         if budgets:
             query += " AND budgets LIKE %s"
             params.append(like_pattern(budgets))
-        if location:
-            query += " AND location = %s"
-            params.append(location)
+        if source_location:
+            query += " AND source_location = %s"
+            params.append(source_location)
+        if destination_location:
+            query += " AND destination_location = %s"
+            params.append(destination_location)
         query += " ORDER BY datetime DESC"
         return paginate(cursor, query, params, page, page_size)
 
