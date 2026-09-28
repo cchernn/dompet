@@ -12,7 +12,7 @@ def search(params: Params) -> PaginatedResult:
         date_from=q.get("from"), date_to=q.get("to"),
         category=q.get("category"), type=q.get("type"),
         source=q.get("source"), destination=q.get("destination"),
-        tags=q.get("tags"), budgets=q.get("budgets"),
+        tags=q.get("tags"), budgets=q.get("budgets"), location=q.get("location"),
     )
     results = []
     for row in rows:

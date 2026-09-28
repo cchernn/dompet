@@ -80,3 +80,7 @@ class TransactionSearchResult(BaseModel):
         default_factory=list,
         title="Budget Names",
     )
+    location: Optional[str] = Field(
+        None,
+        title="Location Name",
+    )
