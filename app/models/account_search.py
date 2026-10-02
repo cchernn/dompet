@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, Literal
 from uuid import UUID
 
 
@@ -9,3 +9,6 @@ class AccountSearchResult(BaseModel):
     name: str = Field(..., title="Account Name")
     description: Optional[str] = Field(None, title="Account Description")
     usage_count: int = Field(..., title="Usage Count", description="Number of transactions referencing this account as source or destination")
+    type: Literal["bank", "wallet", "merchant", "online", "utility", "subscription", "other"] = Field(
+        ..., title="Account Type"
+    )

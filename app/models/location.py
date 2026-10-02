@@ -9,6 +9,11 @@ class Location(BaseModel):
         ...,
         title="Location ID",
     )
+    user_id: Optional[UUID] = Field(
+        None,
+        title="Owner User ID",
+        description="NULL for public/shared locations, Cognito UUID for user-owned (private) locations",
+    )
     type: Literal["physical", "online"] = Field(
         ...,
         title="Location Type",

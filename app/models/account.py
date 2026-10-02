@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, Literal
 from datetime import datetime
 from uuid import UUID
 
@@ -29,6 +29,10 @@ class Account(BaseModel):
     description: Optional[str] = Field(
         None,
         title="Account Description",
+    )
+    type: Literal["bank", "wallet", "merchant", "online", "utility", "subscription", "other"] = Field(
+        "other",
+        title="Account Type",
     )
     is_active: bool = Field(
         True,

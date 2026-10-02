@@ -12,13 +12,15 @@ def _include_inactive(params: Params) -> bool:
 
 def list(params: Params) -> PaginatedResult:
     page, page_size = parse_pagination(params)
-    rows, metadata = location_db.list_locations(page, page_size, include_inactive=_include_inactive(params))
+    rows, metadata = location_db.list_locations(
+        params.user, page, page_size, include_inactive=_include_inactive(params)
+    )
     return PaginatedResult([Location(**row) for row in rows], metadata)
 
 
 def get(params: Params) -> Location:
     location_id = params.pathParams.get("location_id")
-    row = location_db.get_location(location_id)
+    row = location_db.get_location(params.user, location_id)
     return Location(**row)
 
 

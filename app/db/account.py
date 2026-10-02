@@ -5,7 +5,8 @@ from ..lib.exceptions import InvalidDataException
 from ..utils.db import run_atomic, paginate
 from .operations import row_to_dict, record_operation
 
-UPDATABLE_FIELDS = ("name", "description")
+ACCOUNT_TYPES = ("bank", "wallet", "merchant", "online", "utility", "subscription", "other")
+UPDATABLE_FIELDS = ("name", "description", "type")
 
 
 def _generate_code(name: str) -> str:
@@ -50,15 +51,18 @@ def create_account(user_id, body: dict) -> dict:
     if not name:
         raise InvalidDataException(ValueError("name is required"))
     code = body.get("code") or _generate_code(name)
+    account_type = body.get("type", "other")
+    if account_type not in ACCOUNT_TYPES:
+        raise InvalidDataException(ValueError(f"Invalid account type: {account_type}"))
 
     def work(cursor):
         cursor.execute(
             """
-            INSERT INTO dompet.accounts (user_id, code, name, description)
-            VALUES (%s, %s, %s, %s)
+            INSERT INTO dompet.accounts (user_id, code, name, description, type)
+            VALUES (%s, %s, %s, %s, %s)
             RETURNING *
             """,
-            (str(user_id), code, name, body.get("description")),
+            (str(user_id), code, name, body.get("description"), account_type),
         )
         row = cursor.fetchone()
         record_operation(cursor, "account", row["id"], user_id, "CREATE", None, row_to_dict(row))
@@ -71,6 +75,8 @@ def update_account(user_id, account_id, body: dict) -> dict:
     patch = {k: v for k, v in body.items() if k in UPDATABLE_FIELDS}
     if not patch:
         raise InvalidDataException(ValueError("No updatable fields provided"))
+    if "type" in patch and patch["type"] not in ACCOUNT_TYPES:
+        raise InvalidDataException(ValueError(f"Invalid account type: {patch['type']}"))
 
     def work(cursor):
         cursor.execute(
