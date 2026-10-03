@@ -8,6 +8,7 @@ def search_transactions(
     source: str = None, destination: str = None,
     tags: str = None, budgets: str = None,
     source_location: str = None, destination_location: str = None,
+    owner: str = None,
 ) -> tuple[list[dict], dict]:
     def work(cursor):
         query = "SELECT * FROM dompet.vw_transactions WHERE 1=1"
@@ -42,6 +43,9 @@ def search_transactions(
         if destination_location:
             query += " AND destination_location = %s"
             params.append(destination_location)
+        if owner:
+            query += " AND user_id = %s"
+            params.append(owner)
         query += " ORDER BY datetime DESC"
         return paginate(cursor, query, params, page, page_size)
 

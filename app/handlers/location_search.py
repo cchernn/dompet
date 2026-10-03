@@ -10,5 +10,7 @@ def search(params: Params) -> PaginatedResult:
     # fetched in full, since they can grow into the thousands.
     page, page_size = parse_pagination(params)
     q = params.queryParams or {}
-    rows, metadata = location_search_db.search_locations(params.user, page, page_size, q=q.get("q"))
+    rows, metadata = location_search_db.search_locations(
+        params.user, page, page_size, q=q.get("q"), owner=q.get("user_id")
+    )
     return PaginatedResult([LocationSearchResult(**row) for row in rows], metadata)

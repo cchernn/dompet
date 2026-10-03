@@ -14,6 +14,7 @@ def search(params: Params) -> PaginatedResult:
         source=q.get("source"), destination=q.get("destination"),
         tags=q.get("tags"), budgets=q.get("budgets"),
         source_location=q.get("source_location"), destination_location=q.get("destination_location"),
+        owner=q.get("user_id"),
     )
     results = []
     for row in rows:

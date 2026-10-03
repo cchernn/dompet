@@ -1,7 +1,7 @@
 from ..utils.db import run_atomic, paginate, like_pattern
 
 
-def search_locations(user_id, page: int, page_size: int, q: str = None) -> tuple[list[dict], dict]:
+def search_locations(user_id, page: int, page_size: int, q: str = None, owner: str = None) -> tuple[list[dict], dict]:
     """Locations themselves are global/unowned (RLS policy is USING (true)),
     but the view's usage_count subquery counts dompet.account_locations,
     which IS RLS-scoped by ownership -- user_id is still needed here purely
@@ -13,6 +13,12 @@ def search_locations(user_id, page: int, page_size: int, q: str = None) -> tuple
         if q:
             query += " AND name ILIKE %s"
             params.append(like_pattern(q))
+        if owner:
+            if owner.lower() == "null":
+                query += " AND user_id IS NULL"
+            else:
+                query += " AND user_id = %s"
+                params.append(owner)
         query += " ORDER BY usage_count DESC, name ASC"
         return paginate(cursor, query, params, page, page_size)
 
