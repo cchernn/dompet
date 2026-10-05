@@ -10,3 +10,4 @@ class AttachmentSearchResult(BaseModel):
     content_type: Optional[str] = Field(None, title="Attachment Content Type")
     size_bytes: Optional[int] = Field(None, title="File Size (bytes)")
     created_at: datetime = Field(..., title="Uploaded At")
+    transaction_count: int = Field(..., title="Transaction Count", description="Number of transactions this attachment is linked to")
