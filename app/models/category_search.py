@@ -7,7 +7,7 @@ class CategorySearchResult(BaseModel):
     id: UUID = Field(..., title="Category ID")
     name: str = Field(..., title="Category Name")
     parent_id: Optional[UUID] = Field(None, title="Parent Category ID")
-    usage_count: int = Field(..., title="Usage Count", description="Number of transactions using this category")
+    transaction_count: int = Field(..., title="Transaction Count", description="Number of transactions using this category")
     user_id: Optional[UUID] = Field(
         None, title="Owner User ID", description="NULL for global/system categories"
     )
