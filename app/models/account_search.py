@@ -8,7 +8,8 @@ class AccountSearchResult(BaseModel):
     code: str = Field(..., title="Account Code")
     name: str = Field(..., title="Account Name")
     description: Optional[str] = Field(None, title="Account Description")
-    usage_count: int = Field(..., title="Usage Count", description="Number of transactions referencing this account as source or destination")
+    transaction_count: int = Field(..., title="Transaction Count", description="Number of transactions referencing this account as source or destination")
     type: Literal["bank", "wallet", "merchant", "online", "utility", "subscription", "other"] = Field(
         ..., title="Account Type"
     )
+    location_count: int = Field(..., title="Location Count", description="Number of locations linked to this account")

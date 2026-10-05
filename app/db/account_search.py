@@ -11,7 +11,7 @@ def search_accounts(user_id, page: int, page_size: int, q: str = None, type: str
         if type:
             query += " AND type = %s"
             params.append(type)
-        query += " ORDER BY usage_count DESC, name ASC"
+        query += " ORDER BY transaction_count DESC, name ASC"
         return paginate(cursor, query, params, page, page_size)
 
     return run_atomic(work, user_id=user_id)
