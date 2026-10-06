@@ -1,4 +1,4 @@
-from ..utils.db import run_atomic, paginate, like_pattern
+from ..utils.db import run_atomic, paginate
 
 
 def search_transactions(
@@ -32,11 +32,11 @@ def search_transactions(
             query += " AND destination = %s"
             params.append(destination)
         if tags:
-            query += " AND tags LIKE %s"
-            params.append(like_pattern(tags))
+            query += " AND %s = ANY(tags)"
+            params.append(tags)
         if budgets:
-            query += " AND budgets LIKE %s"
-            params.append(like_pattern(budgets))
+            query += " AND %s = ANY(budgets)"
+            params.append(budgets)
         if source_location:
             query += " AND source_location = %s"
             params.append(source_location)

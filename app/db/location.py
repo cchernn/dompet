@@ -72,10 +72,13 @@ def update_location(user_id, location_id, body: dict) -> dict:
         raise InvalidDataException(ValueError("No updatable fields provided"))
 
     def work(cursor):
-        cursor.execute("SELECT * FROM dompet.locations WHERE id = %s FOR UPDATE", (str(location_id),))
+        cursor.execute(
+            "SELECT * FROM dompet.locations WHERE id = %s AND user_id = %s FOR UPDATE",
+            (str(location_id), str(user_id)),
+        )
         existing = cursor.fetchone()
         if not existing:
-            raise InvalidDataException(ValueError(f"Location not found: {location_id}"))
+            raise InvalidDataException(ValueError(f"Location not found or not owned by user: {location_id}"))
 
         if existing["type"] == "online" and not patch.get("url", existing["url"]):
             raise InvalidDataException(ValueError("url is required for online locations"))
@@ -94,10 +97,13 @@ def update_location(user_id, location_id, body: dict) -> dict:
 
 def delete_location(user_id, location_id) -> dict:
     def work(cursor):
-        cursor.execute("SELECT * FROM dompet.locations WHERE id = %s FOR UPDATE", (str(location_id),))
+        cursor.execute(
+            "SELECT * FROM dompet.locations WHERE id = %s AND user_id = %s FOR UPDATE",
+            (str(location_id), str(user_id)),
+        )
         before = cursor.fetchone()
         if not before:
-            raise InvalidDataException(ValueError(f"Location not found: {location_id}"))
+            raise InvalidDataException(ValueError(f"Location not found or not owned by user: {location_id}"))
 
         cursor.execute(
             "UPDATE dompet.locations SET is_active = FALSE, updated_at = NOW() WHERE id = %s RETURNING *",
