@@ -29,7 +29,10 @@ def get_attachment(user_id, attachment_id) -> dict:
         )
         row = cursor.fetchone()
         if not row:
-            raise NotFoundException(ValueError(f"Attachment not found or not owned by user: {attachment_id}"))
+            cursor.execute("SELECT * FROM dompet.shared_attachment(%s)", (str(attachment_id),))
+            row = cursor.fetchone()
+        if not row:
+            raise NotFoundException(ValueError(f"Attachment not found or not accessible: {attachment_id}"))
         return row
 
     return run_atomic(work, user_id=user_id)
