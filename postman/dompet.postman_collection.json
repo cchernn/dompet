@@ -49,6 +49,10 @@
     {
       "key": "budgetId",
       "value": ""
+    },
+    {
+      "key": "notificationId",
+      "value": ""
     }
   ],
   "item": [
@@ -77,6 +81,39 @@
                 {
                   "key": "include_inactive",
                   "value": "false"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search accounts",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/accounts/search?q=&page_size=25",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "accounts",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "",
+                  "description": "substring, case-insensitive"
+                },
+                {
+                  "key": "page_size",
+                  "value": "25"
                 }
               ]
             }
@@ -113,7 +150,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"code\": \"CHECKING\",\n  \"name\": \"Checking Account\",\n  \"description\": \"Created from Postman\"\n}"
+              "raw": "{\n  \"name\": \"Checking Account\",\n  \"description\": \"Created from Postman\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/accounts",
@@ -157,7 +194,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"code\": \"MERCHANT\",\n  \"name\": \"Test Merchant\",\n  \"description\": \"Created from Postman\"\n}"
+              "raw": "{\n  \"name\": \"Test Merchant\",\n  \"description\": \"Created from Postman\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/accounts",
@@ -295,6 +332,39 @@
           }
         },
         {
+          "name": "Search categories",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/categories/search?q=&page_size=25",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "categories",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "",
+                  "description": "substring, case-insensitive"
+                },
+                {
+                  "key": "page_size",
+                  "value": "25"
+                }
+              ]
+            }
+          }
+        },
+        {
           "name": "Create category",
           "event": [
             {
@@ -412,6 +482,39 @@
               ],
               "path": [
                 "locations"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search locations",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/locations/search?q=&page_size=25",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "locations",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "",
+                  "description": "substring, case-insensitive"
+                },
+                {
+                  "key": "page_size",
+                  "value": "25"
+                }
               ]
             }
           }
@@ -644,6 +747,39 @@
           }
         },
         {
+          "name": "Search tags",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/tags/search?q=&page_size=25",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "tags",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "",
+                  "description": "substring, case-insensitive"
+                },
+                {
+                  "key": "page_size",
+                  "value": "25"
+                }
+              ]
+            }
+          }
+        },
+        {
           "name": "Create tag",
           "event": [
             {
@@ -774,6 +910,7 @@
         {
           "name": "Search transactions",
           "request": {
+            "description": "Response contract: source, destination, category, tags, attachments and locations can be null/empty for budget-shared transactions owned by another user (their accounts, categories and tags are not visible to you). user_id is the transaction's owner. Filter: ?user_id=<uuid> narrows to one owner's transactions; a malformed value returns a client error.",
             "method": "GET",
             "header": [
               {
@@ -830,7 +967,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"date\": \"2026-09-06\",\n  \"name\": \"Postman Test Transaction\",\n  \"type\": \"expenditure\",\n  \"amount\": \"12.50\",\n  \"currency_code\": \"MYR\",\n  \"category_id\": \"{{categoryId}}\",\n  \"source_account_id\": \"{{accountId}}\",\n  \"destination_account_id\": \"{{destinationAccountId}}\"\n}"
+              "raw": "{\n  \"date\": \"2026-09-06\",\n  \"name\": \"Postman Test Transaction\",\n  \"type\": \"expenditure\",\n  \"amount\": \"12.50\",\n  \"currency_code\": \"MYR\",\n  \"category_id\": \"{{categoryId}}\",\n  \"source_account_id\": \"{{accountId}}\",\n  \"destination_account_id\": \"{{destinationAccountId}}\",\n  \"source_location_id\": \"{{locationId}}\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/transactions",
@@ -1097,6 +1234,39 @@
           }
         },
         {
+          "name": "Search attachments",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/attachments/search?q=&page_size=25",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "attachments",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "",
+                  "description": "substring, case-insensitive"
+                },
+                {
+                  "key": "page_size",
+                  "value": "25"
+                }
+              ]
+            }
+          }
+        },
+        {
           "name": "Create attachment",
           "request": {
             "method": "POST",
@@ -1319,6 +1489,39 @@
               ],
               "path": [
                 "budgets"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search budgets",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/budgets/search?q=&page_size=25",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "budgets",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "",
+                  "description": "substring, case-insensitive"
+                },
+                {
+                  "key": "page_size",
+                  "value": "25"
+                }
               ]
             }
           }
@@ -1642,6 +1845,149 @@
               ],
               "path": [
                 "accounts"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "List notifications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/notifications?page_size=25",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "notifications"
+              ],
+              "query": [
+                {
+                  "key": "page_size",
+                  "value": "25"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create notification",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const body = pm.response.json();",
+                  "    if (body.data && body.data.id) {",
+                  "        pm.collectionVariables.set('notificationId', body.data.id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"success\",\n  \"message\": \"Transaction created\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/notifications",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "notifications"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Mark notification read",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/notifications/{{notificationId}}/read",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "notifications",
+                "{{notificationId}}",
+                "read"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Mark all notifications read",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/notifications/read-all",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "notifications",
+                "read-all"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete notification",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/notifications/{{notificationId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "notifications",
+                "{{notificationId}}"
               ]
             }
           }

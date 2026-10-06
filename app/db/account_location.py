@@ -1,4 +1,4 @@
-from ..lib.exceptions import InvalidDataException
+from ..lib.exceptions import InvalidDataException, NotFoundException
 from ..utils.db import run_atomic, paginate
 
 
@@ -8,7 +8,7 @@ def _require_owned_account(cursor, user_id, account_id) -> None:
         (str(account_id), str(user_id)),
     )
     if not cursor.fetchone():
-        raise InvalidDataException(ValueError(f"Account not found or not owned by user: {account_id}"))
+        raise NotFoundException(ValueError(f"Account not found or not owned by user: {account_id}"))
 
 
 def list_account_locations(user_id, account_id, page: int, page_size: int) -> tuple[list[dict], dict]:
@@ -34,7 +34,7 @@ def link_location(user_id, account_id, location_id) -> dict:
             (str(location_id),),
         )
         if not cursor.fetchone():
-            raise InvalidDataException(ValueError(f"Location not found or inactive: {location_id}"))
+            raise NotFoundException(ValueError(f"Location not found or inactive: {location_id}"))
 
         cursor.execute(
             """
@@ -64,6 +64,6 @@ def unlink_location(user_id, account_id, location_id) -> None:
             (str(account_id), str(location_id)),
         )
         if not cursor.fetchone():
-            raise InvalidDataException(ValueError("Link not found"))
+            raise NotFoundException(ValueError("Link not found"))
 
     return run_atomic(work, user_id=user_id)

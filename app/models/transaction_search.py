@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import Optional, Literal, List
-from datetime import date as Date
+from datetime import date as Date, datetime as DateTime
 from decimal import Decimal
 from uuid import UUID
 
@@ -23,9 +23,13 @@ class AttachmentRef(BaseModel):
 
 class TransactionSearchResult(BaseModel):
     """Shape of a row from dompet.vw_transactions -- distinct from
-    Transaction (app/models/transaction.py): joined names instead of ids,
-    no user_id/account ids, pipe-delimited tags/budgets split into lists.
-    Active transactions only, since the view is already filtered."""
+    Transaction (app/models/transaction.py): joined names instead of
+    account ids, pipe-delimited tags/budgets split into lists. user_id is
+    the transaction's owner (not necessarily the caller -- a shared-budget
+    member sees other members' transactions too, per transactions_select's
+    RLS policy). For those shared rows the owner's accounts aren't visible
+    to the caller, so source/destination (and category/tags/locations) can
+    be NULL. Active transactions only, since the view is already filtered."""
 
     id: UUID = Field(
         ...,
@@ -35,6 +39,10 @@ class TransactionSearchResult(BaseModel):
         ...,
         title="Transaction Date",
         description="Derived from the transaction's datetime",
+    )
+    datetime: DateTime = Field(
+        ...,
+        title="Transaction Date & Time",
     )
     name: str = Field(
         ...,
@@ -56,12 +64,12 @@ class TransactionSearchResult(BaseModel):
         None,
         title="Category Name",
     )
-    source: str = Field(
-        ...,
+    source: Optional[str] = Field(
+        None,
         title="Source Account Name",
     )
-    destination: str = Field(
-        ...,
+    destination: Optional[str] = Field(
+        None,
         title="Destination Account Name",
     )
     tags: List[str] = Field(
@@ -75,4 +83,16 @@ class TransactionSearchResult(BaseModel):
     budgets: List[str] = Field(
         default_factory=list,
         title="Budget Names",
+    )
+    source_location: Optional[str] = Field(
+        None,
+        title="Source Location Name",
+    )
+    destination_location: Optional[str] = Field(
+        None,
+        title="Destination Location Name",
+    )
+    user_id: UUID = Field(
+        ...,
+        title="Owner User ID",
     )

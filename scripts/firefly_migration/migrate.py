@@ -196,6 +196,11 @@ def build_transaction(journal: dict, ctx: dict, account_map: dict, category_map:
 
     body = {
         "date": journal["date"][:10],
+        # journal["date"] is a naive Firefly wall-clock string -- confirmed
+        # to actually be Asia/Kuala_Lumpur (MYT), not UTC (see
+        # scripts/fix_transaction_timezone.py). Must carry an explicit
+        # offset or transaction_operation._resolve_datetime now rejects it.
+        "datetime": f"{journal['date']}+08:00",
         "name": journal["description"],
         "type": tx_type,
         "amount": str(amount),

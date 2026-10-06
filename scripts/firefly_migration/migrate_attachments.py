@@ -4,7 +4,7 @@ Standalone from migrate.py on purpose -- see migrate_budgets.py's docstring
 for why (Phase 4 already executed; create_transaction is not idempotent).
 This script only touches dompet.attachments/transaction_attachments,
 resolving already-migrated transactions via
-transaction_operations.metadata->>'source_id', exactly like
+operations.metadata->>'source_id', exactly like
 migrate_budgets.py does for budgets.
 
 Firefly's `attachments` table is polymorphic (attachable_type/attachable_id)
@@ -50,9 +50,10 @@ TARBALL_MEMBER = "attachments/at-{id}.data"
 def build_journal_id_map(cursor, user_id: str) -> dict:
     cursor.execute(
         """
-        SELECT transaction_id, metadata->>'source_id' AS source_id
-        FROM dompet.transaction_operations
-        WHERE operation_type = 'CREATE' AND metadata->>'source' = 'firefly' AND user_id = %s
+        SELECT entity_id AS transaction_id, metadata->>'source_id' AS source_id
+        FROM dompet.operations
+        WHERE entity_type = 'transaction' AND operation_type = 'CREATE'
+              AND metadata->>'source' = 'firefly' AND user_id = %s
         """,
         (str(user_id),),
     )

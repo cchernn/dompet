@@ -16,7 +16,7 @@ them:
     few genuinely new ones get created.
   - migrate_transactions is also reused unmodified, but fed a *filtered*
     ctx["active_journals"] containing only journal ids not already present
-    in dompet.transaction_operations.metadata->>'source_id' (the same
+    in dompet.operations.metadata->>'source_id' (the same
     already-migrated check migrate_budgets.py/migrate_attachments.py use).
   - Accounts have no natural-key get-or-create in app.db.account, so this
     script does its own dedup here (not in migrate.py, to avoid silently
@@ -57,8 +57,9 @@ def build_migrated_journal_ids(cursor, user_id: str) -> set:
     cursor.execute(
         """
         SELECT metadata->>'source_id' AS source_id
-        FROM dompet.transaction_operations
-        WHERE operation_type = 'CREATE' AND metadata->>'source' = 'firefly' AND user_id = %s
+        FROM dompet.operations
+        WHERE entity_type = 'transaction' AND operation_type = 'CREATE'
+              AND metadata->>'source' = 'firefly' AND user_id = %s
         """,
         (str(user_id),),
     )

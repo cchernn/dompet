@@ -1,4 +1,4 @@
-from ..lib.exceptions import InvalidDataException
+from ..lib.exceptions import InvalidDataException, NotFoundException
 from ..utils.db import run_atomic, paginate
 
 
@@ -9,7 +9,7 @@ def _require_owner(cursor, user_id, budget_id) -> dict:
     )
     budget = cursor.fetchone()
     if not budget:
-        raise InvalidDataException(ValueError(f"Budget not found or not owned by user: {budget_id}"))
+        raise NotFoundException(ValueError(f"Budget not found or not owned by user: {budget_id}"))
     return budget
 
 
@@ -20,7 +20,7 @@ def list_members(user_id, budget_id, page: int, page_size: int) -> tuple[list[di
             (str(budget_id), str(user_id)),
         )
         if not cursor.fetchone():
-            raise InvalidDataException(ValueError(f"Budget not found or not accessible by user: {budget_id}"))
+            raise NotFoundException(ValueError(f"Budget not found or not accessible by user: {budget_id}"))
 
         query = "SELECT budget_id, user_id, created_at FROM dompet.budget_members WHERE budget_id = %s ORDER BY created_at"
         return paginate(cursor, query, [str(budget_id)], page, page_size)
@@ -60,6 +60,6 @@ def remove_member(user_id, budget_id, member_user_id) -> None:
             (str(budget_id), str(member_user_id)),
         )
         if not cursor.fetchone():
-            raise InvalidDataException(ValueError("Membership not found"))
+            raise NotFoundException(ValueError("Membership not found"))
 
     return run_atomic(work, user_id=user_id)

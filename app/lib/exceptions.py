@@ -32,3 +32,10 @@ class InvalidDataException(Exception):
         message = f"{self.__class__.__name__}: {type(ex).__name__}-{str(ex)}"
         print(message)
         self.message = message
+
+class NotFoundException(InvalidDataException):
+    pass
+
+
+class UnauthorizedException(InvalidParamsException):
+    pass

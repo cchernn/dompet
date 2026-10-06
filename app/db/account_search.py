@@ -1,0 +1,17 @@
+from ..utils.db import run_atomic, paginate, like_pattern
+
+
+def search_accounts(user_id, page: int, page_size: int, q: str = None, account_type: str = None) -> tuple[list[dict], dict]:
+    def work(cursor):
+        query = "SELECT * FROM dompet.vw_accounts WHERE 1=1"
+        params = []
+        if q:
+            query += " AND name ILIKE %s"
+            params.append(like_pattern(q))
+        if account_type:
+            query += " AND type = %s"
+            params.append(account_type)
+        query += " ORDER BY transaction_count DESC, name ASC"
+        return paginate(cursor, query, params, page, page_size)
+
+    return run_atomic(work, user_id=user_id)

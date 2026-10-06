@@ -14,7 +14,7 @@ class PaginatedResult:
         self.metadata = metadata
 
 
-def parse_pagination(params: Params) -> tuple[int, int]:
+def parse_pagination(params: Params, max_page_size: int = MAX_PAGE_SIZE) -> tuple[int, int]:
     query_params = params.queryParams or {}
 
     try:
@@ -27,6 +27,6 @@ def parse_pagination(params: Params) -> tuple[int, int]:
         page_size = int(query_params.get("page_size", DEFAULT_PAGE_SIZE))
     except (TypeError, ValueError):
         page_size = DEFAULT_PAGE_SIZE
-    page_size = max(1, min(page_size, MAX_PAGE_SIZE))
+    page_size = max(1, min(page_size, max_page_size))
 
     return page, page_size

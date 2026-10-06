@@ -55,6 +55,16 @@ class Transaction(BaseModel):
         title="Destination Account ID",
         description="Account the money/activity goes to",
     )
+    source_location_id: Optional[UUID] = Field(
+        None,
+        title="Source Location ID",
+        description="Must be linked, via account_locations, to source_account_id",
+    )
+    destination_location_id: Optional[UUID] = Field(
+        None,
+        title="Destination Location ID",
+        description="Must be linked, via account_locations, to destination_account_id",
+    )
     is_active: bool = Field(
         True,
         title="Transaction Active Status",

@@ -2,8 +2,9 @@ import uuid
 
 from psycopg2.extras import Json
 
-from ..lib.exceptions import InvalidDataException
+from ..lib.exceptions import InvalidDataException, NotFoundException
 from ..utils.db import run_atomic, paginate
+from .operations import row_to_dict, record_operation
 
 UPDATABLE_FIELDS = ("filename", "content_type")
 
@@ -28,7 +29,7 @@ def get_attachment(user_id, attachment_id) -> dict:
         )
         row = cursor.fetchone()
         if not row:
-            raise InvalidDataException(ValueError(f"Attachment not found or not owned by user: {attachment_id}"))
+            raise NotFoundException(ValueError(f"Attachment not found or not owned by user: {attachment_id}"))
         return row
 
     return run_atomic(work, user_id=user_id)
@@ -60,7 +61,9 @@ def create_attachment_record(
                 Json(metadata) if metadata is not None else None,
             ),
         )
-        return cursor.fetchone()
+        row = cursor.fetchone()
+        record_operation(cursor, "attachment", row["id"], user_id, "CREATE", None, row_to_dict(row), metadata)
+        return row
 
     return run_atomic(work, user_id=user_id)
 
@@ -75,18 +78,21 @@ def update_attachment(user_id, attachment_id, body: dict) -> dict:
 
     def work(cursor):
         cursor.execute(
-            "SELECT 1 FROM dompet.attachments WHERE id = %s AND user_id = %s FOR UPDATE",
+            "SELECT * FROM dompet.attachments WHERE id = %s AND user_id = %s FOR UPDATE",
             (str(attachment_id), str(user_id)),
         )
-        if not cursor.fetchone():
-            raise InvalidDataException(ValueError(f"Attachment not found or not owned by user: {attachment_id}"))
+        before = cursor.fetchone()
+        if not before:
+            raise NotFoundException(ValueError(f"Attachment not found or not owned by user: {attachment_id}"))
 
         set_clause = ", ".join(f"{field} = %s" for field in patch)
         cursor.execute(
             f"UPDATE dompet.attachments SET {set_clause}, updated_at = NOW() WHERE id = %s AND user_id = %s RETURNING *",
             (*patch.values(), str(attachment_id), str(user_id)),
         )
-        return cursor.fetchone()
+        after = cursor.fetchone()
+        record_operation(cursor, "attachment", attachment_id, user_id, "UPDATE", row_to_dict(before), row_to_dict(after))
+        return after
 
     return run_atomic(work, user_id=user_id)
 
@@ -99,7 +105,8 @@ def delete_attachment(user_id, attachment_id) -> dict:
         )
         row = cursor.fetchone()
         if not row:
-            raise InvalidDataException(ValueError(f"Attachment not found or not owned by user: {attachment_id}"))
+            raise NotFoundException(ValueError(f"Attachment not found or not owned by user: {attachment_id}"))
+        record_operation(cursor, "attachment", attachment_id, user_id, "DELETE", row_to_dict(row), None)
         return row
 
     return run_atomic(work, user_id=user_id)
