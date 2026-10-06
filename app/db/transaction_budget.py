@@ -1,4 +1,4 @@
-from ..lib.exceptions import InvalidDataException
+from ..lib.exceptions import InvalidDataException, NotFoundException
 from ..utils.db import run_atomic, paginate
 
 
@@ -8,7 +8,7 @@ def _require_owned_transaction(cursor, user_id, transaction_id) -> None:
         (str(transaction_id), str(user_id)),
     )
     if not cursor.fetchone():
-        raise InvalidDataException(ValueError(f"Transaction not found or not owned by user: {transaction_id}"))
+        raise NotFoundException(ValueError(f"Transaction not found or not owned by user: {transaction_id}"))
 
 
 def list_transaction_budgets(user_id, transaction_id, page: int, page_size: int) -> tuple[list[dict], dict]:
@@ -37,7 +37,7 @@ def list_budget_transactions(user_id, budget_id, page: int, page_size: int) -> t
             (str(budget_id), str(user_id)),
         )
         if not cursor.fetchone():
-            raise InvalidDataException(ValueError(f"Budget not found or not accessible by user: {budget_id}"))
+            raise NotFoundException(ValueError(f"Budget not found or not accessible by user: {budget_id}"))
 
         query = """
             SELECT t.* FROM dompet.transaction_budgets tb
@@ -63,7 +63,7 @@ def link_budget(user_id, transaction_id, budget_id) -> dict:
             (str(budget_id), str(user_id)),
         )
         if not cursor.fetchone():
-            raise InvalidDataException(ValueError(f"Budget not found, inactive, or not accessible by user: {budget_id}"))
+            raise NotFoundException(ValueError(f"Budget not found, inactive, or not accessible by user: {budget_id}"))
 
         cursor.execute(
             """
@@ -93,6 +93,6 @@ def unlink_budget(user_id, transaction_id, budget_id) -> None:
             (str(transaction_id), str(budget_id)),
         )
         if not cursor.fetchone():
-            raise InvalidDataException(ValueError("Link not found"))
+            raise NotFoundException(ValueError("Link not found"))
 
     return run_atomic(work, user_id=user_id)

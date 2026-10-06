@@ -2,7 +2,7 @@ import uuid
 from datetime import date, datetime
 from decimal import Decimal
 
-from ..lib.exceptions import InvalidDataException
+from ..lib.exceptions import InvalidDataException, NotFoundException
 from ..utils.db import run_atomic
 from .operations import row_to_dict, record_operation
 
@@ -137,7 +137,7 @@ def _lock_owned_transaction(cursor, user_id, transaction_id) -> dict:
     )
     row = cursor.fetchone()
     if not row:
-        raise InvalidDataException(
+        raise NotFoundException(
             ValueError(f"Transaction not found or not owned by user: {transaction_id}")
         )
     return row

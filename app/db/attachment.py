@@ -2,7 +2,7 @@ import uuid
 
 from psycopg2.extras import Json
 
-from ..lib.exceptions import InvalidDataException
+from ..lib.exceptions import InvalidDataException, NotFoundException
 from ..utils.db import run_atomic, paginate
 from .operations import row_to_dict, record_operation
 
@@ -29,7 +29,7 @@ def get_attachment(user_id, attachment_id) -> dict:
         )
         row = cursor.fetchone()
         if not row:
-            raise InvalidDataException(ValueError(f"Attachment not found or not owned by user: {attachment_id}"))
+            raise NotFoundException(ValueError(f"Attachment not found or not owned by user: {attachment_id}"))
         return row
 
     return run_atomic(work, user_id=user_id)
@@ -83,7 +83,7 @@ def update_attachment(user_id, attachment_id, body: dict) -> dict:
         )
         before = cursor.fetchone()
         if not before:
-            raise InvalidDataException(ValueError(f"Attachment not found or not owned by user: {attachment_id}"))
+            raise NotFoundException(ValueError(f"Attachment not found or not owned by user: {attachment_id}"))
 
         set_clause = ", ".join(f"{field} = %s" for field in patch)
         cursor.execute(
@@ -105,7 +105,7 @@ def delete_attachment(user_id, attachment_id) -> dict:
         )
         row = cursor.fetchone()
         if not row:
-            raise InvalidDataException(ValueError(f"Attachment not found or not owned by user: {attachment_id}"))
+            raise NotFoundException(ValueError(f"Attachment not found or not owned by user: {attachment_id}"))
         record_operation(cursor, "attachment", attachment_id, user_id, "DELETE", row_to_dict(row), None)
         return row
 

@@ -1,4 +1,4 @@
-from ..lib.exceptions import InvalidDataException
+from ..lib.exceptions import InvalidDataException, NotFoundException
 from ..utils.db import run_atomic, paginate
 from .operations import row_to_dict, record_operation
 
@@ -22,7 +22,7 @@ def get_location(user_id, location_id) -> dict:
         cursor.execute("SELECT * FROM dompet.locations WHERE id = %s", (str(location_id),))
         row = cursor.fetchone()
         if not row:
-            raise InvalidDataException(ValueError(f"Location not found: {location_id}"))
+            raise NotFoundException(ValueError(f"Location not found: {location_id}"))
         return row
 
     return run_atomic(work, user_id=user_id)
@@ -78,7 +78,7 @@ def update_location(user_id, location_id, body: dict) -> dict:
         )
         existing = cursor.fetchone()
         if not existing:
-            raise InvalidDataException(ValueError(f"Location not found or not owned by user: {location_id}"))
+            raise NotFoundException(ValueError(f"Location not found or not owned by user: {location_id}"))
 
         if existing["type"] == "online" and not patch.get("url", existing["url"]):
             raise InvalidDataException(ValueError("url is required for online locations"))
@@ -103,7 +103,7 @@ def delete_location(user_id, location_id) -> dict:
         )
         before = cursor.fetchone()
         if not before:
-            raise InvalidDataException(ValueError(f"Location not found or not owned by user: {location_id}"))
+            raise NotFoundException(ValueError(f"Location not found or not owned by user: {location_id}"))
 
         cursor.execute(
             "UPDATE dompet.locations SET is_active = FALSE, updated_at = NOW() WHERE id = %s RETURNING *",

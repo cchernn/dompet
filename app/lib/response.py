@@ -25,15 +25,27 @@ class Response(BaseModel):
         title="API Response Message",
         description="Error message for the response",
     )
+    status_code: int = Field(
+        200,
+        exclude=True,
+        description="HTTP status for the transport layer; not part of the JSON body",
+    )
 
     @classmethod
-    def generate(cls, data: Optional[Union[list, dict]] = None, message: Optional[str] = None, metadata: Optional[dict] = None) -> "Response":
+    def generate(
+        cls,
+        data: Optional[Union[list, dict]] = None,
+        message: Optional[str] = None,
+        metadata: Optional[dict] = None,
+        status_code: int = 200,
+    ) -> "Response":
         success = False if message else True
         return cls(
             success=success,
             data=data,
             message=message,
             metadata=metadata or {},
+            status_code=status_code,
         )
 
 class AWSLambdaResponse(BaseModel):
@@ -41,6 +53,7 @@ class AWSLambdaResponse(BaseModel):
         200,
         201,
         400,
+        409,
         401,
         403,
         404,
@@ -68,7 +81,7 @@ class AWSLambdaResponse(BaseModel):
             "Access-Control-Allow-Methods": "OPTIONS, GET, POST, PUT, DELETE",
             "Access-Control-Allow-Headers": "Content-Type, Authorization",
         }
-        status_code = 200 # WIP: insert status_code logic here
+        status_code = response.status_code
         body = response.model_dump_json(exclude_none=True)
 
         return cls(

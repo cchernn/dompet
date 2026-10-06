@@ -1,4 +1,4 @@
-from ..lib.exceptions import InvalidDataException
+from ..lib.exceptions import InvalidDataException, NotFoundException
 from ..utils.db import run_atomic, paginate
 from .operations import row_to_dict, record_operation
 
@@ -54,7 +54,7 @@ def update_tag(user_id, tag_id, body: dict) -> dict:
         )
         before = cursor.fetchone()
         if not before:
-            raise InvalidDataException(ValueError(f"Tag not found or not owned by user: {tag_id}"))
+            raise NotFoundException(ValueError(f"Tag not found or not owned by user: {tag_id}"))
 
         set_clause = ", ".join(f"{field} = %s" for field in patch)
         cursor.execute(
@@ -76,7 +76,7 @@ def delete_tag(user_id, tag_id) -> dict:
         )
         before = cursor.fetchone()
         if not before:
-            raise InvalidDataException(ValueError(f"Tag not found or not owned by user: {tag_id}"))
+            raise NotFoundException(ValueError(f"Tag not found or not owned by user: {tag_id}"))
 
         cursor.execute(
             "UPDATE dompet.tags SET is_active = FALSE, updated_at = NOW() WHERE id = %s AND user_id = %s RETURNING *",

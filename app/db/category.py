@@ -1,4 +1,4 @@
-from ..lib.exceptions import InvalidDataException
+from ..lib.exceptions import InvalidDataException, NotFoundException
 from ..utils.db import run_atomic, paginate
 from .operations import row_to_dict, record_operation
 
@@ -66,7 +66,7 @@ def update_category(user_id, category_id, body: dict) -> dict:
         )
         before = cursor.fetchone()
         if not before:
-            raise InvalidDataException(ValueError(f"Category not found or not owned by user: {category_id}"))
+            raise NotFoundException(ValueError(f"Category not found or not owned by user: {category_id}"))
 
         parent_id = patch.get("parent_id")
         if parent_id:
@@ -103,7 +103,7 @@ def delete_category(user_id, category_id) -> dict:
         )
         before = cursor.fetchone()
         if not before:
-            raise InvalidDataException(ValueError(f"Category not found or not owned by user: {category_id}"))
+            raise NotFoundException(ValueError(f"Category not found or not owned by user: {category_id}"))
 
         cursor.execute(
             """

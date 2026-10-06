@@ -1,4 +1,4 @@
-from ..lib.exceptions import InvalidDataException
+from ..lib.exceptions import InvalidDataException, NotFoundException
 from ..utils.db import run_atomic, paginate
 
 MAX_NOTIFICATIONS_PER_USER = 200
@@ -60,7 +60,7 @@ def mark_read(user_id, notification_id) -> dict:
         )
         row = cursor.fetchone()
         if not row:
-            raise InvalidDataException(ValueError(f"Notification not found: {notification_id}"))
+            raise NotFoundException(ValueError(f"Notification not found: {notification_id}"))
         return row
 
     return run_atomic(work, user_id=user_id)
@@ -85,7 +85,7 @@ def delete_notification(user_id, notification_id) -> dict:
         )
         row = cursor.fetchone()
         if not row:
-            raise InvalidDataException(ValueError(f"Notification not found: {notification_id}"))
+            raise NotFoundException(ValueError(f"Notification not found: {notification_id}"))
         return row
 
     return run_atomic(work, user_id=user_id)

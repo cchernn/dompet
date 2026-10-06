@@ -1,4 +1,4 @@
-from ..lib.exceptions import InvalidDataException
+from ..lib.exceptions import InvalidDataException, NotFoundException
 from ..utils.db import run_atomic, paginate
 from .operations import row_to_dict, record_operation
 
@@ -33,7 +33,7 @@ def get_budget(user_id, budget_id) -> dict:
         )
         row = cursor.fetchone()
         if not row:
-            raise InvalidDataException(ValueError(f"Budget not found or not accessible by user: {budget_id}"))
+            raise NotFoundException(ValueError(f"Budget not found or not accessible by user: {budget_id}"))
         return row
 
     return run_atomic(work, user_id=user_id)
@@ -87,7 +87,7 @@ def update_budget(user_id, budget_id, body: dict) -> dict:
         )
         before = cursor.fetchone()
         if not before:
-            raise InvalidDataException(ValueError(f"Budget not found or not owned by user: {budget_id}"))
+            raise NotFoundException(ValueError(f"Budget not found or not owned by user: {budget_id}"))
 
         set_clause = ", ".join(f"{field} = %s" for field in patch)
         cursor.execute(
@@ -109,7 +109,7 @@ def delete_budget(user_id, budget_id) -> dict:
         )
         before = cursor.fetchone()
         if not before:
-            raise InvalidDataException(ValueError(f"Budget not found or not owned by user: {budget_id}"))
+            raise NotFoundException(ValueError(f"Budget not found or not owned by user: {budget_id}"))
 
         cursor.execute(
             "UPDATE dompet.budgets SET is_active = FALSE, updated_at = NOW() WHERE id = %s AND user_id = %s RETURNING *",

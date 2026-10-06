@@ -12,7 +12,9 @@ def lambda_handler(event: dict, context: Any) -> AWSLambdaResponse:
     except InvalidParamsException as ex:
         return AWSLambdaResponse.generate(
             params=None,
-            response=Response.generate(message=f"GeneralException: InvalidParamsException-{ex}"),
+            response=Response.generate(
+                message=f"GeneralException: InvalidParamsException-{ex}", status_code=400,
+            ),
         ).model_dump()
     response = main(params)
     return AWSLambdaResponse.generate(

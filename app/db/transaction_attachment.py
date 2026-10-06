@@ -1,4 +1,4 @@
-from ..lib.exceptions import InvalidDataException
+from ..lib.exceptions import InvalidDataException, NotFoundException
 from ..utils.db import run_atomic, paginate
 
 
@@ -8,7 +8,7 @@ def _require_owned_transaction(cursor, user_id, transaction_id) -> None:
         (str(transaction_id), str(user_id)),
     )
     if not cursor.fetchone():
-        raise InvalidDataException(ValueError(f"Transaction not found or not owned by user: {transaction_id}"))
+        raise NotFoundException(ValueError(f"Transaction not found or not owned by user: {transaction_id}"))
 
 
 def list_transaction_attachments(user_id, transaction_id, page: int, page_size: int) -> tuple[list[dict], dict]:
@@ -34,7 +34,7 @@ def link_attachment(user_id, transaction_id, attachment_id) -> dict:
             (str(attachment_id), str(user_id)),
         )
         if not cursor.fetchone():
-            raise InvalidDataException(ValueError(f"Attachment not found, inactive, or not owned by user: {attachment_id}"))
+            raise NotFoundException(ValueError(f"Attachment not found, inactive, or not owned by user: {attachment_id}"))
 
         cursor.execute(
             """
@@ -64,6 +64,6 @@ def unlink_attachment(user_id, transaction_id, attachment_id) -> None:
             (str(transaction_id), str(attachment_id)),
         )
         if not cursor.fetchone():
-            raise InvalidDataException(ValueError("Link not found"))
+            raise NotFoundException(ValueError("Link not found"))
 
     return run_atomic(work, user_id=user_id)

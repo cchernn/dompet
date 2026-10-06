@@ -1,7 +1,7 @@
 import re
 import uuid
 
-from ..lib.exceptions import InvalidDataException
+from ..lib.exceptions import InvalidDataException, NotFoundException
 from ..utils.db import run_atomic, paginate
 from .operations import row_to_dict, record_operation
 
@@ -40,7 +40,7 @@ def get_account(user_id, account_id) -> dict:
         )
         row = cursor.fetchone()
         if not row:
-            raise InvalidDataException(ValueError(f"Account not found: {account_id}"))
+            raise NotFoundException(ValueError(f"Account not found: {account_id}"))
         return row
 
     return run_atomic(work, user_id=user_id)
@@ -85,7 +85,7 @@ def update_account(user_id, account_id, body: dict) -> dict:
         )
         before = cursor.fetchone()
         if not before:
-            raise InvalidDataException(ValueError(f"Account not found: {account_id}"))
+            raise NotFoundException(ValueError(f"Account not found: {account_id}"))
 
         set_clause = ", ".join(f"{field} = %s" for field in patch)
         cursor.execute(
@@ -111,7 +111,7 @@ def _set_active_state(user_id, account_id, active: bool, operation_type: str) ->
         )
         before = cursor.fetchone()
         if not before:
-            raise InvalidDataException(ValueError(f"Account not found: {account_id}"))
+            raise NotFoundException(ValueError(f"Account not found: {account_id}"))
 
         cursor.execute(
             """

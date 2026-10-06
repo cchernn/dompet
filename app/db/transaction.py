@@ -1,4 +1,4 @@
-from ..lib.exceptions import InvalidDataException
+from ..lib.exceptions import InvalidDataException, NotFoundException
 from ..utils.db import run_atomic, paginate
 
 
@@ -22,7 +22,7 @@ def get_transaction(user_id, transaction_id) -> dict:
         )
         row = cursor.fetchone()
         if not row:
-            raise InvalidDataException(ValueError(f"Transaction not found: {transaction_id}"))
+            raise NotFoundException(ValueError(f"Transaction not found: {transaction_id}"))
         return row
 
     return run_atomic(work, user_id=user_id)
