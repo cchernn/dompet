@@ -1,3 +1,4 @@
+from .lib.exceptions import InvalidParamsException
 from .lib.params import Params
 from .lib.response import Response, AWSLambdaResponse
 from .main import main
@@ -6,7 +7,13 @@ from .utils.env import load_local_env
 from typing import Any
 
 def lambda_handler(event: dict, context: Any) -> AWSLambdaResponse:
-    params = Params.from_event(event)
+    try:
+        params = Params.from_event(event)
+    except InvalidParamsException as ex:
+        return AWSLambdaResponse.generate(
+            params=None,
+            response=Response.generate(message=f"GeneralException: InvalidParamsException-{ex}"),
+        ).model_dump()
     response = main(params)
     return AWSLambdaResponse.generate(
         params=params,

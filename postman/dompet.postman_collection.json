@@ -910,6 +910,7 @@
         {
           "name": "Search transactions",
           "request": {
+            "description": "Response contract: source, destination, category, tags, attachments and locations can be null/empty for budget-shared transactions owned by another user (their accounts, categories and tags are not visible to you). user_id is the transaction's owner. Filter: ?user_id=<uuid> narrows to one owner's transactions; a malformed value returns a client error.",
             "method": "GET",
             "header": [
               {

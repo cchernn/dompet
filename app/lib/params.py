@@ -3,7 +3,7 @@ from .exceptions import InvalidParamsException
 import io
 import cgi
 import json
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ValidationError
 from typing import Optional, Literal, Any
 from uuid import UUID
 
@@ -51,6 +51,13 @@ class Params(BaseModel):
 
     @classmethod
     def from_event(cls, event: dict) -> "Params":
+        try:
+            return cls._build_from_event(event)
+        except ValidationError:
+            raise InvalidParamsException(ValueError("Invalid request parameters"))
+
+    @classmethod
+    def _build_from_event(cls, event: dict) -> "Params":
         return cls(
             user = cls._parse_event_user_id(event),
             http_method = event.get("httpMethod"),
@@ -75,19 +82,18 @@ class Params(BaseModel):
     
     @classmethod
     def _parse_event_user_id(cls, event: dict) -> UUID:
+        user_id = (
+            event.get("requestContext", {})
+            .get("authorizer", {})
+            .get("claims", {})
+            .get("sub")
+        )
+        if not user_id:
+            raise InvalidParamsException(ValueError("Missing User ID from params"))
         try:
-            user_id = (
-                event.get("requestContext", {})
-                .get("authorizer", {})
-                .get("claims", {})
-                .get("sub")
-            )
-            if not user_id:
-                raise InvalidParamsException("Missing User ID from params")
-            
             return UUID(user_id)
-        except Exception as ex:
-            raise InvalidParamsException(ex)
+        except ValueError:
+            raise InvalidParamsException(ValueError("Invalid User ID in params"))
     
     @classmethod
     def _parse_event_headers(cls, event: dict) -> dict:
@@ -98,7 +104,7 @@ class Params(BaseModel):
     def _parse_event_body(cls, event: dict) -> dict:
         headers = cls._parse_event_headers(event)
         if event.get('body', None) not in [None, "None"]:
-            content_type = headers.get("content-type")
+            content_type = headers.get("content-type", "")
 
             # form-data
             if "multipart/form-data" in content_type:
@@ -115,7 +121,10 @@ class Params(BaseModel):
             
             # raw json
             elif "application/json" in content_type:
-                return json.loads(event.get('body'))
+                try:
+                    return json.loads(event.get('body'))
+                except json.JSONDecodeError:
+                    raise InvalidParamsException(ValueError("Malformed JSON body"))
             
-            return event.get('body', None)
+            raise InvalidParamsException(ValueError("Unsupported Content-Type, expected application/json"))
         return None
