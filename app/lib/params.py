@@ -1,4 +1,4 @@
-from .exceptions import InvalidParamsException
+from .exceptions import InvalidParamsException, UnauthorizedException
 
 import io
 import cgi
@@ -89,11 +89,11 @@ class Params(BaseModel):
             .get("sub")
         )
         if not user_id:
-            raise InvalidParamsException(ValueError("Missing User ID from params"))
+            raise UnauthorizedException(ValueError("Missing User ID from params"))
         try:
             return UUID(user_id)
         except ValueError:
-            raise InvalidParamsException(ValueError("Invalid User ID in params"))
+            raise UnauthorizedException(ValueError("Invalid User ID in params"))
     
     @classmethod
     def _parse_event_headers(cls, event: dict) -> dict:

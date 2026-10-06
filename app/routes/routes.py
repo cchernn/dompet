@@ -25,6 +25,12 @@ from ..handlers import notification
 import re
 from typing import Callable, Optional
 
+CREATE_HANDLERS = frozenset({
+    transaction.add, account.add, category.add, location.add, account_location.add,
+    tag.add, transaction_tag.add, attachment.add, transaction_attachment.add,
+    budget.add, budget_member.add, transaction_budget.add, notification.add,
+})
+
 UUID_RE = r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
 
 

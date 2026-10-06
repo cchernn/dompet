@@ -3,17 +3,20 @@ from .lib.exceptions import (
     InvalidFunctionException,
     InvalidParamsException,
     NotFoundException,
+    UnauthorizedException,
 )
 from .lib.params import Params
 from .lib.response import Response
-from .routes.routes import route
+from .routes.routes import CREATE_HANDLERS, route
 from .utils.pagination import PaginatedResult
 import traceback
 
 UNIQUE_VIOLATION_PGCODE = "23505"
 
 
-def _error_response(ex: Exception) -> tuple[int, str]:
+def error_response(ex: Exception) -> tuple[int, str]:
+    if isinstance(ex, UnauthorizedException):
+        return 401, f"GeneralException: {type(ex).__name__}-{str(ex)}"
     if isinstance(ex, NotFoundException):
         return 404, f"GeneralException: {type(ex).__name__}-{str(ex)}"
     if isinstance(ex, InvalidFunctionException):
@@ -30,15 +33,18 @@ def main(params: Params) -> Response:
     try:
         func = route(params)
         result = func(params)
+        status_code = 201 if func in CREATE_HANDLERS else 200
         if isinstance(result, PaginatedResult):
             return Response.generate(
                 data=result.items,
                 metadata=result.metadata,
+                status_code=status_code,
             )
         return Response.generate(
             data=result,
+            status_code=status_code,
         )
     except Exception as ex:
         traceback.print_exc()
-        status_code, message = _error_response(ex)
+        status_code, message = error_response(ex)
         return Response.generate(message=message, status_code=status_code)

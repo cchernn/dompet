@@ -35,3 +35,7 @@ class InvalidDataException(Exception):
 
 class NotFoundException(InvalidDataException):
     pass
+
+
+class UnauthorizedException(InvalidParamsException):
+    pass
