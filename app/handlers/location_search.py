@@ -2,6 +2,7 @@ from ..lib.params import Params
 from ..models.location_search import LocationSearchResult
 from ..db import location_search as location_search_db
 from ..utils.pagination import PaginatedResult, parse_pagination
+from ..utils.filters import parse_owner_filter
 
 
 def search(params: Params) -> PaginatedResult:
@@ -11,6 +12,6 @@ def search(params: Params) -> PaginatedResult:
     page, page_size = parse_pagination(params)
     q = params.queryParams or {}
     rows, metadata = location_search_db.search_locations(
-        params.user, page, page_size, q=q.get("q"), owner=q.get("user_id"), type=q.get("type")
+        params.user, page, page_size, q=q.get("q"), owner=parse_owner_filter(q.get("user_id")), location_type=q.get("type")
     )
     return PaginatedResult([LocationSearchResult(**row) for row in rows], metadata)

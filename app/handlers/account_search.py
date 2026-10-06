@@ -9,5 +9,5 @@ MAX_SEARCH_PAGE_SIZE = 1000
 def search(params: Params) -> PaginatedResult:
     page, page_size = parse_pagination(params, max_page_size=MAX_SEARCH_PAGE_SIZE)
     q = params.queryParams or {}
-    rows, metadata = account_search_db.search_accounts(params.user, page, page_size, q=q.get("q"), type=q.get("type"))
+    rows, metadata = account_search_db.search_accounts(params.user, page, page_size, q=q.get("q"), account_type=q.get("type"))
     return PaginatedResult([AccountSearchResult(**row) for row in rows], metadata)

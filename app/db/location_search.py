@@ -2,7 +2,7 @@ from ..utils.db import run_atomic, paginate, like_pattern
 
 
 def search_locations(
-    user_id, page: int, page_size: int, q: str = None, owner: str = None, type: str = None
+    user_id, page: int, page_size: int, q: str = None, owner: str = None, location_type: str = None
 ) -> tuple[list[dict], dict]:
     def work(cursor):
         query = "SELECT * FROM dompet.vw_locations WHERE 1=1"
@@ -16,9 +16,9 @@ def search_locations(
             else:
                 query += " AND user_id = %s"
                 params.append(owner)
-        if type:
+        if location_type:
             query += " AND type = %s"
-            params.append(type)
+            params.append(location_type)
         query += " ORDER BY account_count DESC, name ASC"
         return paginate(cursor, query, params, page, page_size)
 

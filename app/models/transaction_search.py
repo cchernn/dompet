@@ -27,8 +27,9 @@ class TransactionSearchResult(BaseModel):
     account ids, pipe-delimited tags/budgets split into lists. user_id is
     the transaction's owner (not necessarily the caller -- a shared-budget
     member sees other members' transactions too, per transactions_select's
-    RLS policy). Active transactions only, since the view is already
-    filtered."""
+    RLS policy). For those shared rows the owner's accounts aren't visible
+    to the caller, so source/destination (and category/tags/locations) can
+    be NULL. Active transactions only, since the view is already filtered."""
 
     id: UUID = Field(
         ...,
@@ -63,12 +64,12 @@ class TransactionSearchResult(BaseModel):
         None,
         title="Category Name",
     )
-    source: str = Field(
-        ...,
+    source: Optional[str] = Field(
+        None,
         title="Source Account Name",
     )
-    destination: str = Field(
-        ...,
+    destination: Optional[str] = Field(
+        None,
         title="Destination Account Name",
     )
     tags: List[str] = Field(

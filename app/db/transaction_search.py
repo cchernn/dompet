@@ -4,7 +4,7 @@ from ..utils.db import run_atomic, paginate, like_pattern
 def search_transactions(
     user_id, page: int, page_size: int,
     date_from: str = None, date_to: str = None,
-    category: str = None, type: str = None,
+    category: str = None, transaction_type: str = None,
     source: str = None, destination: str = None,
     tags: str = None, budgets: str = None,
     source_location: str = None, destination_location: str = None,
@@ -22,9 +22,9 @@ def search_transactions(
         if category:
             query += " AND category = %s"
             params.append(category)
-        if type:
+        if transaction_type:
             query += " AND type = %s"
-            params.append(type)
+            params.append(transaction_type)
         if source:
             query += " AND source = %s"
             params.append(source)
