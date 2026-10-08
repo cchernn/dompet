@@ -105,6 +105,9 @@ Access the following endpoints by the following endpoints
 | GET | `/locations/{id}` | Get a specific location by ID |
 | PUT | `/locations/{id}` | Update a location |
 | DELETE | `/locations/{id}` | Delete a location |
+| POST | `/users` | Create your user profile (username, display_name, configuration) |
+| GET | `/users/me` | Get your own user profile |
+| PUT | `/users/me` | Edit your own user profile |
 
 ## Roadmap  
 
