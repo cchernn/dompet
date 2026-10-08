@@ -6,6 +6,7 @@ from ..lib.exceptions import InvalidDataException, NotFoundException
 from ..utils.db import run_atomic
 
 USERNAME_RE = re.compile(r"^[a-zA-Z0-9_]{3,30}$")
+ALLOWED_AVATAR_CONTENT_TYPES = {"image/png", "image/jpeg", "image/webp", "image/gif"}
 
 
 def _validate_username(username) -> str:
@@ -14,6 +15,18 @@ def _validate_username(username) -> str:
             "username must be 3-30 characters, letters/numbers/underscore only"
         ))
     return username
+
+
+def _validate_avatar_content_type(content_type) -> str:
+    if content_type not in ALLOWED_AVATAR_CONTENT_TYPES:
+        raise InvalidDataException(ValueError(
+            f"avatar_content_type must be one of: {', '.join(sorted(ALLOWED_AVATAR_CONTENT_TYPES))}"
+        ))
+    return content_type
+
+
+def avatar_storage_key(user_id) -> str:
+    return f"profiles/{user_id}/avatar"
 
 
 def _validate_configuration(configuration) -> dict:
@@ -39,6 +52,10 @@ def create_profile(user_id, body: dict) -> dict:
     username = _validate_username(body.get("username"))
     display_name = body.get("display_name")
     configuration = _validate_configuration(body.get("configuration"))
+    avatar_key = None
+    if body.get("avatar_content_type"):
+        _validate_avatar_content_type(body["avatar_content_type"])
+        avatar_key = avatar_storage_key(user_id)
 
     def work(cursor):
         cursor.execute("SELECT 1 FROM dompet.users WHERE id = %s", (str(user_id),))
@@ -47,11 +64,11 @@ def create_profile(user_id, body: dict) -> dict:
 
         cursor.execute(
             """
-            INSERT INTO dompet.users (id, username, display_name, configuration)
-            VALUES (%s, %s, %s, %s)
+            INSERT INTO dompet.users (id, username, display_name, configuration, avatar_storage_key)
+            VALUES (%s, %s, %s, %s, %s)
             RETURNING *
             """,
-            (str(user_id), username, display_name, Json(configuration)),
+            (str(user_id), username, display_name, Json(configuration), avatar_key),
         )
         return cursor.fetchone()
 
@@ -66,6 +83,9 @@ def update_profile(user_id, body: dict) -> dict:
         patch["display_name"] = body.get("display_name")
     if "configuration" in body:
         patch["configuration"] = _validate_configuration(body.get("configuration"))
+    if body.get("avatar_content_type"):
+        _validate_avatar_content_type(body["avatar_content_type"])
+        patch["avatar_storage_key"] = avatar_storage_key(user_id)
     if not patch:
         raise InvalidDataException(ValueError("No updatable fields provided"))
 

@@ -21,6 +21,11 @@ class User(BaseModel):
         title="Display Name",
         max_length=100,
     )
+    avatar_url: str | None = Field(
+        None,
+        title="Avatar Download URL",
+        description="Short-lived presigned S3 URL, generated fresh on every read -- null if no picture has been uploaded",
+    )
     configuration: dict[str, Any] = Field(
         default_factory=dict,
         title="User Configuration",
