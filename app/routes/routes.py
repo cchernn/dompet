@@ -21,6 +21,7 @@ from ..handlers import budget_search
 from ..handlers import budget_member
 from ..handlers import transaction_budget
 from ..handlers import notification
+from ..handlers import user
 
 import re
 from typing import Callable, Optional
@@ -29,6 +30,7 @@ CREATE_HANDLERS = frozenset({
     transaction.add, account.add, category.add, location.add, account_location.add,
     tag.add, transaction_tag.add, attachment.add, transaction_attachment.add,
     budget.add, budget_member.add, transaction_budget.add, notification.add,
+    user.add,
 })
 
 UUID_RE = r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
@@ -113,6 +115,10 @@ routes = {
     (re.compile(rf"^/transactions/{_uuid('transaction_id')}/budgets$"), "GET", transaction_budget.list),
     (re.compile(rf"^/transactions/{_uuid('transaction_id')}/budgets$"), "POST", transaction_budget.add),
     (re.compile(rf"^/transactions/{_uuid('transaction_id')}/budgets/{_uuid('budget_id')}$"), "DELETE", transaction_budget.delete),
+
+    (re.compile(r"^/users/me$"), "GET", user.get_me),
+    (re.compile(r"^/users$"), "POST", user.add),
+    (re.compile(r"^/users/me$"), "PUT", user.edit_me),
 
     (re.compile(r"^/notifications$"), "GET", notification.list),
     (re.compile(r"^/notifications$"), "POST", notification.add),

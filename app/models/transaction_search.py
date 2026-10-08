@@ -27,9 +27,11 @@ class TransactionSearchResult(BaseModel):
     account ids, pipe-delimited tags/budgets split into lists. user_id is
     the transaction's owner (not necessarily the caller -- a shared-budget
     member sees other members' transactions too, per transactions_select's
-    RLS policy). For those shared rows the owner's accounts aren't visible
-    to the caller, so source/destination (and category/tags/locations) can
-    be NULL. Active transactions only, since the view is already filtered."""
+    RLS policy); username/display_name resolve that owner's public profile
+    so the caller never has to show a raw Cognito UUID. For those shared
+    rows the owner's accounts aren't visible to the caller, so
+    source/destination (and category/tags/locations) can be NULL. Active
+    transactions only, since the view is already filtered."""
 
     id: UUID = Field(
         ...,
@@ -96,3 +98,9 @@ class TransactionSearchResult(BaseModel):
         ...,
         title="Owner User ID",
     )
+    username: Optional[str] = Field(
+        None,
+        title="Owner Username",
+        description="NULL if the owner hasn't created a profile yet",
+    )
+    display_name: Optional[str] = Field(None, title="Owner Display Name")
