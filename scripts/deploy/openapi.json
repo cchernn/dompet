@@ -2715,6 +2715,1164 @@
           }
         }
       }
+    },
+    "/accounts/search": {
+      "get": {
+        "operationId": "get_accounts_search",
+        "security": [
+          {
+            "CognitoAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "aws_proxy",
+          "httpMethod": "POST",
+          "uri": "__LAMBDA_INVOKE_ARN__",
+          "passthroughBehavior": "when_no_match"
+        }
+      },
+      "options": {
+        "responses": {
+          "200": {
+            "description": "CORS preflight",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Access-Control-Allow-Methods": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Access-Control-Allow-Headers": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "mock",
+          "requestTemplates": {
+            "application/json": "{\"statusCode\": 200}"
+          },
+          "responses": {
+            "default": {
+              "statusCode": "200",
+              "responseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET'",
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization'"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/attachments/search": {
+      "get": {
+        "operationId": "get_attachments_search",
+        "security": [
+          {
+            "CognitoAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "aws_proxy",
+          "httpMethod": "POST",
+          "uri": "__LAMBDA_INVOKE_ARN__",
+          "passthroughBehavior": "when_no_match"
+        }
+      },
+      "options": {
+        "responses": {
+          "200": {
+            "description": "CORS preflight",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Access-Control-Allow-Methods": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Access-Control-Allow-Headers": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "mock",
+          "requestTemplates": {
+            "application/json": "{\"statusCode\": 200}"
+          },
+          "responses": {
+            "default": {
+              "statusCode": "200",
+              "responseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET'",
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization'"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/budgets/search": {
+      "get": {
+        "operationId": "get_budgets_search",
+        "security": [
+          {
+            "CognitoAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "aws_proxy",
+          "httpMethod": "POST",
+          "uri": "__LAMBDA_INVOKE_ARN__",
+          "passthroughBehavior": "when_no_match"
+        }
+      },
+      "options": {
+        "responses": {
+          "200": {
+            "description": "CORS preflight",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Access-Control-Allow-Methods": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Access-Control-Allow-Headers": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "mock",
+          "requestTemplates": {
+            "application/json": "{\"statusCode\": 200}"
+          },
+          "responses": {
+            "default": {
+              "statusCode": "200",
+              "responseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET'",
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization'"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/budgets/summary": {
+      "get": {
+        "operationId": "get_budgets_summary",
+        "security": [
+          {
+            "CognitoAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "aws_proxy",
+          "httpMethod": "POST",
+          "uri": "__LAMBDA_INVOKE_ARN__",
+          "passthroughBehavior": "when_no_match"
+        }
+      },
+      "options": {
+        "responses": {
+          "200": {
+            "description": "CORS preflight",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Access-Control-Allow-Methods": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Access-Control-Allow-Headers": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "mock",
+          "requestTemplates": {
+            "application/json": "{\"statusCode\": 200}"
+          },
+          "responses": {
+            "default": {
+              "statusCode": "200",
+              "responseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET'",
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization'"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/budgets/trend": {
+      "get": {
+        "operationId": "get_budgets_trend",
+        "security": [
+          {
+            "CognitoAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "aws_proxy",
+          "httpMethod": "POST",
+          "uri": "__LAMBDA_INVOKE_ARN__",
+          "passthroughBehavior": "when_no_match"
+        }
+      },
+      "options": {
+        "responses": {
+          "200": {
+            "description": "CORS preflight",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Access-Control-Allow-Methods": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Access-Control-Allow-Headers": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "mock",
+          "requestTemplates": {
+            "application/json": "{\"statusCode\": 200}"
+          },
+          "responses": {
+            "default": {
+              "statusCode": "200",
+              "responseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET'",
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization'"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/categories/search": {
+      "get": {
+        "operationId": "get_categories_search",
+        "security": [
+          {
+            "CognitoAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "aws_proxy",
+          "httpMethod": "POST",
+          "uri": "__LAMBDA_INVOKE_ARN__",
+          "passthroughBehavior": "when_no_match"
+        }
+      },
+      "options": {
+        "responses": {
+          "200": {
+            "description": "CORS preflight",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Access-Control-Allow-Methods": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Access-Control-Allow-Headers": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "mock",
+          "requestTemplates": {
+            "application/json": "{\"statusCode\": 200}"
+          },
+          "responses": {
+            "default": {
+              "statusCode": "200",
+              "responseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET'",
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization'"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/locations/search": {
+      "get": {
+        "operationId": "get_locations_search",
+        "security": [
+          {
+            "CognitoAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "aws_proxy",
+          "httpMethod": "POST",
+          "uri": "__LAMBDA_INVOKE_ARN__",
+          "passthroughBehavior": "when_no_match"
+        }
+      },
+      "options": {
+        "responses": {
+          "200": {
+            "description": "CORS preflight",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Access-Control-Allow-Methods": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Access-Control-Allow-Headers": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "mock",
+          "requestTemplates": {
+            "application/json": "{\"statusCode\": 200}"
+          },
+          "responses": {
+            "default": {
+              "statusCode": "200",
+              "responseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET'",
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization'"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tags/search": {
+      "get": {
+        "operationId": "get_tags_search",
+        "security": [
+          {
+            "CognitoAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "aws_proxy",
+          "httpMethod": "POST",
+          "uri": "__LAMBDA_INVOKE_ARN__",
+          "passthroughBehavior": "when_no_match"
+        }
+      },
+      "options": {
+        "responses": {
+          "200": {
+            "description": "CORS preflight",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Access-Control-Allow-Methods": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Access-Control-Allow-Headers": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "mock",
+          "requestTemplates": {
+            "application/json": "{\"statusCode\": 200}"
+          },
+          "responses": {
+            "default": {
+              "statusCode": "200",
+              "responseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET'",
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization'"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/transactions/search": {
+      "get": {
+        "operationId": "get_transactions_search",
+        "security": [
+          {
+            "CognitoAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "aws_proxy",
+          "httpMethod": "POST",
+          "uri": "__LAMBDA_INVOKE_ARN__",
+          "passthroughBehavior": "when_no_match"
+        }
+      },
+      "options": {
+        "responses": {
+          "200": {
+            "description": "CORS preflight",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Access-Control-Allow-Methods": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Access-Control-Allow-Headers": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "mock",
+          "requestTemplates": {
+            "application/json": "{\"statusCode\": 200}"
+          },
+          "responses": {
+            "default": {
+              "statusCode": "200",
+              "responseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET'",
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization'"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/transactions/summary": {
+      "get": {
+        "operationId": "get_transactions_summary",
+        "security": [
+          {
+            "CognitoAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "aws_proxy",
+          "httpMethod": "POST",
+          "uri": "__LAMBDA_INVOKE_ARN__",
+          "passthroughBehavior": "when_no_match"
+        }
+      },
+      "options": {
+        "responses": {
+          "200": {
+            "description": "CORS preflight",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Access-Control-Allow-Methods": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Access-Control-Allow-Headers": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "mock",
+          "requestTemplates": {
+            "application/json": "{\"statusCode\": 200}"
+          },
+          "responses": {
+            "default": {
+              "statusCode": "200",
+              "responseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET'",
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization'"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/transactions/trend": {
+      "get": {
+        "operationId": "get_transactions_trend",
+        "security": [
+          {
+            "CognitoAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "aws_proxy",
+          "httpMethod": "POST",
+          "uri": "__LAMBDA_INVOKE_ARN__",
+          "passthroughBehavior": "when_no_match"
+        }
+      },
+      "options": {
+        "responses": {
+          "200": {
+            "description": "CORS preflight",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Access-Control-Allow-Methods": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Access-Control-Allow-Headers": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "mock",
+          "requestTemplates": {
+            "application/json": "{\"statusCode\": 200}"
+          },
+          "responses": {
+            "default": {
+              "statusCode": "200",
+              "responseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET'",
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization'"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/notifications": {
+      "get": {
+        "operationId": "get_notifications",
+        "security": [
+          {
+            "CognitoAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "aws_proxy",
+          "httpMethod": "POST",
+          "uri": "__LAMBDA_INVOKE_ARN__",
+          "passthroughBehavior": "when_no_match"
+        }
+      },
+      "post": {
+        "operationId": "post_notifications",
+        "security": [
+          {
+            "CognitoAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "aws_proxy",
+          "httpMethod": "POST",
+          "uri": "__LAMBDA_INVOKE_ARN__",
+          "passthroughBehavior": "when_no_match"
+        }
+      },
+      "options": {
+        "responses": {
+          "200": {
+            "description": "CORS preflight",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Access-Control-Allow-Methods": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Access-Control-Allow-Headers": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "mock",
+          "requestTemplates": {
+            "application/json": "{\"statusCode\": 200}"
+          },
+          "responses": {
+            "default": {
+              "statusCode": "200",
+              "responseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,POST'",
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization'"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/notifications/read-all": {
+      "post": {
+        "operationId": "post_notifications_read_all",
+        "security": [
+          {
+            "CognitoAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "aws_proxy",
+          "httpMethod": "POST",
+          "uri": "__LAMBDA_INVOKE_ARN__",
+          "passthroughBehavior": "when_no_match"
+        }
+      },
+      "options": {
+        "responses": {
+          "200": {
+            "description": "CORS preflight",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Access-Control-Allow-Methods": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Access-Control-Allow-Headers": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "mock",
+          "requestTemplates": {
+            "application/json": "{\"statusCode\": 200}"
+          },
+          "responses": {
+            "default": {
+              "statusCode": "200",
+              "responseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,POST'",
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization'"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/notifications/{notification_id}": {
+      "delete": {
+        "operationId": "delete_notifications_notification_id",
+        "security": [
+          {
+            "CognitoAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "notification_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "aws_proxy",
+          "httpMethod": "POST",
+          "uri": "__LAMBDA_INVOKE_ARN__",
+          "passthroughBehavior": "when_no_match"
+        }
+      },
+      "options": {
+        "responses": {
+          "200": {
+            "description": "CORS preflight",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Access-Control-Allow-Methods": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Access-Control-Allow-Headers": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "mock",
+          "requestTemplates": {
+            "application/json": "{\"statusCode\": 200}"
+          },
+          "responses": {
+            "default": {
+              "statusCode": "200",
+              "responseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,DELETE'",
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization'"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/notifications/{notification_id}/read": {
+      "post": {
+        "operationId": "post_notifications_notification_id_read",
+        "security": [
+          {
+            "CognitoAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "notification_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "aws_proxy",
+          "httpMethod": "POST",
+          "uri": "__LAMBDA_INVOKE_ARN__",
+          "passthroughBehavior": "when_no_match"
+        }
+      },
+      "options": {
+        "responses": {
+          "200": {
+            "description": "CORS preflight",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Access-Control-Allow-Methods": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Access-Control-Allow-Headers": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "mock",
+          "requestTemplates": {
+            "application/json": "{\"statusCode\": 200}"
+          },
+          "responses": {
+            "default": {
+              "statusCode": "200",
+              "responseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,POST'",
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization'"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users": {
+      "post": {
+        "operationId": "post_users",
+        "security": [
+          {
+            "CognitoAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "aws_proxy",
+          "httpMethod": "POST",
+          "uri": "__LAMBDA_INVOKE_ARN__",
+          "passthroughBehavior": "when_no_match"
+        }
+      },
+      "options": {
+        "responses": {
+          "200": {
+            "description": "CORS preflight",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Access-Control-Allow-Methods": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Access-Control-Allow-Headers": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "mock",
+          "requestTemplates": {
+            "application/json": "{\"statusCode\": 200}"
+          },
+          "responses": {
+            "default": {
+              "statusCode": "200",
+              "responseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,POST'",
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization'"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/me": {
+      "get": {
+        "operationId": "get_users_me",
+        "security": [
+          {
+            "CognitoAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "aws_proxy",
+          "httpMethod": "POST",
+          "uri": "__LAMBDA_INVOKE_ARN__",
+          "passthroughBehavior": "when_no_match"
+        }
+      },
+      "put": {
+        "operationId": "put_users_me",
+        "security": [
+          {
+            "CognitoAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "aws_proxy",
+          "httpMethod": "POST",
+          "uri": "__LAMBDA_INVOKE_ARN__",
+          "passthroughBehavior": "when_no_match"
+        }
+      },
+      "options": {
+        "responses": {
+          "200": {
+            "description": "CORS preflight",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Access-Control-Allow-Methods": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Access-Control-Allow-Headers": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "mock",
+          "requestTemplates": {
+            "application/json": "{\"statusCode\": 200}"
+          },
+          "responses": {
+            "default": {
+              "statusCode": "200",
+              "responseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT'",
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization'"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/assistant/query": {
+      "post": {
+        "operationId": "post_assistant_query",
+        "security": [
+          {
+            "CognitoAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "aws_proxy",
+          "httpMethod": "POST",
+          "uri": "__LAMBDA_INVOKE_ARN__",
+          "passthroughBehavior": "when_no_match"
+        }
+      },
+      "options": {
+        "responses": {
+          "200": {
+            "description": "CORS preflight",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Access-Control-Allow-Methods": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Access-Control-Allow-Headers": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "mock",
+          "requestTemplates": {
+            "application/json": "{\"statusCode\": 200}"
+          },
+          "responses": {
+            "default": {
+              "statusCode": "200",
+              "responseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,POST'",
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization'"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
