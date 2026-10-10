@@ -3,6 +3,7 @@ from ..lib.response import Response
 from ..lib.exceptions import InvalidFunctionException
 from ..handlers import transaction
 from ..handlers import transaction_search
+from ..handlers import transaction_insights
 from ..handlers import account
 from ..handlers import account_search
 from ..handlers import category
@@ -18,6 +19,7 @@ from ..handlers import attachment_search
 from ..handlers import transaction_attachment
 from ..handlers import budget
 from ..handlers import budget_search
+from ..handlers import budget_insights
 from ..handlers import budget_member
 from ..handlers import transaction_budget
 from ..handlers import notification
@@ -47,6 +49,8 @@ routes = {
     (re.compile(r"^/transactions$"), "GET", transaction.list),
     (re.compile(r"^/transactions$"), "POST", transaction.add),
     (re.compile(r"^/transactions/search$"), "GET", transaction_search.search),
+    (re.compile(r"^/transactions/summary$"), "GET", transaction_insights.summary),
+    (re.compile(r"^/transactions/trend$"), "GET", transaction_insights.trend),
     (re.compile(rf"^/transactions/{_uuid('transaction_id')}$"), "GET", transaction.get),
     (re.compile(rf"^/transactions/{_uuid('transaction_id')}$"), "PUT", transaction.edit),
     (re.compile(rf"^/transactions/{_uuid('transaction_id')}/deactivate$"), "POST", transaction.deactivate),
@@ -102,6 +106,8 @@ routes = {
     (re.compile(r"^/budgets$"), "GET", budget.list),
     (re.compile(r"^/budgets$"), "POST", budget.add),
     (re.compile(r"^/budgets/search$"), "GET", budget_search.search),
+    (re.compile(r"^/budgets/summary$"), "GET", budget_insights.summary),
+    (re.compile(r"^/budgets/trend$"), "GET", budget_insights.trend),
     (re.compile(rf"^/budgets/{_uuid('budget_id')}$"), "GET", budget.get),
     (re.compile(rf"^/budgets/{_uuid('budget_id')}$"), "PUT", budget.edit),
     (re.compile(rf"^/budgets/{_uuid('budget_id')}$"), "DELETE", budget.delete),
