@@ -24,6 +24,7 @@ from ..handlers import budget_member
 from ..handlers import transaction_budget
 from ..handlers import notification
 from ..handlers import user
+from ..handlers import assistant
 
 import re
 from typing import Callable, Optional
@@ -131,6 +132,8 @@ routes = {
     (re.compile(r"^/notifications/read-all$"), "POST", notification.mark_all_read),
     (re.compile(rf"^/notifications/{_uuid('notification_id')}/read$"), "POST", notification.mark_read),
     (re.compile(rf"^/notifications/{_uuid('notification_id')}$"), "DELETE", notification.delete),
+
+    (re.compile(r"^/assistant/query$"), "POST", assistant.query),
 }
 
 def match_route(path: str, method: str):

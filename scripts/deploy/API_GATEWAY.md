@@ -101,7 +101,7 @@ instead of one file upload.
 1. **Authorizer**: your REST API → **Authorizers** → **Create New Authorizer**
    → Type: **Cognito** → select your User Pool → Token Source: `Authorization`.
 
-### Per resource path (repeat for all 30 rows below)
+### Per resource path (repeat for all rows below)
 
 1. **Actions → Create Resource.** For a path segment in `{curly braces}`
    (e.g. `{account_id}`), type it exactly like that as the resource path —
@@ -123,7 +123,7 @@ instead of one file upload.
    an already-CORS-enabled resource, since it needs to know about every
    method to list them in `Access-Control-Allow-Methods`.
 
-### All 30 paths + methods
+### All paths + methods
 
 ```
 /accounts                                                    GET POST
@@ -133,6 +133,7 @@ instead of one file upload.
 /accounts/{account_id}/locations                             GET POST
 /accounts/{account_id}/locations/{location_id}                    DELETE
 /accounts/{account_id}/reactivate                            POST
+/assistant/query                                             POST
 /attachments                                                 GET POST
 /attachments/search                                          GET
 /attachments/{attachment_id}                            DELETE GET PUT
