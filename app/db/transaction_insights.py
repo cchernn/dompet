@@ -20,17 +20,11 @@ def _build_filter(q: dict) -> tuple[str, list]:
     if q.get("type"):
         where += " AND type = %s"
         params.append(q["type"])
-    # An account can't be both legs of the same transaction, so OR-ing
-    # source/destination here can't double-count a row -- source/destination
-    # filter "this account was involved", not "this account was specifically
-    # the source/destination leg".
     if q.get("source"):
-        where += " AND (source = %s OR destination = %s)"
-        params.append(q["source"])
+        where += " AND source = %s"
         params.append(q["source"])
     if q.get("destination"):
-        where += " AND (source = %s OR destination = %s)"
-        params.append(q["destination"])
+        where += " AND destination = %s"
         params.append(q["destination"])
     if q.get("tags"):
         where += " AND %s = ANY(tags)"
