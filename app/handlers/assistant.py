@@ -2,13 +2,21 @@ import re
 from datetime import datetime, timezone
 
 from ..lib.params import Params
-from ..lib.exceptions import InvalidDataException
+from ..lib.exceptions import InvalidDataException, InvalidParamsException
 from ..models.assistant import AssistantReply
 from ..utils import bedrock
 from . import transaction_insights
 from . import budget_insights
 
 MAX_TOOL_ROUNDS = 3
+MAX_MESSAGE_LENGTH = 1000
+
+# Exceptions this app raises itself, with deliberately-written user-facing
+# messages (bad bucket/filter values, missing fields) -- safe to hand back
+# to the model as-is. Anything else (DB errors in particular, via
+# DBOperationException) can carry raw SQL/schema text in str(ex).
+_SAFE_TOOL_ERROR_TYPES = (InvalidDataException, InvalidParamsException)
+_GENERIC_TOOL_ERROR = "This tool could not complete the request due to an internal error."
 
 FALLBACK_REPLY = (
     "I wasn't able to fully resolve that question. Try rephrasing it or "
@@ -123,13 +131,18 @@ def _system_prompt() -> list:
 
 
 _THINKING_BLOCK_RE = re.compile(r"<thinking>.*?</thinking>", re.IGNORECASE | re.DOTALL)
+_UNCLOSED_THINKING_RE = re.compile(r"<thinking>.*", re.IGNORECASE | re.DOTALL)
 
 
 def _strip_thinking(text: str) -> str:
     """Nova Micro sometimes puts its reasoning directly in the text block
     instead of a separate one -- the system prompt asks it not to, but that
-    alone isn't reliable enough to guarantee it never leaks through."""
-    return _THINKING_BLOCK_RE.sub("", text).strip()
+    alone isn't reliable enough to guarantee it never leaks through. Also
+    covers a response truncated mid-<thinking> block (no closing tag),
+    where the well-formed-pair regex alone would miss it entirely."""
+    text = _THINKING_BLOCK_RE.sub("", text)
+    text = _UNCLOSED_THINKING_RE.sub("", text)
+    return text.strip()
 
 
 def _run_tool(params: Params, name: str, tool_input: dict) -> dict:
@@ -141,11 +154,52 @@ def _run_tool(params: Params, name: str, tool_input: dict) -> dict:
     return result.model_dump(mode="json")
 
 
+def _sanitize_tool_error(ex: Exception) -> str:
+    if isinstance(ex, _SAFE_TOOL_ERROR_TYPES):
+        return str(ex)
+    return _GENERIC_TOOL_ERROR
+
+
+def _execute_tools(params: Params, tool_uses: list, round_number: int) -> list:
+    result_blocks = []
+    for tool_use in tool_uses:
+        tool_use_id = tool_use.get("toolUseId", "unknown")
+        tool_name = tool_use.get("name")
+        try:
+            if not tool_name:
+                raise InvalidDataException(ValueError("malformed tool_use block from model: missing name"))
+            tool_result = _run_tool(params, tool_name, tool_use.get("input") or {})
+            result_blocks.append({
+                "toolResult": {
+                    "toolUseId": tool_use_id,
+                    "content": [{"json": tool_result}],
+                }
+            })
+        except Exception as ex:
+            print(f"assistant.query round={round_number} tool={tool_name} error={type(ex).__name__}")
+            result_blocks.append({
+                "toolResult": {
+                    "toolUseId": tool_use_id,
+                    "content": [{"text": _sanitize_tool_error(ex)}],
+                    "status": "error",
+                }
+            })
+    return result_blocks
+
+
+def _final_text(output_message: dict) -> str:
+    text = "".join(block.get("text", "") for block in output_message["content"])
+    return _strip_thinking(text)
+
+
 def query(params: Params) -> AssistantReply:
     body = params.body or {}
-    message = (body.get("message") or "").strip()
-    if not message:
+    message = body.get("message")
+    if not isinstance(message, str) or not message.strip():
         raise InvalidDataException(ValueError("message is required"))
+    message = message.strip()
+    if len(message) > MAX_MESSAGE_LENGTH:
+        raise InvalidDataException(ValueError(f"message must be at most {MAX_MESSAGE_LENGTH} characters"))
 
     messages = [{"role": "user", "content": [{"text": message}]}]
 
@@ -156,32 +210,17 @@ def query(params: Params) -> AssistantReply:
         stop_reason = response.get("stopReason")
 
         tool_uses = [block["toolUse"] for block in output_message["content"] if "toolUse" in block]
-        print(f"assistant.query round={round_number} stopReason={stop_reason} tools={[t['name'] for t in tool_uses]}")
+        print(f"assistant.query round={round_number} stopReason={stop_reason} tools={[t.get('name') for t in tool_uses]}")
         if not tool_uses:
-            text = "".join(block.get("text", "") for block in output_message["content"])
-            text = _strip_thinking(text)
-            return AssistantReply(reply=text or FALLBACK_REPLY)
+            return AssistantReply(reply=_final_text(output_message) or FALLBACK_REPLY)
 
-        result_blocks = []
-        for tool_use in tool_uses:
-            try:
-                tool_result = _run_tool(params, tool_use["name"], tool_use.get("input") or {})
-                result_blocks.append({
-                    "toolResult": {
-                        "toolUseId": tool_use["toolUseId"],
-                        "content": [{"json": tool_result}],
-                    }
-                })
-            except Exception as ex:
-                print(f"assistant.query round={round_number} tool={tool_use['name']} error={type(ex).__name__}: {ex}")
-                result_blocks.append({
-                    "toolResult": {
-                        "toolUseId": tool_use["toolUseId"],
-                        "content": [{"text": str(ex)}],
-                        "status": "error",
-                    }
-                })
+        result_blocks = _execute_tools(params, tool_uses, round_number)
         messages.append({"role": "user", "content": result_blocks})
 
-    print(f"assistant.query hit MAX_TOOL_ROUNDS={MAX_TOOL_ROUNDS} without a final answer")
-    return AssistantReply(reply=FALLBACK_REPLY)
+    # MAX_TOOL_ROUNDS reached and the model still wanted another tool call on
+    # the last round -- that round's tool results were already fetched and
+    # appended above, so force one final answer-only call (no tools offered)
+    # instead of discarding that work and returning the generic fallback.
+    print(f"assistant.query hit MAX_TOOL_ROUNDS={MAX_TOOL_ROUNDS}, forcing a final answer-only call")
+    response = bedrock.converse(messages=messages, system=_system_prompt())
+    return AssistantReply(reply=_final_text(response["output"]["message"]) or FALLBACK_REPLY)
