@@ -108,6 +108,10 @@ Access the following endpoints by the following endpoints
 | POST | `/users` | Create your user profile (username, display_name, configuration) |
 | GET | `/users/me` | Get your own user profile |
 | PUT | `/users/me` | Edit your own user profile |
+| GET | `/transactions/summary` | Aggregate totals and breakdowns for transactions (by category, source account, budget) |
+| GET | `/transactions/trend` | Bucketed income/expense time series for transactions |
+| GET | `/budgets/summary` | Aggregate totals and breakdown by budget |
+| GET | `/budgets/trend` | Bucketed income/expense time series for budget activity |
 
 ## Roadmap  
 

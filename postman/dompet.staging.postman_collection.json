@@ -1666,6 +1666,124 @@
       ]
     },
     {
+      "name": "Insights",
+      "item": [
+        {
+          "name": "Transaction summary",
+          "request": {
+            "description": "Aggregate totals (total_income, total_expense, net, transaction_count) plus breakdowns by category, source account, and budget. Filters (all optional, same names-not-ids semantics as /transactions/search): from, to, category, type, source, destination, tags, budgets.",
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/transactions/summary",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "transactions",
+                "summary"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Transaction trend",
+          "request": {
+            "description": "Bucketed income/expense/net/count time series. bucket: day|week|month (default day). Also accepts the same filters as /transactions/summary (from, to, category, type, source, destination, tags, budgets).",
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/transactions/trend?bucket=month",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "transactions",
+                "trend"
+              ],
+              "query": [
+                {
+                  "key": "bucket",
+                  "value": "month",
+                  "description": "day|week|month"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Budget summary",
+          "request": {
+            "description": "Aggregate totals (budget_count, total_transactions, total_income, total_expense, net) plus a breakdown by budget. Filters (all optional): q (name substring, case-insensitive, same as /budgets/search), from, to (day-inclusive, filters by linked transaction datetime).",
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/budgets/summary?q=",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "budgets",
+                "summary"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "",
+                  "description": "substring, case-insensitive"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Budget trend",
+          "request": {
+            "description": "Bucketed income/expense/net/count time series across budgets matching the filter. bucket: day|week|month (default day). Also accepts from, to, q (same as /budgets/summary).",
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/budgets/trend?bucket=month",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "budgets",
+                "trend"
+              ],
+              "query": [
+                {
+                  "key": "bucket",
+                  "value": "month",
+                  "description": "day|week|month"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "Notifications",
       "item": [
         {
