@@ -112,6 +112,7 @@ Access the following endpoints by the following endpoints
 | GET | `/transactions/trend` | Bucketed income/expense time series for transactions |
 | GET | `/budgets/summary` | Aggregate totals and breakdown by budget |
 | GET | `/budgets/trend` | Bucketed income/expense time series for budget activity |
+| POST | `/assistant/query` | Ask a natural-language question about your own transactions and budgets |
 
 ## Roadmap  
 

@@ -1784,6 +1784,47 @@
       ]
     },
     {
+      "name": "Assistant",
+      "item": [
+        {
+          "name": "Ask a question",
+          "request": {
+            "description": "Ask a free-text question about your own transactions and budgets (e.g. \"how much did I spend on groceries last month?\"). Answered via a tool-use loop against Amazon Nova Micro on Bedrock, using the same transaction/budget insights data as /transactions/summary, /transactions/trend, /budgets/summary, /budgets/trend -- same ownership/shared-budget visibility rules apply. Stateless: each call is an independent question, no conversation history.",
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"How much did I spend last month?\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/assistant/query",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "assistant",
+                "query"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "Notifications",
       "item": [
         {
