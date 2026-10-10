@@ -78,6 +78,18 @@ def summarize_transactions(user_id, q: dict) -> dict:
 
         cursor.execute(
             f"""
+            SELECT destination AS account, SUM(amount) AS total, COUNT(*) AS count
+            FROM dompet.vw_transactions
+            {where} AND destination IS NOT NULL
+            GROUP BY destination
+            ORDER BY total DESC
+            """,
+            params,
+        )
+        by_destination_account = cursor.fetchall()
+
+        cursor.execute(
+            f"""
             SELECT budget, SUM(amount) AS total, COUNT(*) AS count
             FROM dompet.vw_transactions, unnest(budgets) AS budget
             {where}
@@ -95,6 +107,7 @@ def summarize_transactions(user_id, q: dict) -> dict:
             "transaction_count": totals["transaction_count"],
             "by_category": by_category,
             "by_account": by_account,
+            "by_destination_account": by_destination_account,
             "by_budget": by_budget,
         }
 

@@ -7,7 +7,9 @@ from ..utils.trend import parse_bucket, bucket_label
 
 def summary(params: Params) -> BudgetSummary:
     q = params.queryParams or {}
-    result = budget_insights_db.summarize_budgets(params.user, q.get("q"))
+    result = budget_insights_db.summarize_budgets(
+        params.user, q.get("q"), date_from=q.get("from"), date_to=q.get("to"),
+    )
     return BudgetSummary(**result)
 
 
