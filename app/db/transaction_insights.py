@@ -20,11 +20,17 @@ def _build_filter(q: dict) -> tuple[str, list]:
     if q.get("type"):
         where += " AND type = %s"
         params.append(q["type"])
+    # An account can't be both legs of the same transaction, so OR-ing
+    # source/destination here can't double-count a row -- source/destination
+    # filter "this account was involved", not "this account was specifically
+    # the source/destination leg".
     if q.get("source"):
-        where += " AND source = %s"
+        where += " AND (source = %s OR destination = %s)"
+        params.append(q["source"])
         params.append(q["source"])
     if q.get("destination"):
-        where += " AND destination = %s"
+        where += " AND (source = %s OR destination = %s)"
+        params.append(q["destination"])
         params.append(q["destination"])
     if q.get("tags"):
         where += " AND %s = ANY(tags)"
@@ -78,18 +84,6 @@ def summarize_transactions(user_id, q: dict) -> dict:
 
         cursor.execute(
             f"""
-            SELECT destination AS account, SUM(amount) AS total, COUNT(*) AS count
-            FROM dompet.vw_transactions
-            {where} AND destination IS NOT NULL
-            GROUP BY destination
-            ORDER BY total DESC
-            """,
-            params,
-        )
-        by_destination_account = cursor.fetchall()
-
-        cursor.execute(
-            f"""
             SELECT budget, SUM(amount) AS total, COUNT(*) AS count
             FROM dompet.vw_transactions, unnest(budgets) AS budget
             {where}
@@ -107,7 +101,6 @@ def summarize_transactions(user_id, q: dict) -> dict:
             "transaction_count": totals["transaction_count"],
             "by_category": by_category,
             "by_account": by_account,
-            "by_destination_account": by_destination_account,
             "by_budget": by_budget,
         }
 
