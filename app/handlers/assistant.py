@@ -5,11 +5,21 @@ from ..lib.params import Params
 from ..lib.exceptions import InvalidDataException, InvalidParamsException
 from ..models.assistant import AssistantReply
 from ..utils import bedrock
+from ..utils.pagination import PaginatedResult
 from . import transaction_insights
 from . import budget_insights
+from . import transaction_search
+from . import budget_search
 
 MAX_TOOL_ROUNDS = 3
 MAX_MESSAGE_LENGTH = 1000
+
+# Search tools return individual rows, not aggregates -- each row carries
+# several fields (name, amount, date, accounts, tags, budgets, ...), so an
+# uncapped page would multiply token cost fast. The model never sees
+# page/page_size as tool params; this is forced server-side regardless of
+# what it asks for.
+TOOL_SEARCH_PAGE_SIZE = 25
 
 # Exceptions this app raises itself, with deliberately-written user-facing
 # messages (bad bucket/filter values, missing fields) -- safe to hand back
@@ -101,6 +111,59 @@ TOOLS = [
             },
         }
     },
+    {
+        "toolSpec": {
+            "name": "search_transactions",
+            "description": (
+                "List individual transactions matching filters, newest first, up to "
+                f"{TOOL_SEARCH_PAGE_SIZE} results. Use for questions that need actual "
+                "transaction line items rather than totals -- e.g. the biggest "
+                "purchases, a list of transactions at a place, or transactions with "
+                "a specific tag. For totals or breakdowns, use get_transaction_summary "
+                "instead. category/source/destination/tags/budgets only match a name "
+                "you already know exists exactly (e.g. one just seen in another tool's "
+                "result) -- a non-matching value returns zero rows, not an error. For "
+                "a word or phrase from the question itself with no confirmed exact "
+                "match (e.g. a merchant or bill mentioned by name), use `q` instead, "
+                "which matches as a substring of the transaction's own name, "
+                "case-insensitively."
+            ),
+            "inputSchema": {
+                "json": {
+                    "type": "object",
+                    "properties": {
+                        **_FILTER_PROPERTIES,
+                        "q": {
+                            "type": "string",
+                            "description": "Case-insensitive substring match on the transaction's own name",
+                        },
+                        "source_location": {"type": "string", "description": "Exact source location name"},
+                        "destination_location": {"type": "string", "description": "Exact destination location name"},
+                    },
+                }
+            },
+        }
+    },
+    {
+        "toolSpec": {
+            "name": "search_budgets",
+            "description": (
+                "List budgets matching a name, up to "
+                f"{TOOL_SEARCH_PAGE_SIZE} results, including each budget's owner, "
+                "members, and when it was last updated. Use for questions about "
+                "which budgets exist, who's in a budget, or when a budget was last "
+                "updated. For totals or breakdowns, use get_budget_summary instead."
+            ),
+            "inputSchema": {
+                "json": {
+                    "type": "object",
+                    "properties": {
+                        "q": {"type": "string", "description": "Budget name substring, case-insensitive"},
+                    },
+                }
+            },
+        }
+    },
 ]
 
 _TOOL_DISPATCH = {
@@ -108,7 +171,11 @@ _TOOL_DISPATCH = {
     "get_transaction_trend": transaction_insights.trend,
     "get_budget_summary": budget_insights.summary,
     "get_budget_trend": budget_insights.trend,
+    "search_transactions": transaction_search.search,
+    "search_budgets": budget_search.search,
 }
+
+_PAGINATED_TOOLS = frozenset({"search_transactions", "search_budgets"})
 
 
 def _system_prompt() -> list:
@@ -149,8 +216,19 @@ def _run_tool(params: Params, name: str, tool_input: dict) -> dict:
     handler = _TOOL_DISPATCH.get(name)
     if handler is None:
         raise InvalidDataException(ValueError(f"unknown tool: {name}"))
-    tool_params = Params(user=params.user, queryParams=tool_input or {})
+    query_params = dict(tool_input or {})
+    if name in _PAGINATED_TOOLS:
+        # Forced regardless of tool_input -- page/page_size aren't offered
+        # to the model at all, so this only overrides a hallucinated value.
+        query_params["page"] = 1
+        query_params["page_size"] = TOOL_SEARCH_PAGE_SIZE
+    tool_params = Params(user=params.user, queryParams=query_params)
     result = handler(tool_params)
+    if isinstance(result, PaginatedResult):
+        return {
+            "items": [item.model_dump(mode="json") for item in result.items],
+            "metadata": result.metadata,
+        }
     return result.model_dump(mode="json")
 
 
