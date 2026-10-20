@@ -113,6 +113,23 @@ Access the following endpoints by the following endpoints
 | GET | `/budgets/summary` | Aggregate totals and breakdown by budget |
 | GET | `/budgets/trend` | Bucketed income/expense time series for budget activity |
 | POST | `/assistant/query` | Ask a natural-language question about your own transactions and budgets |
+| GET | `/bills` | List bill occurrences (recurring and one-off) |
+| POST | `/bills` | Create a one-off bill |
+| GET | `/bills/search` | Search bills by name/category/account/status, with computed paid status |
+| GET | `/bills/{id}` | Get a specific bill occurrence |
+| PUT | `/bills/{id}` | Update a bill occurrence |
+| DELETE | `/bills/{id}` | Deactivate a bill occurrence |
+| GET | `/bills/series` | List recurring bill definitions |
+| POST | `/bills/series` | Create a recurring bill definition |
+| GET | `/bills/series/{id}` | Get a specific recurring bill definition |
+| PUT | `/bills/series/{id}` | Update a recurring bill definition |
+| DELETE | `/bills/series/{id}` | Deactivate a recurring bill definition |
+| GET | `/bills/{id}/payments` | List payments recorded against a bill |
+| POST | `/bills/{id}/payments` | Record a payment toward a bill, optionally linked to a transaction |
+| DELETE | `/bills/{id}/payments/{payment_id}` | Remove a recorded payment |
+| GET | `/bills/{id}/attachments` | List attachments linked to a bill |
+| POST | `/bills/{id}/attachments` | Link an attachment to a bill |
+| DELETE | `/bills/{id}/attachments/{attachment_id}` | Unlink an attachment from a bill |
 
 ## Roadmap  
 

@@ -1,0 +1,78 @@
+from datetime import date
+
+from ..lib.exceptions import InvalidDataException, NotFoundException
+from ..utils.db import run_atomic, paginate
+
+
+def _require_owned_bill(cursor, user_id, bill_id) -> dict:
+    cursor.execute(
+        "SELECT * FROM dompet.bills WHERE id = %s AND user_id = %s",
+        (str(bill_id), str(user_id)),
+    )
+    row = cursor.fetchone()
+    if not row:
+        raise NotFoundException(ValueError(f"Bill not found: {bill_id}"))
+    return row
+
+
+def _require_owned_transaction(cursor, user_id, transaction_id) -> None:
+    cursor.execute(
+        "SELECT 1 FROM dompet.transactions WHERE id = %s AND user_id = %s",
+        (str(transaction_id), str(user_id)),
+    )
+    if not cursor.fetchone():
+        raise NotFoundException(ValueError(f"Transaction not found or not owned by user: {transaction_id}"))
+
+
+def list_payments(user_id, bill_id, page: int, page_size: int) -> tuple[list[dict], dict]:
+    def work(cursor):
+        _require_owned_bill(cursor, user_id, bill_id)
+        query = "SELECT * FROM dompet.bill_payments WHERE bill_id = %s ORDER BY paid_date DESC, created_at DESC"
+        return paginate(cursor, query, [str(bill_id)], page, page_size)
+
+    return run_atomic(work, user_id=user_id)
+
+
+def create_payment(user_id, bill_id, body: dict) -> dict:
+    transaction_id = body.get("transaction_id")
+
+    def work(cursor):
+        bill = _require_owned_bill(cursor, user_id, bill_id)
+        if transaction_id:
+            _require_owned_transaction(cursor, user_id, transaction_id)
+
+        amount_paid = body.get("amount_paid")
+        if amount_paid is None:
+            amount_paid = bill["amount"]
+        elif float(amount_paid) < 0:
+            raise InvalidDataException(ValueError("amount_paid must be non-negative"))
+
+        paid_date = body.get("paid_date") or date.today().isoformat()
+
+        cursor.execute(
+            """
+            INSERT INTO dompet.bill_payments (user_id, bill_id, transaction_id, amount_paid, paid_date, notes)
+            VALUES (%s, %s, %s, %s, %s, %s)
+            RETURNING *
+            """,
+            (str(user_id), str(bill_id), str(transaction_id) if transaction_id else None,
+             amount_paid, paid_date, body.get("notes")),
+        )
+        return cursor.fetchone()
+
+    return run_atomic(work, user_id=user_id)
+
+
+def delete_payment(user_id, bill_id, payment_id) -> dict:
+    def work(cursor):
+        _require_owned_bill(cursor, user_id, bill_id)
+        cursor.execute(
+            "DELETE FROM dompet.bill_payments WHERE id = %s AND bill_id = %s AND user_id = %s RETURNING *",
+            (str(payment_id), str(bill_id), str(user_id)),
+        )
+        row = cursor.fetchone()
+        if not row:
+            raise NotFoundException(ValueError(f"Bill payment not found: {payment_id}"))
+        return row
+
+    return run_atomic(work, user_id=user_id)

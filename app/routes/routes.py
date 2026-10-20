@@ -25,6 +25,11 @@ from ..handlers import transaction_budget
 from ..handlers import notification
 from ..handlers import user
 from ..handlers import assistant
+from ..handlers import bill
+from ..handlers import bill_series
+from ..handlers import bill_payment
+from ..handlers import bill_search
+from ..handlers import bill_attachment
 
 import re
 from typing import Callable, Optional
@@ -33,7 +38,7 @@ CREATE_HANDLERS = frozenset({
     transaction.add, account.add, category.add, location.add, account_location.add,
     tag.add, transaction_tag.add, attachment.add, transaction_attachment.add,
     budget.add, budget_member.add, transaction_budget.add, notification.add,
-    user.add,
+    user.add, bill.add, bill_series.add, bill_payment.add, bill_attachment.add,
 })
 
 UUID_RE = r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
@@ -134,6 +139,27 @@ routes = {
     (re.compile(rf"^/notifications/{_uuid('notification_id')}$"), "DELETE", notification.delete),
 
     (re.compile(r"^/assistant/query$"), "POST", assistant.query),
+
+    (re.compile(r"^/bills$"), "GET", bill.list),
+    (re.compile(r"^/bills$"), "POST", bill.add),
+    (re.compile(r"^/bills/search$"), "GET", bill_search.search),
+    (re.compile(rf"^/bills/{_uuid('bill_id')}$"), "GET", bill.get),
+    (re.compile(rf"^/bills/{_uuid('bill_id')}$"), "PUT", bill.edit),
+    (re.compile(rf"^/bills/{_uuid('bill_id')}$"), "DELETE", bill.delete),
+
+    (re.compile(r"^/bills/series$"), "GET", bill_series.list),
+    (re.compile(r"^/bills/series$"), "POST", bill_series.add),
+    (re.compile(rf"^/bills/series/{_uuid('series_id')}$"), "GET", bill_series.get),
+    (re.compile(rf"^/bills/series/{_uuid('series_id')}$"), "PUT", bill_series.edit),
+    (re.compile(rf"^/bills/series/{_uuid('series_id')}$"), "DELETE", bill_series.delete),
+
+    (re.compile(rf"^/bills/{_uuid('bill_id')}/payments$"), "GET", bill_payment.list),
+    (re.compile(rf"^/bills/{_uuid('bill_id')}/payments$"), "POST", bill_payment.add),
+    (re.compile(rf"^/bills/{_uuid('bill_id')}/payments/{_uuid('payment_id')}$"), "DELETE", bill_payment.delete),
+
+    (re.compile(rf"^/bills/{_uuid('bill_id')}/attachments$"), "GET", bill_attachment.list),
+    (re.compile(rf"^/bills/{_uuid('bill_id')}/attachments$"), "POST", bill_attachment.add),
+    (re.compile(rf"^/bills/{_uuid('bill_id')}/attachments/{_uuid('attachment_id')}$"), "DELETE", bill_attachment.delete),
 }
 
 def match_route(path: str, method: str):
