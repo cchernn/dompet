@@ -30,6 +30,7 @@ from ..handlers import bill_series
 from ..handlers import bill_payment
 from ..handlers import bill_search
 from ..handlers import bill_attachment
+from ..handlers import bill_budget
 
 import re
 from typing import Callable, Optional
@@ -39,6 +40,7 @@ CREATE_HANDLERS = frozenset({
     tag.add, transaction_tag.add, attachment.add, transaction_attachment.add,
     budget.add, budget_member.add, transaction_budget.add, notification.add,
     user.add, bill.add, bill_series.add, bill_payment.add, bill_attachment.add,
+    bill_budget.add,
 })
 
 UUID_RE = r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
@@ -119,6 +121,7 @@ routes = {
     (re.compile(rf"^/budgets/{_uuid('budget_id')}$"), "DELETE", budget.delete),
 
     (re.compile(rf"^/budgets/{_uuid('budget_id')}/transactions$"), "GET", budget.list_transactions),
+    (re.compile(rf"^/budgets/{_uuid('budget_id')}/bills$"), "GET", budget.list_bills),
 
     (re.compile(rf"^/budgets/{_uuid('budget_id')}/members$"), "GET", budget_member.list),
     (re.compile(rf"^/budgets/{_uuid('budget_id')}/members$"), "POST", budget_member.add),
@@ -160,6 +163,10 @@ routes = {
     (re.compile(rf"^/bills/{_uuid('bill_id')}/attachments$"), "GET", bill_attachment.list),
     (re.compile(rf"^/bills/{_uuid('bill_id')}/attachments$"), "POST", bill_attachment.add),
     (re.compile(rf"^/bills/{_uuid('bill_id')}/attachments/{_uuid('attachment_id')}$"), "DELETE", bill_attachment.delete),
+
+    (re.compile(rf"^/bills/{_uuid('bill_id')}/budgets$"), "GET", bill_budget.list),
+    (re.compile(rf"^/bills/{_uuid('bill_id')}/budgets$"), "POST", bill_budget.add),
+    (re.compile(rf"^/bills/{_uuid('bill_id')}/budgets/{_uuid('budget_id')}$"), "DELETE", bill_budget.delete),
 }
 
 def match_route(path: str, method: str):

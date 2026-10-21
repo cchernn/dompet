@@ -137,6 +137,15 @@ instead of one file upload.
 /attachments                                                 GET POST
 /attachments/search                                          GET
 /attachments/{attachment_id}                            DELETE GET PUT
+/bills                                                       GET POST
+/bills/search                                                GET
+/bills/series                                                GET POST
+/bills/series/{series_id}                               DELETE GET PUT
+/bills/{bill_id}                                        DELETE GET PUT
+/bills/{bill_id}/attachments                                 GET POST
+/bills/{bill_id}/attachments/{attachment_id}                     DELETE
+/bills/{bill_id}/payments                                    GET POST
+/bills/{bill_id}/payments/{payment_id}                           DELETE
 /budgets                                                     GET POST
 /budgets/search                                              GET
 /budgets/{budget_id}                                    DELETE GET PUT
@@ -183,6 +192,11 @@ existing as siblings and matches the literal one first for an exact
 (`search` never matches a UUID-shaped `{..._id}` pattern). `/attachments/search`
 is the same case too, alongside `{attachment_id}`. `/notifications/read-all`
 is the identical situation alongside `/notifications/{notification_id}`.
+`/bills/search` and `/bills/series` are both the same case too, alongside
+`/bills/{bill_id}` — `series` never matches the UUID-shaped `{bill_id}`
+pattern either, same reasoning. `/bills/series/{series_id}` is then its
+own separate child resource under the literal `/bills/series`, not under
+`/bills/{bill_id}`.
 
 ### Deploy
 

@@ -1,8 +1,10 @@
 from ..lib.params import Params
 from ..models.budget import Budget
 from ..models.transaction import Transaction
+from ..models.bill import Bill
 from ..db import budget as budget_db
 from ..db import transaction_budget as transaction_budget_db
+from ..db import bill_budget as bill_budget_db
 from ..utils.pagination import PaginatedResult, parse_pagination
 
 
@@ -48,3 +50,10 @@ def list_transactions(params: Params) -> PaginatedResult:
     page, page_size = parse_pagination(params)
     rows, metadata = transaction_budget_db.list_budget_transactions(params.user, budget_id, page, page_size)
     return PaginatedResult([Transaction(**row) for row in rows], metadata)
+
+
+def list_bills(params: Params) -> PaginatedResult:
+    budget_id = params.pathParams.get("budget_id")
+    page, page_size = parse_pagination(params)
+    rows, metadata = bill_budget_db.list_budget_bills(params.user, budget_id, page, page_size)
+    return PaginatedResult([Bill(**row) for row in rows], metadata)
