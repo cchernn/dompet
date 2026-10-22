@@ -97,12 +97,31 @@ def _generate_due_occurrences(cursor, user_id, series: dict, today: date) -> Non
                 (user_id, series_id, name, amount, currency_code, category_id, account_id, due_date)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
             ON CONFLICT (series_id, due_date) WHERE series_id IS NOT NULL DO NOTHING
+            RETURNING id
             """,
             (
                 str(user_id), str(series["id"]), series["name"], series["amount"], series["currency_code"],
                 series["category_id"], series["account_id"], next_due,
             ),
         )
+        new_bill = cursor.fetchone()
+        if new_bill:
+            # Linking a bill to a budget fans out to every occurrence in its
+            # series (see bill_budget.link_budget) -- a newly generated
+            # occurrence needs the same links copied forward, otherwise it
+            # silently falls outside the budget the rest of the series is
+            # shared through.
+            cursor.execute(
+                """
+                INSERT INTO dompet.bill_budgets (bill_id, budget_id)
+                SELECT %s, bb.budget_id
+                FROM dompet.bill_budgets bb
+                JOIN dompet.bills b ON b.id = bb.bill_id
+                WHERE b.series_id = %s
+                ON CONFLICT DO NOTHING
+                """,
+                (str(new_bill["id"]), str(series["id"])),
+            )
         next_due = _advance_date(next_due, series["recurrence_unit"], series["recurrence_count"])
 
 

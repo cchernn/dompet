@@ -64,14 +64,33 @@ def link_budget(user_id, bill_id, budget_id) -> dict:
         if not cursor.fetchone():
             raise NotFoundException(ValueError(f"Budget not found, inactive, or not accessible by user: {budget_id}"))
 
-        cursor.execute(
-            """
-            INSERT INTO dompet.bill_budgets (bill_id, budget_id)
-            VALUES (%s, %s)
-            ON CONFLICT DO NOTHING
-            """,
-            (str(bill_id), str(budget_id)),
-        )
+        cursor.execute("SELECT series_id FROM dompet.bills WHERE id = %s", (str(bill_id),))
+        series_id = cursor.fetchone()["series_id"]
+
+        if series_id:
+            # Recurring: link every occurrence in the series, not just the
+            # one this call was made on, so the whole recurring bill --
+            # past and future occurrences alike -- is visible to the
+            # budget. New occurrences generated later inherit this via
+            # bill.py's _generate_due_occurrences.
+            cursor.execute(
+                """
+                INSERT INTO dompet.bill_budgets (bill_id, budget_id)
+                SELECT id, %s FROM dompet.bills WHERE series_id = %s AND user_id = %s
+                ON CONFLICT DO NOTHING
+                """,
+                (str(budget_id), str(series_id), str(user_id)),
+            )
+        else:
+            cursor.execute(
+                """
+                INSERT INTO dompet.bill_budgets (bill_id, budget_id)
+                VALUES (%s, %s)
+                ON CONFLICT DO NOTHING
+                """,
+                (str(bill_id), str(budget_id)),
+            )
+
         cursor.execute(
             """
             SELECT bill_id, budget_id, created_at FROM dompet.bill_budgets
@@ -93,5 +112,19 @@ def unlink_budget(user_id, bill_id, budget_id) -> None:
         )
         if not cursor.fetchone():
             raise NotFoundException(ValueError("Link not found"))
+
+        cursor.execute("SELECT series_id FROM dompet.bills WHERE id = %s", (str(bill_id),))
+        series_id = cursor.fetchone()["series_id"]
+        if series_id:
+            # Symmetric with link_budget's fan-out: unlinking one occurrence
+            # unlinks the whole series from this budget.
+            cursor.execute(
+                """
+                DELETE FROM dompet.bill_budgets
+                WHERE budget_id = %s
+                  AND bill_id IN (SELECT id FROM dompet.bills WHERE series_id = %s AND user_id = %s)
+                """,
+                (str(budget_id), str(series_id), str(user_id)),
+            )
 
     return run_atomic(work, user_id=user_id)

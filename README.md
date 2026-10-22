@@ -131,8 +131,8 @@ Access the following endpoints by the following endpoints
 | POST | `/bills/{id}/attachments` | Link an attachment to a bill |
 | DELETE | `/bills/{id}/attachments/{attachment_id}` | Unlink an attachment from a bill |
 | GET | `/bills/{id}/budgets` | List budgets a bill is tied to |
-| POST | `/bills/{id}/budgets` | Tie a bill to a shared budget (other members can then see it) |
-| DELETE | `/bills/{id}/budgets/{budget_id}` | Untie a bill from a budget |
+| POST | `/bills/{id}/budgets` | Tie a bill to a shared budget (other members can then see it); for a recurring bill, ties every occurrence in the series, including ones generated later |
+| DELETE | `/bills/{id}/budgets/{budget_id}` | Untie a bill from a budget; for a recurring bill, unties every occurrence in the series |
 | GET | `/budgets/{id}/bills` | List every bill tied to a budget, across all its members |
 
 ## Roadmap  
