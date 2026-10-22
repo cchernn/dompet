@@ -126,6 +126,7 @@ Access the following endpoints by the following endpoints
 | DELETE | `/bills/series/{id}` | Deactivate a recurring bill definition |
 | GET | `/bills/{id}/payments` | List payments recorded against a bill |
 | POST | `/bills/{id}/payments` | Record a payment toward a bill, optionally linked to a transaction |
+| PUT | `/bills/{id}/payments/{payment_id}` | Edit a recorded payment, e.g. unlink its transaction by setting `transaction_id` to null while keeping the amount/date |
 | DELETE | `/bills/{id}/payments/{payment_id}` | Remove a recorded payment |
 | GET | `/bills/{id}/attachments` | List attachments linked to a bill |
 | POST | `/bills/{id}/attachments` | Link an attachment to a bill |

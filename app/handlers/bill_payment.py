@@ -18,6 +18,14 @@ def add(params: Params) -> BillPayment:
     return BillPayment(**row)
 
 
+def edit(params: Params) -> BillPayment:
+    bill_id = params.pathParams.get("bill_id")
+    payment_id = params.pathParams.get("payment_id")
+    body = params.body or {}
+    row = bill_payment_db.update_payment(params.user, bill_id, payment_id, body)
+    return BillPayment(**row)
+
+
 def delete(params: Params) -> dict:
     bill_id = params.pathParams.get("bill_id")
     payment_id = params.pathParams.get("payment_id")

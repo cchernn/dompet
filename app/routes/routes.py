@@ -158,6 +158,7 @@ routes = {
 
     (re.compile(rf"^/bills/{_uuid('bill_id')}/payments$"), "GET", bill_payment.list),
     (re.compile(rf"^/bills/{_uuid('bill_id')}/payments$"), "POST", bill_payment.add),
+    (re.compile(rf"^/bills/{_uuid('bill_id')}/payments/{_uuid('payment_id')}$"), "PUT", bill_payment.edit),
     (re.compile(rf"^/bills/{_uuid('bill_id')}/payments/{_uuid('payment_id')}$"), "DELETE", bill_payment.delete),
 
     (re.compile(rf"^/bills/{_uuid('bill_id')}/attachments$"), "GET", bill_attachment.list),

@@ -144,11 +144,14 @@ instead of one file upload.
 /bills/{bill_id}                                        DELETE GET PUT
 /bills/{bill_id}/attachments                                 GET POST
 /bills/{bill_id}/attachments/{attachment_id}                     DELETE
+/bills/{bill_id}/budgets                                     GET POST
+/bills/{bill_id}/budgets/{budget_id}                             DELETE
 /bills/{bill_id}/payments                                    GET POST
-/bills/{bill_id}/payments/{payment_id}                           DELETE
+/bills/{bill_id}/payments/{payment_id}                       DELETE PUT
 /budgets                                                     GET POST
 /budgets/search                                              GET
 /budgets/{budget_id}                                    DELETE GET PUT
+/budgets/{budget_id}/bills                                   GET
 /budgets/{budget_id}/members                                 GET POST
 /budgets/{budget_id}/members/{member_user_id}                    DELETE
 /budgets/{budget_id}/transactions                            GET
