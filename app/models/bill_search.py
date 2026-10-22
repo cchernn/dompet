@@ -8,6 +8,7 @@ from uuid import UUID
 class BillSearchResult(BaseModel):
     id: UUID = Field(..., title="Bill ID")
     name: str = Field(..., title="Bill Name")
+    bill_date: date = Field(..., title="Bill Date")
     due_date: date = Field(..., title="Due Date")
     amount: Decimal = Field(..., title="Bill Amount")
     currency: str = Field(..., title="Currency Code")

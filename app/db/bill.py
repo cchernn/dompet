@@ -6,8 +6,8 @@ from ..utils.db import run_atomic, paginate
 from .operations import row_to_dict, record_operation
 from .notification import MAX_NOTIFICATIONS_PER_USER
 
-CREATE_REQUIRED_FIELDS = ("name", "amount", "currency_code", "due_date")
-UPDATABLE_FIELDS = ("name", "amount", "currency_code", "category_id", "account_id", "due_date")
+CREATE_REQUIRED_FIELDS = ("name", "amount", "currency_code", "bill_date")
+UPDATABLE_FIELDS = ("name", "amount", "currency_code", "category_id", "account_id", "bill_date", "due_date")
 
 # How far ahead of due_date a "due soon" notification fires.
 NOTIFY_DAYS_BEFORE = 3
@@ -80,28 +80,35 @@ def _advance_date(d: date, unit: str, count: int) -> date:
 
 def _generate_due_occurrences(cursor, user_id, series: dict, today: date) -> None:
     cursor.execute(
-        "SELECT MAX(due_date) AS max_due FROM dompet.bills WHERE series_id = %s",
+        "SELECT MAX(bill_date) AS max_bill_date FROM dompet.bills WHERE series_id = %s",
         (str(series["id"]),),
     )
-    last_due = cursor.fetchone()["max_due"]
-    next_due = series["anchor_date"] if last_due is None else _advance_date(
-        last_due, series["recurrence_unit"], series["recurrence_count"]
+    last_bill_date = cursor.fetchone()["max_bill_date"]
+    next_bill_date = series["anchor_date"] if last_bill_date is None else _advance_date(
+        last_bill_date, series["recurrence_unit"], series["recurrence_count"]
     )
 
     for _ in range(MAX_OCCURRENCES_PER_SYNC):
-        if next_due > today:
+        if next_bill_date > today:
             break
+        # due_date is the day before the *next* occurrence's bill_date --
+        # computed directly from the fixed recurrence rule, not by looking
+        # ahead at an actual generated row, so it doesn't depend on
+        # generation order.
+        due_date = _advance_date(
+            next_bill_date, series["recurrence_unit"], series["recurrence_count"]
+        ) - timedelta(days=1)
         cursor.execute(
             """
             INSERT INTO dompet.bills
-                (user_id, series_id, name, amount, currency_code, category_id, account_id, due_date)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-            ON CONFLICT (series_id, due_date) WHERE series_id IS NOT NULL DO NOTHING
+                (user_id, series_id, name, amount, currency_code, category_id, account_id, bill_date, due_date)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            ON CONFLICT (series_id, bill_date) WHERE series_id IS NOT NULL DO NOTHING
             RETURNING id
             """,
             (
                 str(user_id), str(series["id"]), series["name"], series["amount"], series["currency_code"],
-                series["category_id"], series["account_id"], next_due,
+                series["category_id"], series["account_id"], next_bill_date, due_date,
             ),
         )
         new_bill = cursor.fetchone()
@@ -122,7 +129,7 @@ def _generate_due_occurrences(cursor, user_id, series: dict, today: date) -> Non
                 """,
                 (str(new_bill["id"]), str(series["id"])),
             )
-        next_due = _advance_date(next_due, series["recurrence_unit"], series["recurrence_count"])
+        next_bill_date = _advance_date(next_bill_date, series["recurrence_unit"], series["recurrence_count"])
 
 
 def _sync_bill_notifications(cursor, user_id, today: date) -> None:
@@ -233,19 +240,22 @@ def create_bill(user_id, body: dict) -> dict:
     fields = {field: body[field] for field in CREATE_REQUIRED_FIELDS}
     fields["category_id"] = body.get("category_id")
     fields["account_id"] = body.get("account_id")
+    # A one-off bill has no "next bill_date" to derive a due_date from --
+    # default to the same day as bill_date unless given explicitly.
+    fields["due_date"] = body.get("due_date") or fields["bill_date"]
 
     def work(cursor):
         _validate_fields(cursor, user_id, fields)
         cursor.execute(
             """
             INSERT INTO dompet.bills
-                (user_id, series_id, name, amount, currency_code, category_id, account_id, due_date)
-            VALUES (%s, NULL, %s, %s, %s, %s, %s, %s)
+                (user_id, series_id, name, amount, currency_code, category_id, account_id, bill_date, due_date)
+            VALUES (%s, NULL, %s, %s, %s, %s, %s, %s, %s)
             RETURNING *
             """,
             (
                 str(user_id), fields["name"], fields["amount"], fields["currency_code"],
-                fields["category_id"], fields["account_id"], fields["due_date"],
+                fields["category_id"], fields["account_id"], fields["bill_date"], fields["due_date"],
             ),
         )
         row = cursor.fetchone()
@@ -276,13 +286,13 @@ def update_bill(user_id, bill_id, body: dict) -> dict:
             """
             UPDATE dompet.bills
             SET name = %s, amount = %s, currency_code = %s, category_id = %s,
-                account_id = %s, due_date = %s, updated_at = NOW()
+                account_id = %s, bill_date = %s, due_date = %s, updated_at = NOW()
             WHERE id = %s AND user_id = %s
             RETURNING *
             """,
             (
                 merged["name"], merged["amount"], merged["currency_code"], merged["category_id"],
-                merged["account_id"], merged["due_date"], str(bill_id), str(user_id),
+                merged["account_id"], merged["bill_date"], merged["due_date"], str(bill_id), str(user_id),
             ),
         )
         after = cursor.fetchone()

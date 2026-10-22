@@ -114,13 +114,13 @@ Access the following endpoints by the following endpoints
 | GET | `/budgets/trend` | Bucketed income/expense time series for budget activity |
 | POST | `/assistant/query` | Ask a natural-language question about your own transactions and budgets |
 | GET | `/bills` | List bill occurrences (recurring and one-off) |
-| POST | `/bills` | Create a one-off bill |
+| POST | `/bills` | Create a one-off bill. Requires `bill_date` (when it was issued); `due_date` defaults to `bill_date` if omitted |
 | GET | `/bills/search` | Search bills by name/category/account/status, with computed paid status |
 | GET | `/bills/{id}` | Get a specific bill occurrence |
 | PUT | `/bills/{id}` | Update a bill occurrence |
 | DELETE | `/bills/{id}` | Deactivate a bill occurrence |
 | GET | `/bills/series` | List recurring bill definitions |
-| POST | `/bills/series` | Create a recurring bill definition |
+| POST | `/bills/series` | Create a recurring bill definition. `anchor_date` is the first occurrence's `bill_date` (issue date); each occurrence's `due_date` defaults to the day before the next occurrence's `bill_date` |
 | GET | `/bills/series/{id}` | Get a specific recurring bill definition |
 | PUT | `/bills/series/{id}` | Update a recurring bill definition |
 | DELETE | `/bills/series/{id}` | Deactivate a recurring bill definition |

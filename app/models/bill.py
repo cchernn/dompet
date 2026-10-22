@@ -43,9 +43,15 @@ class Bill(BaseModel):
         None,
         title="Expected Payment Account ID",
     )
+    bill_date: date = Field(
+        ...,
+        title="Bill Date",
+        description="The date the bill was issued (e.g. a statement date), distinct from due_date",
+    )
     due_date: date = Field(
         ...,
         title="Due Date",
+        description="Defaults to the day before the series' next bill_date for a recurring bill, or to bill_date itself for a one-off bill, unless given explicitly",
     )
     is_active: bool = Field(
         True,

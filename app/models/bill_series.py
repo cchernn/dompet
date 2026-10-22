@@ -50,7 +50,7 @@ class BillSeries(BaseModel):
     anchor_date: date = Field(
         ...,
         title="Anchor Date",
-        description="First due date -- every occurrence's due date is computed as anchor_date + k * interval, never by accumulating onto a prior due date",
+        description="First occurrence's bill_date (issue date), not due_date -- every occurrence's bill_date is computed as anchor_date + k * interval, never by accumulating onto a prior one. due_date defaults to the day before the following occurrence's bill_date",
     )
     is_active: bool = Field(
         True,
