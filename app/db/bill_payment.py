@@ -15,13 +15,15 @@ def _require_owned_bill(cursor, user_id, bill_id) -> dict:
     return row
 
 
-def _require_owned_transaction(cursor, user_id, transaction_id) -> None:
+def _require_owned_transaction(cursor, user_id, transaction_id) -> dict:
     cursor.execute(
-        "SELECT 1 FROM dompet.transactions WHERE id = %s AND user_id = %s",
+        "SELECT * FROM dompet.transactions WHERE id = %s AND user_id = %s",
         (str(transaction_id), str(user_id)),
     )
-    if not cursor.fetchone():
+    row = cursor.fetchone()
+    if not row:
         raise NotFoundException(ValueError(f"Transaction not found or not owned by user: {transaction_id}"))
+    return row
 
 
 def list_payments(user_id, bill_id, page: int, page_size: int) -> tuple[list[dict], dict]:
@@ -38,8 +40,7 @@ def create_payment(user_id, bill_id, body: dict) -> dict:
 
     def work(cursor):
         bill = _require_owned_bill(cursor, user_id, bill_id)
-        if transaction_id:
-            _require_owned_transaction(cursor, user_id, transaction_id)
+        transaction = _require_owned_transaction(cursor, user_id, transaction_id) if transaction_id else None
 
         amount_paid = body.get("amount_paid")
         if amount_paid is None:
@@ -47,7 +48,9 @@ def create_payment(user_id, bill_id, body: dict) -> dict:
         elif float(amount_paid) < 0:
             raise InvalidDataException(ValueError("amount_paid must be non-negative"))
 
-        paid_date = body.get("paid_date") or date.today().isoformat()
+        paid_date = body.get("paid_date")
+        if paid_date is None:
+            paid_date = transaction["datetime"].date().isoformat() if transaction else date.today().isoformat()
 
         cursor.execute(
             """
