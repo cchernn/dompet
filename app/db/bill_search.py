@@ -29,12 +29,12 @@ def search_bills(
             query += " AND status = %s"
             params.append(status)
         if date_from:
-            query += " AND due_date >= %s"
+            query += " AND bill_date >= %s"
             params.append(date_from)
         if date_to:
-            query += " AND due_date <= %s"
+            query += " AND bill_date <= %s"
             params.append(date_to)
-        query += " ORDER BY due_date ASC"
+        query += " ORDER BY bill_date ASC"
         return paginate(cursor, query, params, page, page_size)
 
     return run_atomic(work, user_id=user_id)

@@ -211,7 +211,7 @@ def list_bills(user_id, page: int, page_size: int, include_inactive: bool = Fals
         params = [str(user_id)]
         if not include_inactive:
             query += " AND is_active = TRUE"
-        query += " ORDER BY due_date ASC, created_at ASC"
+        query += " ORDER BY bill_date ASC, created_at ASC"
         return paginate(cursor, query, params, page, page_size)
 
     return run_atomic(work, user_id=user_id)

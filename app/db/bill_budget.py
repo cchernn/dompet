@@ -42,7 +42,7 @@ def list_budget_bills(user_id, budget_id, page: int, page_size: int) -> tuple[li
             SELECT bl.* FROM dompet.bill_budgets bb
             JOIN dompet.bills bl ON bl.id = bb.bill_id
             WHERE bb.budget_id = %s
-            ORDER BY bl.due_date ASC
+            ORDER BY bl.bill_date ASC
         """
         return paginate(cursor, query, [str(budget_id)], page, page_size)
 
