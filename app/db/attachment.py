@@ -6,7 +6,7 @@ from ..lib.exceptions import InvalidDataException, NotFoundException
 from ..utils.db import run_atomic, paginate
 from .operations import row_to_dict, record_operation
 
-UPDATABLE_FIELDS = ("filename", "content_type")
+UPDATABLE_FIELDS = ("name", "filename", "content_type")
 
 
 def list_attachments(user_id, page: int, page_size: int, include_inactive: bool = False) -> tuple[list[dict], dict]:
@@ -39,7 +39,7 @@ def get_attachment(user_id, attachment_id) -> dict:
 
 
 def create_attachment_record(
-    user_id, filename: str, content_type: str = None, size_bytes: int = None, metadata: dict = None
+    user_id, filename: str, content_type: str = None, size_bytes: int = None, metadata: dict = None, name: str = None
 ) -> dict:
     if not filename:
         raise InvalidDataException(ValueError("filename is required"))
@@ -50,13 +50,14 @@ def create_attachment_record(
     def work(cursor):
         cursor.execute(
             """
-            INSERT INTO dompet.attachments (id, user_id, filename, content_type, size_bytes, storage_key, metadata)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO dompet.attachments (id, user_id, name, filename, content_type, size_bytes, storage_key, metadata)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING *
             """,
             (
                 str(attachment_id),
                 str(user_id),
+                name or filename,
                 filename,
                 content_type,
                 size_bytes,

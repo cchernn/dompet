@@ -19,6 +19,11 @@ class AttachmentRef(BaseModel):
         ...,
         title="Attachment Filename",
     )
+    name: str = Field(
+        ...,
+        title="Attachment Name",
+        description="User-given display name, separate from filename",
+    )
 
 
 class TransactionSearchResult(BaseModel):

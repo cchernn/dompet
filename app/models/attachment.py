@@ -13,10 +13,17 @@ class Attachment(BaseModel):
         ...,
         title="Owner User ID",
     )
+    name: str = Field(
+        ...,
+        title="Attachment Name",
+        max_length=255,
+        description="User-given display name, separate from filename -- defaults to filename unless given explicitly",
+    )
     filename: str = Field(
         ...,
         title="Attachment Filename",
         max_length=255,
+        description="The file name used for the S3 storage key at upload time",
     )
     content_type: Optional[str] = Field(
         None,

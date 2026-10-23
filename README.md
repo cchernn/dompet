@@ -96,7 +96,7 @@ Access the following endpoints by the following endpoints
 | PUT | `/transactions/groups/{id}` | Update a transaction group |
 | DELETE | `/transactions/groups/{id}` | Delete a transaction group |
 | GET | `/attachments` | List all attachments for the user |
-| POST | `/attachments` | Create a new attachment |
+| POST | `/attachments` | Create a new attachment. `name` is an optional display label, separate from `filename` (the stored file name) -- defaults to `filename` if omitted |
 | GET | `/attachments/{id}` | Get a specific attachment by ID |
 | PUT | `/attachments/{id}` | Update a attachment |
 | DELETE | `/attachments/{id}` | Delete a attachment |

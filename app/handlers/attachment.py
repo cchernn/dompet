@@ -49,8 +49,9 @@ def add(params: Params) -> dict:
         raise InvalidDataException(ValueError("filename is required in the request body"))
     content_type = body.get("content_type")
     size_bytes = body.get("size_bytes")
+    name = body.get("name")
 
-    row = attachment_db.create_attachment_record(params.user, filename, content_type, size_bytes)
+    row = attachment_db.create_attachment_record(params.user, filename, content_type, size_bytes, name=name)
     storage_key = row["storage_key"]
     upload_url = s3.generate_upload_url(storage_key, content_type)
     return {
