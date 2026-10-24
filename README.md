@@ -115,7 +115,7 @@ Access the following endpoints by the following endpoints
 | POST | `/assistant/query` | Ask a natural-language question about your own transactions and budgets |
 | GET | `/bills` | List bill occurrences (recurring and one-off) |
 | POST | `/bills` | Create a one-off bill. Requires `bill_date` (when it was issued); `due_date` defaults to `bill_date` if omitted |
-| GET | `/bills/search` | Search bills by name/category/account/status, with computed paid status, linked attachments, and linked transactions (for navigating to the transaction page) |
+| GET | `/bills/search` | Search bills by name/category/account/status, with computed paid status, linked transactions (for navigating to the transaction page), and attachments merged from the bill itself and any linked transaction (tagged with `linked_via` so the frontend knows which unlink endpoint applies) |
 | GET | `/bills/{id}` | Get a specific bill occurrence |
 | PUT | `/bills/{id}` | Update a bill occurrence |
 | DELETE | `/bills/{id}` | Deactivate a bill occurrence |
