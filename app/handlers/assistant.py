@@ -1,15 +1,18 @@
 import re
+import time
 from datetime import datetime, timezone
 
 from ..lib.params import Params
-from ..lib.exceptions import InvalidDataException, InvalidParamsException
+from ..lib.exceptions import InvalidDataException, InvalidParamsException, RateLimitException
 from ..models.assistant import AssistantReply
 from ..utils import bedrock
 from ..utils.pagination import PaginatedResult
+from ..db import assistant as assistant_db
 from . import transaction_insights
 from . import budget_insights
 from . import transaction_search
 from . import budget_search
+from . import bill_search
 
 MAX_TOOL_ROUNDS = 3
 MAX_MESSAGE_LENGTH = 1000
@@ -56,6 +59,16 @@ _BUDGET_FILTER_PROPERTIES = {
     "q": {"type": "string", "description": "Budget name substring, case-insensitive"},
     "from": {"type": "string", "description": "Start date, inclusive, YYYY-MM-DD"},
     "to": {"type": "string", "description": "End date, inclusive, YYYY-MM-DD"},
+}
+
+_BILL_FILTER_PROPERTIES = {
+    "q": {"type": "string", "description": "Case-insensitive substring match on the bill's name"},
+    "category": {"type": "string", "description": "Exact category name"},
+    "account": {"type": "string", "description": "Exact expected payment account name"},
+    "is_recurring": {"type": "boolean", "description": "Filter to recurring or one-off bills"},
+    "status": {"type": "string", "enum": ["unpaid", "partial", "paid"]},
+    "from": {"type": "string", "description": "Start bill_date, inclusive, YYYY-MM-DD"},
+    "to": {"type": "string", "description": "End bill_date, inclusive, YYYY-MM-DD"},
 }
 
 TOOLS = [
@@ -164,6 +177,22 @@ TOOLS = [
             },
         }
     },
+    {
+        "toolSpec": {
+            "name": "search_bills",
+            "description": (
+                "List individual bills (recurring occurrences and one-off), up to "
+                f"{TOOL_SEARCH_PAGE_SIZE} results. Each bill includes its paid status "
+                "(unpaid/partial/paid), amount, paid_amount, bill_date, due_date, and "
+                "whether it's overdue. Use for questions about what bills exist, which "
+                "are due or overdue, or whether a specific bill has been paid. "
+                "category/account only match a name you already know exists exactly. "
+                "For a bill name or merchant mentioned in the question, use `q` instead, "
+                "a case-insensitive substring match."
+            ),
+            "inputSchema": {"json": {"type": "object", "properties": _BILL_FILTER_PROPERTIES}},
+        }
+    },
 ]
 
 _TOOL_DISPATCH = {
@@ -173,17 +202,18 @@ _TOOL_DISPATCH = {
     "get_budget_trend": budget_insights.trend,
     "search_transactions": transaction_search.search,
     "search_budgets": budget_search.search,
+    "search_bills": bill_search.search,
 }
 
-_PAGINATED_TOOLS = frozenset({"search_transactions", "search_budgets"})
+_PAGINATED_TOOLS = frozenset({"search_transactions", "search_budgets", "search_bills"})
 
 
 def _system_prompt() -> list:
     today = datetime.now(timezone.utc).date().isoformat()
     text = (
         f"You are a financial assistant for the Dompet app. Today's date is {today} "
-        "(UTC). Answer the user's question about their own transactions and budgets "
-        "using only the provided tools -- never invent numbers. Amounts are each "
+        "(UTC). Answer the user's question about their own transactions, budgets, and "
+        "bills using only the provided tools -- never invent numbers. Amounts are each "
         "account's native currency; there is no currency conversion between accounts. "
         "Only pass from/to to a tool if the user's question actually mentions a time "
         "period (e.g. \"last month\", \"this week\", a specific range) -- resolve that "
@@ -238,7 +268,7 @@ def _sanitize_tool_error(ex: Exception) -> str:
     return _GENERIC_TOOL_ERROR
 
 
-def _execute_tools(params: Params, tool_uses: list, round_number: int) -> list:
+def _execute_tools(params: Params, tool_uses: list, round_number: int, tool_log: list) -> list:
     result_blocks = []
     for tool_use in tool_uses:
         tool_use_id = tool_use.get("toolUseId", "unknown")
@@ -247,6 +277,7 @@ def _execute_tools(params: Params, tool_uses: list, round_number: int) -> list:
             if not tool_name:
                 raise InvalidDataException(ValueError("malformed tool_use block from model: missing name"))
             tool_result = _run_tool(params, tool_name, tool_use.get("input") or {})
+            tool_log.append({"round": round_number, "name": tool_name, "status": "ok"})
             result_blocks.append({
                 "toolResult": {
                     "toolUseId": tool_use_id,
@@ -255,6 +286,7 @@ def _execute_tools(params: Params, tool_uses: list, round_number: int) -> list:
             })
         except Exception as ex:
             print(f"assistant.query round={round_number} tool={tool_name} error={type(ex).__name__}")
+            tool_log.append({"round": round_number, "name": tool_name, "status": "error"})
             result_blocks.append({
                 "toolResult": {
                     "toolUseId": tool_use_id,
@@ -279,26 +311,52 @@ def query(params: Params) -> AssistantReply:
     if len(message) > MAX_MESSAGE_LENGTH:
         raise InvalidDataException(ValueError(f"message must be at most {MAX_MESSAGE_LENGTH} characters"))
 
-    messages = [{"role": "user", "content": [{"text": message}]}]
+    recent = assistant_db.count_recent_queries(params.user)
+    if recent >= assistant_db.RATE_LIMIT_MAX_QUERIES:
+        raise RateLimitException(ValueError(
+            f"too many requests -- at most {assistant_db.RATE_LIMIT_MAX_QUERIES} per "
+            f"{assistant_db.RATE_LIMIT_WINDOW_MINUTES} minutes, try again shortly"
+        ))
 
-    for round_number in range(1, MAX_TOOL_ROUNDS + 1):
-        response = bedrock.converse(messages=messages, system=_system_prompt(), tools=TOOLS)
-        output_message = response["output"]["message"]
-        messages.append(output_message)
+    tool_log = []
+    round_count = 0
+    stop_reason = None
+    error_type = None
+    started = time.monotonic()
+    try:
+        messages = [{"role": "user", "content": [{"text": message}]}]
+
+        for round_number in range(1, MAX_TOOL_ROUNDS + 1):
+            round_count = round_number
+            response = bedrock.converse(messages=messages, system=_system_prompt(), tools=TOOLS)
+            output_message = response["output"]["message"]
+            messages.append(output_message)
+            stop_reason = response.get("stopReason")
+
+            tool_uses = [block["toolUse"] for block in output_message["content"] if "toolUse" in block]
+            print(f"assistant.query round={round_number} stopReason={stop_reason} tools={[t.get('name') for t in tool_uses]}")
+            if not tool_uses:
+                return AssistantReply(reply=_final_text(output_message) or FALLBACK_REPLY)
+
+            result_blocks = _execute_tools(params, tool_uses, round_number, tool_log)
+            messages.append({"role": "user", "content": result_blocks})
+
+        # MAX_TOOL_ROUNDS reached and the model still wanted another tool call on
+        # the last round -- that round's tool results were already fetched and
+        # appended above, so force one final answer-only call (no tools offered)
+        # instead of discarding that work and returning the generic fallback.
+        round_count += 1
+        print(f"assistant.query hit MAX_TOOL_ROUNDS={MAX_TOOL_ROUNDS}, forcing a final answer-only call")
+        response = bedrock.converse(messages=messages, system=_system_prompt())
         stop_reason = response.get("stopReason")
-
-        tool_uses = [block["toolUse"] for block in output_message["content"] if "toolUse" in block]
-        print(f"assistant.query round={round_number} stopReason={stop_reason} tools={[t.get('name') for t in tool_uses]}")
-        if not tool_uses:
-            return AssistantReply(reply=_final_text(output_message) or FALLBACK_REPLY)
-
-        result_blocks = _execute_tools(params, tool_uses, round_number)
-        messages.append({"role": "user", "content": result_blocks})
-
-    # MAX_TOOL_ROUNDS reached and the model still wanted another tool call on
-    # the last round -- that round's tool results were already fetched and
-    # appended above, so force one final answer-only call (no tools offered)
-    # instead of discarding that work and returning the generic fallback.
-    print(f"assistant.query hit MAX_TOOL_ROUNDS={MAX_TOOL_ROUNDS}, forcing a final answer-only call")
-    response = bedrock.converse(messages=messages, system=_system_prompt())
-    return AssistantReply(reply=_final_text(response["output"]["message"]) or FALLBACK_REPLY)
+        return AssistantReply(reply=_final_text(response["output"]["message"]) or FALLBACK_REPLY)
+    except Exception as ex:
+        error_type = type(ex).__name__
+        raise
+    finally:
+        latency_ms = int((time.monotonic() - started) * 1000)
+        assistant_db.log_query(
+            params.user, message_length=len(message), round_count=round_count,
+            tool_calls=tool_log, stop_reason=stop_reason, error_type=error_type,
+            latency_ms=latency_ms,
+        )
