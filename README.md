@@ -96,7 +96,7 @@ Access the following endpoints by the following endpoints
 | PUT | `/transactions/groups/{id}` | Update a transaction group |
 | DELETE | `/transactions/groups/{id}` | Delete a transaction group |
 | GET | `/attachments` | List all attachments for the user |
-| POST | `/attachments` | Create a new attachment |
+| POST | `/attachments` | Create a new attachment. `name` is an optional display label, separate from `filename` (the stored file name) -- defaults to `filename` if omitted |
 | GET | `/attachments/{id}` | Get a specific attachment by ID |
 | PUT | `/attachments/{id}` | Update a attachment |
 | DELETE | `/attachments/{id}` | Delete a attachment |
@@ -105,11 +105,39 @@ Access the following endpoints by the following endpoints
 | GET | `/locations/{id}` | Get a specific location by ID |
 | PUT | `/locations/{id}` | Update a location |
 | DELETE | `/locations/{id}` | Delete a location |
+| POST | `/users` | Create your user profile (username, display_name, configuration) |
+| GET | `/users/me` | Get your own user profile |
+| PUT | `/users/me` | Edit your own user profile |
+| GET | `/transactions/summary` | Aggregate totals and breakdowns for transactions (by category, source account, budget) |
+| GET | `/transactions/trend` | Bucketed income/expense time series for transactions |
+| GET | `/budgets/summary` | Aggregate totals and breakdown by budget |
+| GET | `/budgets/trend` | Bucketed income/expense time series for budget activity |
+| POST | `/assistant/query` | Ask a natural-language question about your own transactions, budgets, and bills. Rate-limited per user |
+| GET | `/bills` | List bill occurrences (recurring and one-off) |
+| POST | `/bills` | Create a one-off bill. Requires `bill_date` (when it was issued); `due_date` defaults to `bill_date` if omitted |
+| GET | `/bills/search` | Search bills by name/category/account/status, with computed paid status, linked transactions (for navigating to the transaction page), and attachments merged from the bill itself and any linked transaction (tagged with `linked_via` so the frontend knows which unlink endpoint applies) |
+| GET | `/bills/{id}` | Get a specific bill occurrence |
+| PUT | `/bills/{id}` | Update a bill occurrence |
+| DELETE | `/bills/{id}` | Deactivate a bill occurrence |
+| GET | `/bills/series` | List recurring bill definitions |
+| POST | `/bills/series` | Create a recurring bill definition. `anchor_date` is the first occurrence's `bill_date` (issue date); each occurrence's `due_date` defaults to the day before the next occurrence's `bill_date` |
+| GET | `/bills/series/{id}` | Get a specific recurring bill definition |
+| PUT | `/bills/series/{id}` | Update a recurring bill definition |
+| DELETE | `/bills/series/{id}` | Deactivate a recurring bill definition |
+| GET | `/bills/{id}/payments` | List payments recorded against a bill |
+| POST | `/bills/{id}/payments` | Record a payment toward a bill, optionally linked to a transaction |
+| PUT | `/bills/{id}/payments/{payment_id}` | Edit a recorded payment, e.g. unlink its transaction by setting `transaction_id` to null while keeping the amount/date |
+| DELETE | `/bills/{id}/payments/{payment_id}` | Remove a recorded payment |
+| GET | `/bills/{id}/attachments` | List attachments linked to a bill |
+| POST | `/bills/{id}/attachments` | Link an attachment to a bill |
+| DELETE | `/bills/{id}/attachments/{attachment_id}` | Unlink an attachment from a bill |
+| GET | `/bills/{id}/budgets` | List budgets a bill is tied to |
+| POST | `/bills/{id}/budgets` | Tie a bill to a shared budget (other members can then see it); for a recurring bill, ties every occurrence in the series, including ones generated later |
+| DELETE | `/bills/{id}/budgets/{budget_id}` | Untie a bill from a budget; for a recurring bill, unties every occurrence in the series |
+| GET | `/budgets/{id}/bills` | List every bill tied to a budget, across all its members |
 
 ## Roadmap  
 
-- Pagination for `list` methods  
-- Module/Row level Authorization methods and tables  
 - Scripts for AWS Lambda and API Gateway setup  
 
 ## Contact  

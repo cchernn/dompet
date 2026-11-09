@@ -3,6 +3,7 @@ from ..lib.response import Response
 from ..lib.exceptions import InvalidFunctionException
 from ..handlers import transaction
 from ..handlers import transaction_search
+from ..handlers import transaction_insights
 from ..handlers import account
 from ..handlers import account_search
 from ..handlers import category
@@ -18,9 +19,18 @@ from ..handlers import attachment_search
 from ..handlers import transaction_attachment
 from ..handlers import budget
 from ..handlers import budget_search
+from ..handlers import budget_insights
 from ..handlers import budget_member
 from ..handlers import transaction_budget
 from ..handlers import notification
+from ..handlers import user
+from ..handlers import assistant
+from ..handlers import bill
+from ..handlers import bill_series
+from ..handlers import bill_payment
+from ..handlers import bill_search
+from ..handlers import bill_attachment
+from ..handlers import bill_budget
 
 import re
 from typing import Callable, Optional
@@ -29,6 +39,8 @@ CREATE_HANDLERS = frozenset({
     transaction.add, account.add, category.add, location.add, account_location.add,
     tag.add, transaction_tag.add, attachment.add, transaction_attachment.add,
     budget.add, budget_member.add, transaction_budget.add, notification.add,
+    user.add, bill.add, bill_series.add, bill_payment.add, bill_attachment.add,
+    bill_budget.add,
 })
 
 UUID_RE = r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
@@ -45,6 +57,8 @@ routes = {
     (re.compile(r"^/transactions$"), "GET", transaction.list),
     (re.compile(r"^/transactions$"), "POST", transaction.add),
     (re.compile(r"^/transactions/search$"), "GET", transaction_search.search),
+    (re.compile(r"^/transactions/summary$"), "GET", transaction_insights.summary),
+    (re.compile(r"^/transactions/trend$"), "GET", transaction_insights.trend),
     (re.compile(rf"^/transactions/{_uuid('transaction_id')}$"), "GET", transaction.get),
     (re.compile(rf"^/transactions/{_uuid('transaction_id')}$"), "PUT", transaction.edit),
     (re.compile(rf"^/transactions/{_uuid('transaction_id')}/deactivate$"), "POST", transaction.deactivate),
@@ -100,11 +114,14 @@ routes = {
     (re.compile(r"^/budgets$"), "GET", budget.list),
     (re.compile(r"^/budgets$"), "POST", budget.add),
     (re.compile(r"^/budgets/search$"), "GET", budget_search.search),
+    (re.compile(r"^/budgets/summary$"), "GET", budget_insights.summary),
+    (re.compile(r"^/budgets/trend$"), "GET", budget_insights.trend),
     (re.compile(rf"^/budgets/{_uuid('budget_id')}$"), "GET", budget.get),
     (re.compile(rf"^/budgets/{_uuid('budget_id')}$"), "PUT", budget.edit),
     (re.compile(rf"^/budgets/{_uuid('budget_id')}$"), "DELETE", budget.delete),
 
     (re.compile(rf"^/budgets/{_uuid('budget_id')}/transactions$"), "GET", budget.list_transactions),
+    (re.compile(rf"^/budgets/{_uuid('budget_id')}/bills$"), "GET", budget.list_bills),
 
     (re.compile(rf"^/budgets/{_uuid('budget_id')}/members$"), "GET", budget_member.list),
     (re.compile(rf"^/budgets/{_uuid('budget_id')}/members$"), "POST", budget_member.add),
@@ -114,11 +131,43 @@ routes = {
     (re.compile(rf"^/transactions/{_uuid('transaction_id')}/budgets$"), "POST", transaction_budget.add),
     (re.compile(rf"^/transactions/{_uuid('transaction_id')}/budgets/{_uuid('budget_id')}$"), "DELETE", transaction_budget.delete),
 
+    (re.compile(r"^/users/me$"), "GET", user.get_me),
+    (re.compile(r"^/users$"), "POST", user.add),
+    (re.compile(r"^/users/me$"), "PUT", user.edit_me),
+
     (re.compile(r"^/notifications$"), "GET", notification.list),
     (re.compile(r"^/notifications$"), "POST", notification.add),
     (re.compile(r"^/notifications/read-all$"), "POST", notification.mark_all_read),
     (re.compile(rf"^/notifications/{_uuid('notification_id')}/read$"), "POST", notification.mark_read),
     (re.compile(rf"^/notifications/{_uuid('notification_id')}$"), "DELETE", notification.delete),
+
+    (re.compile(r"^/assistant/query$"), "POST", assistant.query),
+
+    (re.compile(r"^/bills$"), "GET", bill.list),
+    (re.compile(r"^/bills$"), "POST", bill.add),
+    (re.compile(r"^/bills/search$"), "GET", bill_search.search),
+    (re.compile(rf"^/bills/{_uuid('bill_id')}$"), "GET", bill.get),
+    (re.compile(rf"^/bills/{_uuid('bill_id')}$"), "PUT", bill.edit),
+    (re.compile(rf"^/bills/{_uuid('bill_id')}$"), "DELETE", bill.delete),
+
+    (re.compile(r"^/bills/series$"), "GET", bill_series.list),
+    (re.compile(r"^/bills/series$"), "POST", bill_series.add),
+    (re.compile(rf"^/bills/series/{_uuid('series_id')}$"), "GET", bill_series.get),
+    (re.compile(rf"^/bills/series/{_uuid('series_id')}$"), "PUT", bill_series.edit),
+    (re.compile(rf"^/bills/series/{_uuid('series_id')}$"), "DELETE", bill_series.delete),
+
+    (re.compile(rf"^/bills/{_uuid('bill_id')}/payments$"), "GET", bill_payment.list),
+    (re.compile(rf"^/bills/{_uuid('bill_id')}/payments$"), "POST", bill_payment.add),
+    (re.compile(rf"^/bills/{_uuid('bill_id')}/payments/{_uuid('payment_id')}$"), "PUT", bill_payment.edit),
+    (re.compile(rf"^/bills/{_uuid('bill_id')}/payments/{_uuid('payment_id')}$"), "DELETE", bill_payment.delete),
+
+    (re.compile(rf"^/bills/{_uuid('bill_id')}/attachments$"), "GET", bill_attachment.list),
+    (re.compile(rf"^/bills/{_uuid('bill_id')}/attachments$"), "POST", bill_attachment.add),
+    (re.compile(rf"^/bills/{_uuid('bill_id')}/attachments/{_uuid('attachment_id')}$"), "DELETE", bill_attachment.delete),
+
+    (re.compile(rf"^/bills/{_uuid('bill_id')}/budgets$"), "GET", bill_budget.list),
+    (re.compile(rf"^/bills/{_uuid('bill_id')}/budgets$"), "POST", bill_budget.add),
+    (re.compile(rf"^/bills/{_uuid('bill_id')}/budgets/{_uuid('budget_id')}$"), "DELETE", bill_budget.delete),
 }
 
 def match_route(path: str, method: str):

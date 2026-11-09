@@ -3,6 +3,7 @@ from .lib.exceptions import (
     InvalidFunctionException,
     InvalidParamsException,
     NotFoundException,
+    RateLimitException,
     UnauthorizedException,
 )
 from .lib.params import Params
@@ -21,6 +22,8 @@ def error_response(ex: Exception) -> tuple[int, str]:
         return 404, f"GeneralException: {type(ex).__name__}-{str(ex)}"
     if isinstance(ex, InvalidFunctionException):
         return 404, f"GeneralException: {type(ex).__name__}-{str(ex)}"
+    if isinstance(ex, RateLimitException):
+        return 429, f"GeneralException: {type(ex).__name__}-{str(ex)}"
     if isinstance(ex, (InvalidDataException, InvalidParamsException)):
         return 400, f"GeneralException: {type(ex).__name__}-{str(ex)}"
     inner = ex.args[0] if ex.args else None

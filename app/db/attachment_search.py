@@ -6,8 +6,8 @@ def search_attachments(user_id, page: int, page_size: int, q: str = None) -> tup
         query = "SELECT * FROM dompet.vw_attachments WHERE 1=1"
         params = []
         if q:
-            query += " AND filename ILIKE %s"
-            params.append(like_pattern(q))
+            query += " AND (name ILIKE %s OR filename ILIKE %s)"
+            params.extend([like_pattern(q), like_pattern(q)])
         query += " ORDER BY created_at DESC"
         return paginate(cursor, query, params, page, page_size)
 

@@ -1,4 +1,4 @@
-from ..utils.db import run_atomic, paginate
+from ..utils.db import run_atomic, paginate, like_pattern
 
 
 def search_transactions(
@@ -8,11 +8,14 @@ def search_transactions(
     source: str = None, destination: str = None,
     tags: str = None, budgets: str = None,
     source_location: str = None, destination_location: str = None,
-    owner: str = None,
+    owner: str = None, q: str = None,
 ) -> tuple[list[dict], dict]:
     def work(cursor):
         query = "SELECT * FROM dompet.vw_transactions WHERE 1=1"
         params = []
+        if q:
+            query += " AND name ILIKE %s"
+            params.append(like_pattern(q))
         if date_from:
             query += " AND date >= %s"
             params.append(date_from)

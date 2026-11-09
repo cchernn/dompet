@@ -11,3 +11,7 @@ class CategorySearchResult(BaseModel):
     user_id: Optional[UUID] = Field(
         None, title="Owner User ID", description="NULL for global/system categories"
     )
+    username: Optional[str] = Field(
+        None, title="Owner Username", description="NULL for global categories, or if the owner hasn't created a profile yet"
+    )
+    display_name: Optional[str] = Field(None, title="Owner Display Name")

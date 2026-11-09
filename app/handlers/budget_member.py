@@ -15,10 +15,10 @@ def list(params: Params) -> PaginatedResult:
 def add(params: Params) -> BudgetMember:
     budget_id = params.pathParams.get("budget_id")
     body = params.body or {}
-    member_user_id = body.get("user_id")
-    if not member_user_id:
-        raise InvalidDataException(ValueError("user_id is required in the request body"))
-    row = budget_member_db.add_member(params.user, budget_id, member_user_id)
+    username = body.get("username")
+    if not username:
+        raise InvalidDataException(ValueError("username is required in the request body"))
+    row = budget_member_db.add_member(params.user, budget_id, username)
     return BudgetMember(**row)
 
 
