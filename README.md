@@ -135,6 +135,20 @@ Access the following endpoints by the following endpoints
 | POST | `/bills/{id}/budgets` | Tie a bill to a shared budget (other members can then see it); for a recurring bill, ties every occurrence in the series, including ones generated later |
 | DELETE | `/bills/{id}/budgets/{budget_id}` | Untie a bill from a budget; for a recurring bill, unties every occurrence in the series |
 | GET | `/budgets/{id}/bills` | List every bill tied to a budget, across all its members |
+| GET | `/statements` | List statement occurrences (expected and received), newest first |
+| POST | `/statements` | Record a standalone statement. Requires `account_id`, `statement_date`, `period_start`, `period_end`; `currency_code` is required if a balance is given |
+| GET | `/statements/search` | Search statements by account/status (`pending`, `received`, `overdue`)/date range, with attachments. `status` is derived: `received` once `received_date` is set, `overdue` once `statement_date` has passed without one |
+| GET | `/statements/{id}` | Get a specific statement |
+| PUT | `/statements/{id}` | Update a statement, e.g. set `received_date` and balances when it arrives |
+| DELETE | `/statements/{id}` | Deactivate a statement |
+| GET | `/statements/series` | List recurring statement schedules |
+| POST | `/statements/series` | Create a recurring statement schedule for an account (one active schedule per account). `anchor_date` is the first occurrence's `statement_date`; each occurrence's period ends on its `statement_date` and starts the day after the previous one |
+| GET | `/statements/series/{id}` | Get a specific statement schedule |
+| PUT | `/statements/series/{id}` | Update a schedule's recurrence or currency (affects only occurrences generated afterwards) |
+| DELETE | `/statements/series/{id}` | Deactivate a schedule, freeing the account for a new one |
+| GET | `/statements/{id}/attachments` | List attachments linked to a statement |
+| POST | `/statements/{id}/attachments` | Link an attachment to a statement |
+| DELETE | `/statements/{id}/attachments/{attachment_id}` | Unlink an attachment from a statement |
 
 ## Roadmap  
 

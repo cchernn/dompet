@@ -165,6 +165,13 @@ instead of one file upload.
 /notifications/read-all                                     POST
 /notifications/{notification_id}                            DELETE
 /notifications/{notification_id}/read                       POST
+/statements                                                  GET POST
+/statements/search                                           GET
+/statements/series                                           GET POST
+/statements/series/{series_id}                          DELETE GET PUT
+/statements/{statement_id}                              DELETE GET PUT
+/statements/{statement_id}/attachments                       GET POST
+/statements/{statement_id}/attachments/{attachment_id}           DELETE
 /tags                                                        GET POST
 /tags/search                                                 GET
 /tags/{tag_id}                                           DELETE PUT
@@ -199,7 +206,9 @@ is the identical situation alongside `/notifications/{notification_id}`.
 `/bills/{bill_id}` — `series` never matches the UUID-shaped `{bill_id}`
 pattern either, same reasoning. `/bills/series/{series_id}` is then its
 own separate child resource under the literal `/bills/series`, not under
-`/bills/{bill_id}`.
+`/bills/{bill_id}`. `/statements/search` and `/statements/series` (with
+`/statements/series/{series_id}` beneath it) follow the identical pattern
+alongside `/statements/{statement_id}`.
 
 ### Deploy
 

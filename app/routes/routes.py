@@ -31,6 +31,10 @@ from ..handlers import bill_payment
 from ..handlers import bill_search
 from ..handlers import bill_attachment
 from ..handlers import bill_budget
+from ..handlers import statement
+from ..handlers import statement_series
+from ..handlers import statement_attachment
+from ..handlers import statement_search
 
 import re
 from typing import Callable, Optional
@@ -40,7 +44,7 @@ CREATE_HANDLERS = frozenset({
     tag.add, transaction_tag.add, attachment.add, transaction_attachment.add,
     budget.add, budget_member.add, transaction_budget.add, notification.add,
     user.add, bill.add, bill_series.add, bill_payment.add, bill_attachment.add,
-    bill_budget.add,
+    bill_budget.add, statement.add, statement_series.add, statement_attachment.add,
 })
 
 UUID_RE = r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
@@ -168,6 +172,23 @@ routes = {
     (re.compile(rf"^/bills/{_uuid('bill_id')}/budgets$"), "GET", bill_budget.list),
     (re.compile(rf"^/bills/{_uuid('bill_id')}/budgets$"), "POST", bill_budget.add),
     (re.compile(rf"^/bills/{_uuid('bill_id')}/budgets/{_uuid('budget_id')}$"), "DELETE", bill_budget.delete),
+
+    (re.compile(r"^/statements$"), "GET", statement.list),
+    (re.compile(r"^/statements$"), "POST", statement.add),
+    (re.compile(r"^/statements/search$"), "GET", statement_search.search),
+    (re.compile(rf"^/statements/{_uuid('statement_id')}$"), "GET", statement.get),
+    (re.compile(rf"^/statements/{_uuid('statement_id')}$"), "PUT", statement.edit),
+    (re.compile(rf"^/statements/{_uuid('statement_id')}$"), "DELETE", statement.delete),
+
+    (re.compile(r"^/statements/series$"), "GET", statement_series.list),
+    (re.compile(r"^/statements/series$"), "POST", statement_series.add),
+    (re.compile(rf"^/statements/series/{_uuid('series_id')}$"), "GET", statement_series.get),
+    (re.compile(rf"^/statements/series/{_uuid('series_id')}$"), "PUT", statement_series.edit),
+    (re.compile(rf"^/statements/series/{_uuid('series_id')}$"), "DELETE", statement_series.delete),
+
+    (re.compile(rf"^/statements/{_uuid('statement_id')}/attachments$"), "GET", statement_attachment.list),
+    (re.compile(rf"^/statements/{_uuid('statement_id')}/attachments$"), "POST", statement_attachment.add),
+    (re.compile(rf"^/statements/{_uuid('statement_id')}/attachments/{_uuid('attachment_id')}$"), "DELETE", statement_attachment.delete),
 }
 
 def match_route(path: str, method: str):

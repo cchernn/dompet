@@ -6,11 +6,13 @@ MAX_NOTIFICATIONS_PER_USER = 200
 
 def list_notifications(user_id, page: int, page_size: int) -> tuple[list[dict], dict]:
     def work(cursor):
-        # Imported inside work(), not at module level -- bill.py imports
-        # MAX_NOTIFICATIONS_PER_USER from this module, so a top-level import
-        # here would be circular.
+        # Imported inside work(), not at module level -- bill.py and
+        # statement.py import MAX_NOTIFICATIONS_PER_USER from this module, so
+        # a top-level import here would be circular.
         from .bill import sync_bills
+        from .statement import sync_statements
         sync_bills(cursor, user_id)
+        sync_statements(cursor, user_id)
 
         query = "SELECT * FROM dompet.notifications WHERE user_id = %s ORDER BY created_at DESC"
         return paginate(cursor, query, [str(user_id)], page, page_size)
