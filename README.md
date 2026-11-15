@@ -101,7 +101,7 @@ Access the following endpoints by the following endpoints
 | PUT | `/attachments/{id}` | Update a attachment |
 | DELETE | `/attachments/{id}` | Delete a attachment |
 | GET | `/locations` | List all locations |
-| POST | `/locations` | Create a new location |
+| POST | `/locations` | Create a new location. Physical locations require `country` (ISO 3166-1 alpha-2, e.g. `MY`); online locations require `url` |
 | GET | `/locations/{id}` | Get a specific location by ID |
 | PUT | `/locations/{id}` | Update a location |
 | DELETE | `/locations/{id}` | Delete a location |

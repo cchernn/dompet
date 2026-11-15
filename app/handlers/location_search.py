@@ -12,6 +12,7 @@ def search(params: Params) -> PaginatedResult:
     page, page_size = parse_pagination(params)
     q = params.queryParams or {}
     rows, metadata = location_search_db.search_locations(
-        params.user, page, page_size, q=q.get("q"), owner=parse_owner_filter(q.get("user_id")), location_type=q.get("type")
+        params.user, page, page_size, q=q.get("q"), owner=parse_owner_filter(q.get("user_id")), location_type=q.get("type"),
+        country=q.get("country"),
     )
     return PaginatedResult([LocationSearchResult(**row) for row in rows], metadata)

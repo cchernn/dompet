@@ -16,3 +16,4 @@ class LocationSearchResult(BaseModel):
         None, title="Owner Username", description="NULL for public/shared locations, or if the owner hasn't created a profile yet"
     )
     display_name: Optional[str] = Field(None, title="Owner Display Name")
+    country: Optional[str] = Field(None, title="Country", description="ISO 3166-1 alpha-2 code; NULL for online locations")

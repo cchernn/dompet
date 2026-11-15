@@ -1,9 +1,22 @@
+import re
+
 from ..lib.exceptions import InvalidDataException, NotFoundException
 from ..utils.db import run_atomic, paginate
 from .operations import row_to_dict, record_operation
 
 LOCATION_TYPES = ("physical", "online")
-UPDATABLE_FIELDS = ("name", "google_maps_url", "url")
+UPDATABLE_FIELDS = ("name", "google_maps_url", "url", "country")
+COUNTRY_PATTERN = re.compile(r"^[A-Z]{2}$")
+
+
+def _normalize_country(country):
+    """Uppercases and validates an ISO 3166-1 alpha-2 code; None if not given."""
+    if country in (None, ""):
+        return None
+    normalized = str(country).strip().upper()
+    if not COUNTRY_PATTERN.match(normalized):
+        raise InvalidDataException(ValueError(f"country must be a 2-letter ISO country code: {country}"))
+    return normalized
 
 
 def list_locations(user_id, page: int, page_size: int, include_inactive: bool = False) -> tuple[list[dict], dict]:
@@ -40,6 +53,9 @@ def create_location(user_id, body: dict) -> dict:
     url = body.get("url")
     if loc_type == "online" and not url:
         raise InvalidDataException(ValueError("url is required for online locations"))
+    country = _normalize_country(body.get("country"))
+    if loc_type == "physical" and not country:
+        raise InvalidDataException(ValueError("country is required for physical locations"))
 
     # Public locations (user_id NULL, visible to everyone) are opt-in and
     # permanent -- the owner_update/owner_delete RLS policies can never
@@ -49,14 +65,15 @@ def create_location(user_id, body: dict) -> dict:
     def work(cursor):
         cursor.execute(
             """
-            INSERT INTO dompet.locations (user_id, type, name, google_maps_url, url)
-            VALUES (%s, %s, %s, %s, %s)
+            INSERT INTO dompet.locations (user_id, type, name, google_maps_url, url, country)
+            VALUES (%s, %s, %s, %s, %s, %s)
             RETURNING *
             """,
             (
                 owner_id, loc_type, name,
                 google_maps_url if loc_type == "physical" else None,
                 url if loc_type == "online" else None,
+                country if loc_type == "physical" else None,
             ),
         )
         row = cursor.fetchone()
@@ -82,6 +99,16 @@ def update_location(user_id, location_id, body: dict) -> dict:
 
         if existing["type"] == "online" and not patch.get("url", existing["url"]):
             raise InvalidDataException(ValueError("url is required for online locations"))
+        if "country" in patch:
+            if existing["type"] == "online":
+                # Country only applies to physical locations, same as create.
+                patch.pop("country")
+            else:
+                patch["country"] = _normalize_country(patch["country"])
+                if not patch["country"]:
+                    raise InvalidDataException(ValueError("country is required for physical locations"))
+        if not patch:
+            raise InvalidDataException(ValueError("No updatable fields provided"))
 
         set_clause = ", ".join(f"{field} = %s" for field in patch)
         cursor.execute(

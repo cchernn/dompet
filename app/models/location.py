@@ -33,6 +33,13 @@ class Location(BaseModel):
         title="Site URL",
         description="Set for online locations",
     )
+    country: Optional[str] = Field(
+        None,
+        title="Country",
+        description="ISO 3166-1 alpha-2 code (e.g. MY); required for physical locations",
+        min_length=2,
+        max_length=2,
+    )
     is_active: bool = Field(
         True,
         title="Location Active Status",
