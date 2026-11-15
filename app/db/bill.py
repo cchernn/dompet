@@ -18,6 +18,11 @@ NOTIFY_DAYS_BEFORE = 3
 # on-demand sync.
 MAX_OCCURRENCES_PER_SYNC = 365
 
+# Hard stop on the date-walk itself (which only computes dates, no inserts),
+# in case a long-running short-interval series has a huge backlog of
+# already-materialized occurrences to skip over.
+MAX_DATE_STEPS = 20000
+
 
 def _require_currency(cursor, currency_code: str) -> None:
     cursor.execute(
@@ -84,20 +89,24 @@ def _generate_due_occurrences(cursor, user_id, series: dict, today: date) -> Non
         (str(series["id"]),),
     )
     last_bill_date = cursor.fetchone()["max_bill_date"]
-    next_bill_date = series["anchor_date"] if last_bill_date is None else _advance_date(
-        last_bill_date, series["recurrence_unit"], series["recurrence_count"]
-    )
 
-    for _ in range(MAX_OCCURRENCES_PER_SYNC):
-        if next_bill_date > today:
+    unit, count, anchor = series["recurrence_unit"], series["recurrence_count"], series["anchor_date"]
+    inserted = 0
+    for k in range(MAX_DATE_STEPS):
+        # Always measured from the fixed anchor, not from the previous
+        # occurrence, so a monthly series on the 31st doesn't drift to the
+        # 28th after February.
+        next_bill_date = _advance_date(anchor, unit, count * k)
+        if next_bill_date > today or inserted >= MAX_OCCURRENCES_PER_SYNC:
             break
+        if last_bill_date is not None and next_bill_date <= last_bill_date:
+            continue
         # due_date is the day before the *next* occurrence's bill_date --
         # computed directly from the fixed recurrence rule, not by looking
         # ahead at an actual generated row, so it doesn't depend on
         # generation order.
-        due_date = _advance_date(
-            next_bill_date, series["recurrence_unit"], series["recurrence_count"]
-        ) - timedelta(days=1)
+        due_date = _advance_date(anchor, unit, count * (k + 1)) - timedelta(days=1)
+        inserted += 1
         cursor.execute(
             """
             INSERT INTO dompet.bills
@@ -129,7 +138,6 @@ def _generate_due_occurrences(cursor, user_id, series: dict, today: date) -> Non
                 """,
                 (str(new_bill["id"]), str(series["id"])),
             )
-        next_bill_date = _advance_date(next_bill_date, series["recurrence_unit"], series["recurrence_count"])
 
 
 def _sync_bill_notifications(cursor, user_id, today: date) -> None:
