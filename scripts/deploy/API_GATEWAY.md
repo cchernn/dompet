@@ -165,6 +165,10 @@ instead of one file upload.
 /notifications/read-all                                     POST
 /notifications/{notification_id}                            DELETE
 /notifications/{notification_id}/read                       POST
+/staged-transactions                                         GET POST
+/staged-transactions/search                                  GET
+/staged-transactions/{staged_id}                        DELETE GET PUT
+/staged-transactions/{staged_id}/approve                     POST
 /statements                                                  GET POST
 /statements/search                                           GET
 /statements/series                                           GET POST
@@ -177,6 +181,7 @@ instead of one file upload.
 /tags/{tag_id}                                           DELETE PUT
 /transactions                                                GET POST
 /transactions/search                                         GET
+/transactions/suggestions                                    GET
 /transactions/{transaction_id}                               GET PUT
 /transactions/{transaction_id}/attachments                   GET POST
 /transactions/{transaction_id}/attachments/{attachment_id}       DELETE
@@ -208,7 +213,10 @@ pattern either, same reasoning. `/bills/series/{series_id}` is then its
 own separate child resource under the literal `/bills/series`, not under
 `/bills/{bill_id}`. `/statements/search` and `/statements/series` (with
 `/statements/series/{series_id}` beneath it) follow the identical pattern
-alongside `/statements/{statement_id}`.
+alongside `/statements/{statement_id}`. `/staged-transactions/search` is the
+same case alongside `/staged-transactions/{staged_id}`, with `approve` as an
+ordinary child resource beneath it. `/transactions/suggestions` is one more
+literal sibling of `/transactions/{transaction_id}`, like `search`.
 
 ### Deploy
 

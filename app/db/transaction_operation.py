@@ -143,7 +143,11 @@ def _lock_owned_transaction(cursor, user_id, transaction_id) -> dict:
     return row
 
 
-def create_transaction(user_id, body: dict, metadata: dict = None) -> dict:
+def create_transaction_in(cursor, user_id, body: dict, metadata: dict = None) -> dict:
+    """The create logic against an already-open cursor, so a caller that has
+    more to do in the same database transaction (approving a staged
+    transaction also copies links and marks the draft approved) gets
+    exactly the add flow's validation without nesting run_atomic."""
     missing = [f for f in CREATE_REQUIRED_FIELDS if body.get(f) in (None, "")]
     if missing:
         raise InvalidDataException(ValueError(f"Missing required fields: {', '.join(missing)}"))
@@ -154,32 +158,33 @@ def create_transaction(user_id, body: dict, metadata: dict = None) -> dict:
     fields["destination_location_id"] = body.get("destination_location_id")
     fields["datetime"] = _resolve_datetime(body)
 
-    def work(cursor):
-        _validate_fields(cursor, user_id, fields)
+    _validate_fields(cursor, user_id, fields)
 
-        transaction_id = uuid.uuid4()
-        cursor.execute(
-            """
-            INSERT INTO dompet.transactions
-                (id, user_id, datetime, name, type, amount, currency_code,
-                 category_id, source_account_id, destination_account_id,
-                 source_location_id, destination_location_id)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            RETURNING *
-            """,
-            (
-                str(transaction_id), str(user_id), fields["datetime"], fields["name"],
-                fields["type"], fields["amount"], fields["currency_code"],
-                fields["category_id"], fields["source_account_id"], fields["destination_account_id"],
-                fields["source_location_id"], fields["destination_location_id"],
-            ),
-        )
-        after_row = row_to_dict(cursor.fetchone())
+    transaction_id = uuid.uuid4()
+    cursor.execute(
+        """
+        INSERT INTO dompet.transactions
+            (id, user_id, datetime, name, type, amount, currency_code,
+             category_id, source_account_id, destination_account_id,
+             source_location_id, destination_location_id)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        RETURNING *
+        """,
+        (
+            str(transaction_id), str(user_id), fields["datetime"], fields["name"],
+            fields["type"], fields["amount"], fields["currency_code"],
+            fields["category_id"], fields["source_account_id"], fields["destination_account_id"],
+            fields["source_location_id"], fields["destination_location_id"],
+        ),
+    )
+    after_row = row_to_dict(cursor.fetchone())
 
-        record_operation(cursor, "transaction", transaction_id, user_id, "CREATE", None, after_row, metadata)
-        return after_row
+    record_operation(cursor, "transaction", transaction_id, user_id, "CREATE", None, after_row, metadata)
+    return after_row
 
-    return run_atomic(work, user_id=user_id)
+
+def create_transaction(user_id, body: dict, metadata: dict = None) -> dict:
+    return run_atomic(lambda cursor: create_transaction_in(cursor, user_id, body, metadata), user_id=user_id)
 
 
 def update_transaction(user_id, transaction_id, body: dict, metadata: dict = None) -> dict:

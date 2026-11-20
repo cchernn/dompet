@@ -108,6 +108,7 @@ Access the following endpoints by the following endpoints
 | POST | `/users` | Create your user profile (username, display_name, configuration) |
 | GET | `/users/me` | Get your own user profile |
 | PUT | `/users/me` | Edit your own user profile |
+| GET | `/transactions/suggestions` | Your recurring transaction patterns, ranked by recency-weighted frequency, for one-click creation. Each carries `origin_transaction_id` (its most recent use) to open the add page prefilled with `?from=<id>`. Filters: `q`, `type`, `min_uses` (default 2); pass `tz_offset` (minutes east of UTC, e.g. `480`) to boost patterns you usually record around this time of day |
 | GET | `/transactions/summary` | Aggregate totals and breakdowns for transactions (by category, source account, budget) |
 | GET | `/transactions/trend` | Bucketed income/expense time series for transactions |
 | GET | `/budgets/summary` | Aggregate totals and breakdown by budget |
@@ -149,6 +150,13 @@ Access the following endpoints by the following endpoints
 | GET | `/statements/{id}/attachments` | List attachments linked to a statement |
 | POST | `/statements/{id}/attachments` | Link an attachment to a statement |
 | DELETE | `/statements/{id}/attachments/{attachment_id}` | Unlink an attachment from a statement |
+| GET | `/staged-transactions` | List draft transactions awaiting approval (`status` = `draft` by default, `approved`, `discarded` or `all`) |
+| POST | `/staged-transactions` | Stage a draft. Every field is optional; `tag_ids`, `budget_ids` and `attachment_ids` may be sent as lists. Set `origin_transaction_id` to record the transaction it was copied from (marks the origin as `suggestion`) |
+| GET | `/staged-transactions/search` | Search drafts by name/notes, status, type, origin, account, and `is_complete`; each result lists the `missing_fields` still blocking approval |
+| GET | `/staged-transactions/{id}` | Get a draft, including its tag, budget and attachment ids |
+| PUT | `/staged-transactions/{id}` | Edit a draft. A tag/budget/attachment list that is sent replaces that set; one left out is untouched |
+| DELETE | `/staged-transactions/{id}` | Discard a draft (kept as `discarded`, not erased) |
+| POST | `/staged-transactions/{id}/approve` | Turn a draft into a real transaction through the same validation as `POST /transactions`, copying its tags, budgets and attachments, and return the new transaction. Send `datetime` (or `date`) to override or supply the draft's own |
 
 ## Roadmap  
 

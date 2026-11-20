@@ -35,6 +35,9 @@ from ..handlers import statement
 from ..handlers import statement_series
 from ..handlers import statement_attachment
 from ..handlers import statement_search
+from ..handlers import staged_transaction
+from ..handlers import staged_transaction_search
+from ..handlers import transaction_suggestion
 
 import re
 from typing import Callable, Optional
@@ -45,6 +48,7 @@ CREATE_HANDLERS = frozenset({
     budget.add, budget_member.add, transaction_budget.add, notification.add,
     user.add, bill.add, bill_series.add, bill_payment.add, bill_attachment.add,
     bill_budget.add, statement.add, statement_series.add, statement_attachment.add,
+    staged_transaction.add, staged_transaction.approve,
 })
 
 UUID_RE = r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
@@ -61,6 +65,7 @@ routes = {
     (re.compile(r"^/transactions$"), "GET", transaction.list),
     (re.compile(r"^/transactions$"), "POST", transaction.add),
     (re.compile(r"^/transactions/search$"), "GET", transaction_search.search),
+    (re.compile(r"^/transactions/suggestions$"), "GET", transaction_suggestion.search),
     (re.compile(r"^/transactions/summary$"), "GET", transaction_insights.summary),
     (re.compile(r"^/transactions/trend$"), "GET", transaction_insights.trend),
     (re.compile(rf"^/transactions/{_uuid('transaction_id')}$"), "GET", transaction.get),
@@ -189,6 +194,14 @@ routes = {
     (re.compile(rf"^/statements/{_uuid('statement_id')}/attachments$"), "GET", statement_attachment.list),
     (re.compile(rf"^/statements/{_uuid('statement_id')}/attachments$"), "POST", statement_attachment.add),
     (re.compile(rf"^/statements/{_uuid('statement_id')}/attachments/{_uuid('attachment_id')}$"), "DELETE", statement_attachment.delete),
+
+    (re.compile(r"^/staged-transactions$"), "GET", staged_transaction.list),
+    (re.compile(r"^/staged-transactions$"), "POST", staged_transaction.add),
+    (re.compile(r"^/staged-transactions/search$"), "GET", staged_transaction_search.search),
+    (re.compile(rf"^/staged-transactions/{_uuid('staged_id')}$"), "GET", staged_transaction.get),
+    (re.compile(rf"^/staged-transactions/{_uuid('staged_id')}$"), "PUT", staged_transaction.edit),
+    (re.compile(rf"^/staged-transactions/{_uuid('staged_id')}$"), "DELETE", staged_transaction.delete),
+    (re.compile(rf"^/staged-transactions/{_uuid('staged_id')}/approve$"), "POST", staged_transaction.approve),
 }
 
 def match_route(path: str, method: str):
