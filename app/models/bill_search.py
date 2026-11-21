@@ -43,6 +43,7 @@ class BillSearchResult(BaseModel):
     category: Optional[str] = Field(None, title="Category Name")
     account: Optional[str] = Field(None, title="Expected Payment Account Name")
     is_recurring: bool = Field(..., title="Is Recurring")
+    series_id: Optional[UUID] = Field(None, title="Series ID", description="The recurring series this bill came from; null for a one-off")
     paid_amount: Decimal = Field(..., title="Amount Paid So Far")
     status: Literal["unpaid", "partial", "paid"] = Field(
         ...,

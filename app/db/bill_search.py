@@ -1,3 +1,6 @@
+from uuid import UUID
+
+from ..lib.exceptions import InvalidDataException
 from ..utils.db import run_atomic, paginate, like_pattern
 from .bill import sync_bills
 
@@ -6,8 +9,14 @@ def search_bills(
     user_id, page: int, page_size: int,
     q: str = None, category: str = None, account: str = None,
     is_recurring: bool = None, status: str = None,
-    date_from: str = None, date_to: str = None,
+    date_from: str = None, date_to: str = None, series_id: str = None,
 ) -> tuple[list[dict], dict]:
+    if series_id:
+        try:
+            UUID(str(series_id))
+        except ValueError:
+            raise InvalidDataException(ValueError(f"series_id must be a UUID: {series_id}"))
+
     def work(cursor):
         sync_bills(cursor, user_id)
 
@@ -28,6 +37,9 @@ def search_bills(
         if status:
             query += " AND status = %s"
             params.append(status)
+        if series_id:
+            query += " AND series_id = %s"
+            params.append(series_id)
         if date_from:
             query += " AND bill_date >= %s"
             params.append(date_from)

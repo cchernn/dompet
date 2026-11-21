@@ -117,6 +117,7 @@ Access the following endpoints by the following endpoints
 | GET | `/bills` | List bill occurrences (recurring and one-off) |
 | POST | `/bills` | Create a one-off bill. Requires `bill_date` (when it was issued); `due_date` defaults to `bill_date` if omitted |
 | GET | `/bills/search` | Search bills by name/category/account/status, with computed paid status, linked transactions (for navigating to the transaction page), and attachments merged from the bill itself and any linked transaction (tagged with `linked_via` so the frontend knows which unlink endpoint applies) |
+| GET | `/bills/groups` | The bills landing list: one row per recurring series and per one-off bill, each tagged `kind` (`series` or `one_off`) with `next_due_date`, `unpaid_count`, `overdue_count` and the latest occurrence's amount/status. Filters: `q`, `kind`, `category`, `account`, `is_overdue`; fully paid one-offs are hidden unless `include_paid=true`. Open a series with `GET /bills/search?series_id=<id>`, a one-off with `GET /bills/{id}` |
 | GET | `/bills/{id}` | Get a specific bill occurrence |
 | PUT | `/bills/{id}` | Update a bill occurrence |
 | DELETE | `/bills/{id}` | Deactivate a bill occurrence |

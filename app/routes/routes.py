@@ -29,6 +29,7 @@ from ..handlers import bill
 from ..handlers import bill_series
 from ..handlers import bill_payment
 from ..handlers import bill_search
+from ..handlers import bill_group
 from ..handlers import bill_attachment
 from ..handlers import bill_budget
 from ..handlers import statement
@@ -155,6 +156,7 @@ routes = {
     (re.compile(r"^/bills$"), "GET", bill.list),
     (re.compile(r"^/bills$"), "POST", bill.add),
     (re.compile(r"^/bills/search$"), "GET", bill_search.search),
+    (re.compile(r"^/bills/groups$"), "GET", bill_group.search),
     (re.compile(rf"^/bills/{_uuid('bill_id')}$"), "GET", bill.get),
     (re.compile(rf"^/bills/{_uuid('bill_id')}$"), "PUT", bill.edit),
     (re.compile(rf"^/bills/{_uuid('bill_id')}$"), "DELETE", bill.delete),
