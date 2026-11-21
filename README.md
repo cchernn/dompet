@@ -111,8 +111,9 @@ Access the following endpoints by the following endpoints
 | GET | `/transactions/suggestions` | Your recurring transaction patterns, ranked by recency-weighted frequency, for one-click creation. Each carries `origin_transaction_id` (its most recent use) to open the add page prefilled with `?from=<id>`. Filters: `q`, `type`, `min_uses` (default 2); pass `tz_offset` (minutes east of UTC, e.g. `480`) to boost patterns you usually record around this time of day |
 | GET | `/transactions/summary` | Aggregate totals and breakdowns for transactions (by category, source account, budget) |
 | GET | `/transactions/trend` | Bucketed income/expense time series for transactions |
-| GET | `/budgets/summary` | Aggregate totals and breakdown by budget |
-| GET | `/budgets/trend` | Bucketed income/expense time series for budget activity |
+| GET | `/budgets/search` | Search budgets by name (`q`, substring match) or exactly by `budget_id` |
+| GET | `/budgets/summary` | Aggregate totals and breakdown by budget. `q` is a substring match on name; `budget_id` selects exactly one budget |
+| GET | `/budgets/trend` | Bucketed income/expense time series for budget activity. `q` is a substring match on name; `budget_id` selects exactly one budget |
 | POST | `/assistant/query` | Ask a natural-language question about your own transactions, budgets, and bills. Rate-limited per user |
 | GET | `/bills` | List bill occurrences (recurring and one-off) |
 | POST | `/bills` | Create a one-off bill. Requires `bill_date` (when it was issued); `due_date` defaults to `bill_date` if omitted |

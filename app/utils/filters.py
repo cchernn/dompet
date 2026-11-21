@@ -4,6 +4,15 @@ from typing import Optional
 from ..lib.exceptions import InvalidDataException
 
 
+def parse_uuid_filter(value: Optional[str], name: str) -> Optional[str]:
+    if not value:
+        return None
+    try:
+        return str(uuid.UUID(value))
+    except ValueError:
+        raise InvalidDataException(ValueError(f"{name} must be a UUID: {value}"))
+
+
 def parse_owner_filter(value: Optional[str], allow_null: bool = True) -> Optional[str]:
     if not value:
         return None

@@ -1,9 +1,12 @@
 from ..utils.db import run_atomic, like_pattern
 
 
-def _budget_filter(q: str = None) -> tuple[str, list]:
+def _budget_filter(q: str = None, budget_id: str = None) -> tuple[str, list]:
     where = "WHERE 1=1"
     params = []
+    if budget_id:
+        where += " AND b.id = %s"
+        params.append(budget_id)
     if q:
         where += " AND b.name ILIKE %s"
         params.append(like_pattern(q))
@@ -22,8 +25,8 @@ def _date_filter(date_from: str = None, date_to: str = None) -> tuple[str, list]
     return where, params
 
 
-def summarize_budgets(user_id, q: str = None, date_from: str = None, date_to: str = None) -> dict:
-    base_where, base_params = _budget_filter(q)
+def summarize_budgets(user_id, q: str = None, date_from: str = None, date_to: str = None, budget_id: str = None) -> dict:
+    base_where, base_params = _budget_filter(q, budget_id)
     date_where, date_params = _date_filter(date_from, date_to)
     where = base_where + date_where
     params = base_params + date_params
@@ -86,8 +89,8 @@ def summarize_budgets(user_id, q: str = None, date_from: str = None, date_to: st
     return run_atomic(work, user_id=user_id)
 
 
-def trend_budgets(user_id, bucket: str, date_from: str = None, date_to: str = None, q: str = None) -> list[dict]:
-    base_where, base_params = _budget_filter(q)
+def trend_budgets(user_id, bucket: str, date_from: str = None, date_to: str = None, q: str = None, budget_id: str = None) -> list[dict]:
+    base_where, base_params = _budget_filter(q, budget_id)
     date_where, date_params = _date_filter(date_from, date_to)
     where = base_where + date_where
     params = base_params + date_params
