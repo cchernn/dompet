@@ -99,6 +99,26 @@ class TransactionSearchResult(BaseModel):
         None,
         title="Destination Location Name",
     )
+    source_location_google_maps_url: Optional[str] = Field(
+        None,
+        title="Source Location Google Maps URL",
+        description="NULL if the location has none, or isn't readable by the viewer (another user's, seen via a shared budget)",
+    )
+    source_location_url: Optional[str] = Field(
+        None,
+        title="Source Location URL",
+        description="Website of an online location; NULL otherwise",
+    )
+    destination_location_google_maps_url: Optional[str] = Field(
+        None,
+        title="Destination Location Google Maps URL",
+        description="NULL if the location has none, or isn't readable by the viewer (another user's, seen via a shared budget)",
+    )
+    destination_location_url: Optional[str] = Field(
+        None,
+        title="Destination Location URL",
+        description="Website of an online location; NULL otherwise",
+    )
     user_id: UUID = Field(
         ...,
         title="Owner User ID",
