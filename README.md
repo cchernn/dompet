@@ -108,7 +108,7 @@ Access the following endpoints by the following endpoints
 | POST | `/users` | Create your user profile (username, display_name, configuration) |
 | GET | `/users/me` | Get your own user profile |
 | PUT | `/users/me` | Edit your own user profile |
-| GET | `/transactions/suggestions` | Your recurring transaction patterns, ranked by recency-weighted frequency, for one-click creation. Each carries `origin_transaction_id` (its most recent use) to open the add page prefilled with `?from=<id>`. Filters: `q`, `type`, `min_uses` (default 2); pass `tz_offset` (minutes east of UTC, e.g. `480`) to boost patterns you usually record around this time of day |
+| GET | `/transactions/suggestions` | Your recurring transaction patterns, ranked by recency-weighted frequency plus a fading bonus for what you just recorded (a pattern used once still appears for 7 days), for one-click creation. Each carries `origin_transaction_id` (its most recent use) to open the add page prefilled with `?from=<id>`. Filters: `q`, `type`, `min_uses` (default 2); pass `tz_offset` (minutes east of UTC, e.g. `480`) to boost patterns you usually record around this time of day |
 | GET | `/transactions/summary` | Aggregate totals and breakdowns for transactions (by category, source account, budget) |
 | GET | `/transactions/trend` | Bucketed income/expense time series for transactions |
 | GET | `/budgets/search` | Search budgets by name (`q`, substring match) or exactly by `budget_id` |

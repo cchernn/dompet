@@ -9,6 +9,14 @@ from .transaction_operation import TRANSACTION_TYPES
 MAX_CANDIDATES = 100
 DEFAULT_MIN_USES = 2
 
+# A pattern used only once still surfaces if that use was this recent, and
+# the most recently used RECENT_SLOTS patterns within that window are pinned
+# above everything else, so something just recorded appears even though it
+# has no history yet (frequency alone would bury it under habitual ones).
+RECENT_DAYS = 7
+RECENT_SLOTS = 3
+RECENT_BONUS = 1000.0
+
 # A past use "matches the time" when it falls within this many hours of now
 # (wrapping around midnight) on the same kind of day (weekday vs weekend).
 TIME_WINDOW_HOURS = 2
@@ -42,8 +50,13 @@ def search_suggestions(
         tz_offset = _parse_int("tz_offset", tz_offset, -840, 840)
 
     def work(cursor):
-        where = "user_id = %s AND times_used >= %s"
+        where = f"user_id = %s AND (times_used >= %s OR last_used >= NOW() - INTERVAL '{RECENT_DAYS} days')"
         params = [str(user_id), min_uses]
+        bonus = (
+            f"CASE WHEN last_used >= NOW() - INTERVAL '{RECENT_DAYS} days' "
+            f"AND ROW_NUMBER() OVER (ORDER BY last_used DESC) <= {RECENT_SLOTS} "
+            f"THEN {RECENT_BONUS} ELSE 0 END"
+        )
         if q:
             where += " AND name ILIKE %s"
             params.append(like_pattern(q))
@@ -52,16 +65,17 @@ def search_suggestions(
             params.append(transaction_type)
 
         candidates = f"""
-            SELECT * FROM dompet.vw_transaction_suggestions
+            SELECT *, {bonus} AS recent_bonus
+            FROM dompet.vw_transaction_suggestions
             WHERE {where}
-            ORDER BY score DESC, last_used DESC
+            ORDER BY score + {bonus} DESC, last_used DESC
             LIMIT {MAX_CANDIDATES}
         """
 
         if tz_offset is None:
             query = f"""
                 WITH cand AS ({candidates})
-                SELECT cand.*, 0 AS time_matches, cand.score AS ranked_score
+                SELECT cand.*, 0 AS time_matches, cand.score + cand.recent_bonus AS ranked_score
                 FROM cand
                 ORDER BY ranked_score DESC, last_used DESC
             """
@@ -73,7 +87,7 @@ def search_suggestions(
                 ranked AS (
                     SELECT cand.*,
                            COALESCE(m.time_matches, 0) AS time_matches,
-                           cand.score * (1 + COALESCE(m.time_matches, 0)::float8 / cand.times_used) AS ranked_score
+                           cand.score * (1 + COALESCE(m.time_matches, 0)::float8 / cand.times_used) + cand.recent_bonus AS ranked_score
                     FROM cand
                     LEFT JOIN LATERAL (
                         SELECT COUNT(*) AS time_matches
