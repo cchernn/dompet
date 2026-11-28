@@ -12,8 +12,11 @@ def search_bills(
     q: str = None, category: str = None, account: str = None,
     is_recurring: bool = None, status: str = None,
     date_from: str = None, date_to: str = None, series_id: str = None,
-    document_status: str = None,
+    document_status: str = None, order: str = None,
 ) -> tuple[list[dict], dict]:
+    order = (order or "desc").lower()
+    if order not in ("asc", "desc"):
+        raise InvalidDataException(ValueError(f"order must be asc or desc: {order}"))
     if document_status and document_status not in DOCUMENT_STATUSES:
         raise InvalidDataException(ValueError(f"Invalid document_status: {document_status}"))
     if series_id:
@@ -54,7 +57,9 @@ def search_bills(
         if date_to:
             query += " AND bill_date <= %s"
             params.append(date_to)
-        query += " ORDER BY bill_date ASC"
+        # `order` is validated above, never user text; id breaks ties so
+        # paging is stable when bills share a bill_date.
+        query += f" ORDER BY bill_date {order.upper()}, id {order.upper()}"
         return paginate(cursor, query, params, page, page_size)
 
     return run_atomic(work, user_id=user_id)

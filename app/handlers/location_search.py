@@ -5,11 +5,11 @@ from ..utils.pagination import PaginatedResult, parse_pagination
 from ..utils.filters import parse_owner_filter
 
 
+MAX_SEARCH_PAGE_SIZE = 1000
+
+
 def search(params: Params) -> PaginatedResult:
-    # No raised page-size ceiling here (unlike accounts/categories/tags/
-    # budgets) -- locations are meant to be typeahead-searched, not
-    # fetched in full, since they can grow into the thousands.
-    page, page_size = parse_pagination(params)
+    page, page_size = parse_pagination(params, max_page_size=MAX_SEARCH_PAGE_SIZE)
     q = params.queryParams or {}
     rows, metadata = location_search_db.search_locations(
         params.user, page, page_size, q=q.get("q"), owner=parse_owner_filter(q.get("user_id")), location_type=q.get("type"),
