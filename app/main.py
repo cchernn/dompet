@@ -8,7 +8,7 @@ from .lib.exceptions import (
 )
 from .lib.params import Params
 from .lib.response import Response
-from .routes.routes import CREATE_HANDLERS, route
+from .routes.routes import CREATE_HANDLERS, extract_path_params, route
 from .utils.pagination import PaginatedResult
 import traceback
 
@@ -35,6 +35,13 @@ def error_response(ex: Exception) -> tuple[int, str]:
 def main(params: Params) -> Response:
     try:
         func = route(params)
+        # API Gateway keys pathParameters by whatever each resource's
+        # {variable} happens to be called there, so a resource named
+        # differently from the route pattern (e.g. {id}) would arrive as a
+        # missing key. The route pattern is the source of truth: fill from it.
+        from_route = extract_path_params(params.path, params.http_method)
+        if from_route:
+            params.pathParams = {**(params.pathParams or {}), **from_route}
         result = func(params)
         status_code = 201 if func in CREATE_HANDLERS else 200
         if isinstance(result, PaginatedResult):
