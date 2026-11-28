@@ -105,12 +105,12 @@ Access the following endpoints by the following endpoints
 | GET | `/locations/{id}` | Get a specific location by ID |
 | PUT | `/locations/{id}` | Update a location |
 | DELETE | `/locations/{id}` | Delete a location |
-| POST | `/users` | Create your user profile (username, display_name, configuration) |
+| POST | `/users` | Create your user profile (username, display_name, configuration, `default_currency` e.g. `MYR`) |
 | GET | `/users/me` | Get your own user profile |
 | PUT | `/users/me` | Edit your own user profile |
 | GET | `/transactions/suggestions` | Your recurring transaction patterns, ranked by recency-weighted frequency plus a fading bonus for what you just recorded (a pattern used once still appears for 7 days), for one-click creation. Each carries `origin_transaction_id` (its most recent use) to open the add page prefilled with `?from=<id>`. Filters: `q`, `type`, `min_uses` (default 2); pass `tz_offset` (minutes east of UTC, e.g. `480`) to boost patterns you usually record around this time of day |
-| GET | `/transactions/summary` | Aggregate totals and breakdowns for transactions (by category, source account, budget) |
-| GET | `/transactions/trend` | Bucketed income/expense time series for transactions |
+| GET | `/transactions/summary` | Totals and breakdowns for transactions, never mixing currencies. `by_total` maps each currency to `total_income`, `total_expense`, `total_transfer`, `net` and `transaction_count` (transfers counted); `by_category` (uncategorized shown as `Uncategorized`), `by_account` (a transaction counts toward both its source and destination), `by_budget` and `by_user` list one row per label and currency, transfers excluded. `currencies` is ordered with your `default_currency` first. All times are UTC (`timezone`). Same filters as `/transactions/search`: `q`, `from`, `to`, `category`, `type`, `source`, `destination`, `account` (source or destination), `tags`, `budgets`, `source_location`, `destination_location`, `user_id` |
+| GET | `/transactions/trend` | Bucketed income/expense time series, one point per period and currency (`count` includes transfers); buckets are cut in UTC. Same filters as `/transactions/summary`, plus `bucket` |
 | GET | `/budgets/search` | Search budgets by name (`q`, substring match) or exactly by `budget_id` |
 | GET | `/budgets/summary` | Aggregate totals and breakdown by budget. `q` is a substring match on name; `budget_id` selects exactly one budget |
 | GET | `/budgets/trend` | Bucketed income/expense time series for budget activity. `q` is a substring match on name; `budget_id` selects exactly one budget |

@@ -37,6 +37,19 @@ def _validate_configuration(configuration) -> dict:
     return configuration
 
 
+def _validate_default_currency(cursor, value):
+    """None clears it; anything else must be an existing currency code."""
+    if value is None:
+        return None
+    code = value.upper() if isinstance(value, str) else value
+    if not isinstance(code, str) or len(code) != 3:
+        raise InvalidDataException(ValueError("default_currency must be a 3-letter currency code"))
+    cursor.execute("SELECT 1 FROM dompet.currencies WHERE code = %s", (code,))
+    if not cursor.fetchone():
+        raise InvalidDataException(ValueError(f"Unknown currency: {code}"))
+    return code
+
+
 def get_profile(user_id) -> dict:
     def work(cursor):
         cursor.execute("SELECT * FROM dompet.users WHERE id = %s", (str(user_id),))
@@ -62,13 +75,14 @@ def create_profile(user_id, body: dict) -> dict:
         if cursor.fetchone():
             raise InvalidDataException(ValueError("User profile already exists"))
 
+        default_currency = _validate_default_currency(cursor, body.get("default_currency"))
         cursor.execute(
             """
-            INSERT INTO dompet.users (id, username, display_name, configuration, avatar_storage_key)
-            VALUES (%s, %s, %s, %s, %s)
+            INSERT INTO dompet.users (id, username, display_name, configuration, avatar_storage_key, default_currency)
+            VALUES (%s, %s, %s, %s, %s, %s)
             RETURNING *
             """,
-            (str(user_id), username, display_name, Json(configuration), avatar_key),
+            (str(user_id), username, display_name, Json(configuration), avatar_key, default_currency),
         )
         return cursor.fetchone()
 
@@ -83,6 +97,8 @@ def update_profile(user_id, body: dict) -> dict:
         patch["display_name"] = body.get("display_name")
     if "configuration" in body:
         patch["configuration"] = _validate_configuration(body.get("configuration"))
+    if "default_currency" in body:
+        patch["default_currency"] = body.get("default_currency")
     if body.get("avatar_content_type"):
         _validate_avatar_content_type(body["avatar_content_type"])
         patch["avatar_storage_key"] = avatar_storage_key(user_id)
@@ -93,6 +109,9 @@ def update_profile(user_id, body: dict) -> dict:
         cursor.execute("SELECT 1 FROM dompet.users WHERE id = %s", (str(user_id),))
         if not cursor.fetchone():
             raise NotFoundException(ValueError("User profile not found"))
+
+        if "default_currency" in patch:
+            patch["default_currency"] = _validate_default_currency(cursor, patch["default_currency"])
 
         set_clause = ", ".join(f"{field} = %s" for field in patch)
         values = [

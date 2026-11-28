@@ -76,9 +76,10 @@ TOOLS = [
         "toolSpec": {
             "name": "get_transaction_summary",
             "description": (
-                "Aggregate income/expense totals for the user's transactions, with "
-                "breakdowns by category, source account, and budget. Use for questions "
-                "about totals or spending by category/account/budget over a period."
+                "Income/expense/transfer totals for the user's transactions, separated by "
+                "currency (never add different currencies together), with breakdowns by "
+                "category, account, budget and user. Use for questions about totals or "
+                "spending by category/account/budget over a period."
             ),
             "inputSchema": {"json": {"type": "object", "properties": _FILTER_PROPERTIES}},
         }

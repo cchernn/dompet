@@ -31,5 +31,10 @@ class User(BaseModel):
         title="User Configuration",
         description="Opaque per-user settings blob (e.g. preferred currency, locale, theme)",
     )
+    default_currency: str | None = Field(
+        None,
+        title="Default Currency",
+        description="ISO 4217 code the web app shows first when a summary spans several currencies",
+    )
     created_at: datetime
     updated_at: datetime
