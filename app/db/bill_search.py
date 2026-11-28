@@ -4,13 +4,18 @@ from ..lib.exceptions import InvalidDataException
 from ..utils.db import run_atomic, paginate, like_pattern
 from .bill import sync_bills
 
+DOCUMENT_STATUSES = ("not_required", "awaiting", "confirmed")
+
 
 def search_bills(
     user_id, page: int, page_size: int,
     q: str = None, category: str = None, account: str = None,
     is_recurring: bool = None, status: str = None,
     date_from: str = None, date_to: str = None, series_id: str = None,
+    document_status: str = None,
 ) -> tuple[list[dict], dict]:
+    if document_status and document_status not in DOCUMENT_STATUSES:
+        raise InvalidDataException(ValueError(f"Invalid document_status: {document_status}"))
     if series_id:
         try:
             UUID(str(series_id))
@@ -37,6 +42,9 @@ def search_bills(
         if status:
             query += " AND status = %s"
             params.append(status)
+        if document_status:
+            query += " AND document_status = %s"
+            params.append(document_status)
         if series_id:
             query += " AND series_id = %s"
             params.append(series_id)

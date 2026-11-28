@@ -51,6 +51,14 @@ class BillSearchResult(BaseModel):
         description="Derived from bill_payments vs. amount, not stored",
     )
     is_overdue: bool = Field(..., title="Is Overdue")
+    requires_document: bool = Field(..., title="Requires Document")
+    document_status: Literal["not_required", "awaiting", "confirmed"] = Field(
+        ...,
+        title="Document Status",
+        description="Derived: not_required, or confirmed once an attachment is linked to the bill itself or document_confirmed_date is set, otherwise awaiting. Independent of the payment status",
+    )
+    document_confirmed_date: Optional[date] = Field(None, title="Document Confirmed Date", description="The manual confirmation date, if one was set")
+    document_confirmed_via: Optional[Literal["attachment", "manual"]] = Field(None, title="Document Confirmed Via")
     attachment_count: int = Field(..., title="Attachment Count")
     attachments: List[BillAttachmentRef] = Field(
         default_factory=list,

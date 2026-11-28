@@ -117,15 +117,15 @@ Access the following endpoints by the following endpoints
 | POST | `/assistant/query` | Ask a natural-language question about your own transactions, budgets, and bills. Rate-limited per user |
 | GET | `/bills` | List bill occurrences (recurring and one-off) |
 | POST | `/bills` | Create a one-off bill. Requires `bill_date` (when it was issued); `due_date` defaults to `bill_date` if omitted |
-| GET | `/bills/search` | Search bills by name/category/account/status, with computed paid status, linked transactions (for navigating to the transaction page), and attachments merged from the bill itself and any linked transaction (tagged with `linked_via` so the frontend knows which unlink endpoint applies) |
-| GET | `/bills/groups` | The bills landing list: one row per recurring series and per one-off bill, each tagged `kind` (`series` or `one_off`) with `next_due_date`, `unpaid_count`, `overdue_count` and the latest occurrence's amount/status. Filters: `q`, `kind`, `category`, `account`, `is_overdue`; fully paid one-offs are hidden unless `include_paid=true`. Open a series with `GET /bills/search?series_id=<id>`, a one-off with `GET /bills/{id}` |
+| GET | `/bills/search` | Search bills by name/category/account/status/`document_status` (`not_required`, `awaiting`, `confirmed`), with computed paid status, linked transactions (for navigating to the transaction page), and attachments merged from the bill itself and any linked transaction (tagged with `linked_via` so the frontend knows which unlink endpoint applies) |
+| GET | `/bills/groups` | The bills landing list: one row per recurring series and per one-off bill, each tagged `kind` (`series` or `one_off`) with `next_due_date`, `unpaid_count`, `overdue_count`, `awaiting_document_count` and the latest occurrence's amount/status. Filters: `q`, `kind`, `category`, `account`, `is_overdue`; fully paid one-offs are hidden unless `include_paid=true`. Open a series with `GET /bills/search?series_id=<id>`, a one-off with `GET /bills/{id}` |
 | GET | `/bills/{id}` | Get a specific bill occurrence |
-| PUT | `/bills/{id}` | Update a bill occurrence |
+| PUT | `/bills/{id}` | Update a bill occurrence. For a scheduled bill that requires a document, `document_confirmed_date` confirms it by hand when no attachment is linked (send `null` to clear) |
 | DELETE | `/bills/{id}` | Deactivate a bill occurrence |
 | GET | `/bills/series` | List recurring bill definitions |
-| POST | `/bills/series` | Create a recurring bill definition. `anchor_date` is the first occurrence's `bill_date` (issue date); each occurrence's `due_date` defaults to the day before the next occurrence's `bill_date` |
+| POST | `/bills/series` | Create a recurring bill definition. `requires_document` (default false) marks every occurrence generated from it as needing its bill document: `document_status` is `awaiting` until an attachment is linked to the bill or `document_confirmed_date` is set, then `confirmed`; one-off bills are always `not_required`. `anchor_date` is the first occurrence's `bill_date` (issue date); each occurrence's `due_date` defaults to the day before the next occurrence's `bill_date` |
 | GET | `/bills/series/{id}` | Get a specific recurring bill definition |
-| PUT | `/bills/series/{id}` | Update a recurring bill definition |
+| PUT | `/bills/series/{id}` | Update a recurring bill definition (including `requires_document`; only occurrences generated afterwards are affected) |
 | DELETE | `/bills/series/{id}` | Deactivate a recurring bill definition |
 | GET | `/bills/{id}/payments` | List payments recorded against a bill |
 | POST | `/bills/{id}/payments` | Record a payment toward a bill, optionally linked to a transaction |

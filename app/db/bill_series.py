@@ -7,7 +7,7 @@ RECURRENCE_UNITS = ("day", "week", "month", "year")
 CREATE_REQUIRED_FIELDS = ("name", "amount", "currency_code", "recurrence_unit", "recurrence_count", "anchor_date")
 UPDATABLE_FIELDS = (
     "name", "amount", "currency_code", "category_id", "account_id",
-    "recurrence_unit", "recurrence_count",
+    "recurrence_unit", "recurrence_count", "requires_document",
 )
 
 
@@ -49,6 +49,8 @@ def _validate_fields(cursor, user_id, fields: dict) -> None:
         raise InvalidDataException(ValueError(f"Invalid recurrence_unit: {fields['recurrence_unit']}"))
     if int(fields["recurrence_count"]) <= 0:
         raise InvalidDataException(ValueError("recurrence_count must be positive"))
+    if not isinstance(fields.get("requires_document", False), bool):
+        raise InvalidDataException(ValueError("requires_document must be true or false"))
     _require_currency(cursor, fields["currency_code"])
     _require_owned_account(cursor, user_id, fields.get("account_id"))
     _require_accessible_category(cursor, user_id, fields.get("category_id"))
@@ -88,6 +90,7 @@ def create_series(user_id, body: dict) -> dict:
     fields = {field: body[field] for field in CREATE_REQUIRED_FIELDS}
     fields["category_id"] = body.get("category_id")
     fields["account_id"] = body.get("account_id")
+    fields["requires_document"] = body.get("requires_document", False)
 
     def work(cursor):
         _validate_fields(cursor, user_id, fields)
@@ -95,14 +98,15 @@ def create_series(user_id, body: dict) -> dict:
             """
             INSERT INTO dompet.bill_series
                 (user_id, name, amount, currency_code, category_id, account_id,
-                 recurrence_unit, recurrence_count, anchor_date)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                 recurrence_unit, recurrence_count, anchor_date, requires_document)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING *
             """,
             (
                 str(user_id), fields["name"], fields["amount"], fields["currency_code"],
                 fields["category_id"], fields["account_id"],
                 fields["recurrence_unit"], fields["recurrence_count"], fields["anchor_date"],
+                fields["requires_document"],
             ),
         )
         row = cursor.fetchone()
@@ -141,14 +145,14 @@ def update_series(user_id, series_id, body: dict) -> dict:
             """
             UPDATE dompet.bill_series
             SET name = %s, amount = %s, currency_code = %s, category_id = %s, account_id = %s,
-                recurrence_unit = %s, recurrence_count = %s, updated_at = NOW()
+                recurrence_unit = %s, recurrence_count = %s, requires_document = %s, updated_at = NOW()
             WHERE id = %s AND user_id = %s
             RETURNING *
             """,
             (
                 merged["name"], merged["amount"], merged["currency_code"], merged["category_id"],
                 merged["account_id"], merged["recurrence_unit"], merged["recurrence_count"],
-                str(series_id), str(user_id),
+                merged["requires_document"], str(series_id), str(user_id),
             ),
         )
         after = cursor.fetchone()

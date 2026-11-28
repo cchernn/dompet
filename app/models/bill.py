@@ -53,6 +53,16 @@ class Bill(BaseModel):
         title="Due Date",
         description="Defaults to the day before the series' next bill_date for a recurring bill, or to bill_date itself for a one-off bill, unless given explicitly",
     )
+    requires_document: bool = Field(
+        False,
+        title="Requires Document",
+        description="Copied from the series at generation time; always false for a one-off bill",
+    )
+    document_confirmed_date: Optional[date] = Field(
+        None,
+        title="Document Confirmed Date",
+        description="Set by hand to confirm the document when no attachment is linked; send null to clear. Only for bills that require a document",
+    )
     is_active: bool = Field(
         True,
         title="Bill Active Status",

@@ -20,5 +20,6 @@ def search(params: Params) -> PaginatedResult:
         q=q.get("q"), category=q.get("category"), account=q.get("account"),
         is_recurring=_parse_bool(q.get("is_recurring")), status=q.get("status"),
         date_from=q.get("from"), date_to=q.get("to"), series_id=q.get("series_id"),
+        document_status=q.get("document_status"),
     )
     return PaginatedResult([BillSearchResult(**row) for row in rows], metadata)

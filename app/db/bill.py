@@ -110,14 +110,16 @@ def _generate_due_occurrences(cursor, user_id, series: dict, today: date) -> Non
         cursor.execute(
             """
             INSERT INTO dompet.bills
-                (user_id, series_id, name, amount, currency_code, category_id, account_id, bill_date, due_date)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                (user_id, series_id, name, amount, currency_code, category_id, account_id, bill_date, due_date,
+                 requires_document)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             ON CONFLICT (series_id, bill_date) WHERE series_id IS NOT NULL DO NOTHING
             RETURNING id
             """,
             (
                 str(user_id), str(series["id"]), series["name"], series["amount"], series["currency_code"],
                 series["category_id"], series["account_id"], next_bill_date, due_date,
+                series["requires_document"],
             ),
         )
         new_bill = cursor.fetchone()
@@ -245,6 +247,11 @@ def create_bill(user_id, body: dict) -> dict:
     if missing:
         raise InvalidDataException(ValueError(f"Missing required fields: {', '.join(missing)}"))
 
+    if body.get("requires_document"):
+        raise InvalidDataException(ValueError(
+            "requires_document applies to scheduled bills only -- set it on the bill series"
+        ))
+
     fields = {field: body[field] for field in CREATE_REQUIRED_FIELDS}
     fields["category_id"] = body.get("category_id")
     fields["account_id"] = body.get("account_id")
@@ -273,9 +280,22 @@ def create_bill(user_id, body: dict) -> dict:
     return run_atomic(work, user_id=user_id)
 
 
+def _parse_confirmed_date(value):
+    """None clears a manual confirmation; anything else must be a date."""
+    if value is None:
+        return None
+    try:
+        return date.fromisoformat(str(value))
+    except ValueError:
+        raise InvalidDataException(ValueError(f"document_confirmed_date must be YYYY-MM-DD: {value}"))
+
+
 def update_bill(user_id, bill_id, body: dict) -> dict:
     patch = {k: v for k, v in body.items() if k in UPDATABLE_FIELDS}
-    if not patch:
+    confirm = "document_confirmed_date" in body
+    if confirm:
+        confirmed_date = _parse_confirmed_date(body["document_confirmed_date"])
+    if not patch and not confirm:
         raise InvalidDataException(ValueError("No updatable fields provided"))
 
     def work(cursor):
@@ -290,17 +310,25 @@ def update_bill(user_id, bill_id, body: dict) -> dict:
         merged = {field: patch.get(field, before[field]) for field in UPDATABLE_FIELDS}
         _validate_fields(cursor, user_id, merged)
 
+        # Confirming by hand only makes sense for a bill that needs a
+        # document; clearing (null) is always allowed.
+        if confirm and confirmed_date is not None and not before["requires_document"]:
+            raise InvalidDataException(ValueError("This bill does not require a document"))
+        merged["document_confirmed_date"] = confirmed_date if confirm else before["document_confirmed_date"]
+
         cursor.execute(
             """
             UPDATE dompet.bills
             SET name = %s, amount = %s, currency_code = %s, category_id = %s,
-                account_id = %s, bill_date = %s, due_date = %s, updated_at = NOW()
+                account_id = %s, bill_date = %s, due_date = %s, document_confirmed_date = %s,
+                updated_at = NOW()
             WHERE id = %s AND user_id = %s
             RETURNING *
             """,
             (
                 merged["name"], merged["amount"], merged["currency_code"], merged["category_id"],
-                merged["account_id"], merged["bill_date"], merged["due_date"], str(bill_id), str(user_id),
+                merged["account_id"], merged["bill_date"], merged["due_date"],
+                merged["document_confirmed_date"], str(bill_id), str(user_id),
             ),
         )
         after = cursor.fetchone()

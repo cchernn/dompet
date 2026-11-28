@@ -52,6 +52,11 @@ class BillSeries(BaseModel):
         title="Anchor Date",
         description="First occurrence's bill_date (issue date), not due_date -- every occurrence's bill_date is computed as anchor_date + k * interval, never by accumulating onto a prior one. due_date defaults to the day before the following occurrence's bill_date",
     )
+    requires_document: bool = Field(
+        False,
+        title="Requires Document",
+        description="Each occurrence generated from now on needs its bill document to arrive (an attachment, or a manual confirmation date) before it counts as confirmed. Already-generated occurrences keep the value they were created with",
+    )
     is_active: bool = Field(
         True,
         title="Series Active Status",

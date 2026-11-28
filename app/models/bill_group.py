@@ -26,3 +26,5 @@ class BillGroup(BaseModel):
     next_due_date: Optional[date] = Field(None, title="Next Due Date", description="Earliest due date among unpaid occurrences; null when everything is paid")
     latest_status: Optional[Literal["unpaid", "partial", "paid"]] = Field(None, title="Latest Occurrence Status")
     latest_bill_date: Optional[date] = Field(None, title="Latest Occurrence Bill Date")
+    requires_document: bool = Field(..., title="Requires Document", description="The series' current setting; always false for a one-off")
+    awaiting_document_count: int = Field(..., title="Occurrences Awaiting Document", description="Occurrences that need a document that hasn't arrived or been confirmed")
